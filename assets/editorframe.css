@@ -1,0 +1,24 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    overflow: scroll;
+}
+
+pre {
+    outline: none;
+    display: inline-block;
+    min-width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 2px 3px 2px 37px;
+    line-height: 150%;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    white-space: pre;
+    background-color: white;
+    cursor: text;
+}

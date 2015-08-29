@@ -1,0 +1,141 @@
+#breadcrumbs h2 small{
+    font-size: 100%;
+    color: #900A04;
+}
+
+p.label {
+    margin: 0;
+	cursor: default;
+}
+
+.code {
+    white-space: pre;
+}
+
+#editor {
+    position: relative;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    margin: 2px 0 0 0;
+    outline: none;
+    padding: 0;
+    width: 100%;
+    height: 580px;
+}
+
+#editor.focus {
+    border-color: rgba(0, 0, 0, 0.4);
+    -webkit-box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+}
+
+#editor-main {
+    margin: 0;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+}
+
+#editor-line-numbers {
+    position: absolute;
+    z-index: 9;
+    top: 0;
+    left: 0;
+    margin: 0;
+    width: 34px;
+    padding: 2px 3px;
+
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+
+    border-right: 1px solid #C0C0C0;
+    background-color: #E0E0E0;
+    white-space: pre;
+    text-align: right;
+    color: #585858;
+    overflow: hidden;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+	user-select: none;
+    cursor: default;
+    height: 560px;
+}
+
+#editor-menu {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    min-width: 140px;
+    border: 1px solid gray;
+    outline: none;
+    background-color: white;
+    display: none;
+}
+
+#editor-menu ul {
+    margin: 0;
+    padding: 2px 0;
+}
+
+#editor-menu li {
+    line-height: 140%;
+    padding: 2px 3px;
+    font-size: 1.2em;
+    color: gray;
+    cursor: default;
+}
+
+#editor-menu li.active {
+    color: black;
+}
+
+#editor-menu li.active:hover {
+    background-color: gray;
+    color: white;
+    cursor: pointer;
+}
+
+input[type="text"] {
+    margin-top: 2px;
+}
+
+#editor-resize-handle {
+    margin: 4px auto 0 auto;
+    height: 10px;
+    width: 200px;
+    background-color: white;
+    border-top: 1px solid #B0B0B0;
+    border-bottom: 1px solid #B0B0B0;
+    cursor: row-resize;
+}
+
+#saving-popup {
+    position: fixed;
+    z-index: 9000;
+    top: 50%;
+    left: 50%;
+    height: 27px;
+    width: 76px;
+    margin: -15px 0 0 -39px;
+    border: 1px solid #707070;
+    border-radius: 3px;
+    background-color: #bfdc96;
+    display: none;
+}
+
+#saving-popup p {
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 15px;
+    margin-top: 6px;
+    color: rgba(0, 0, 0, 0.75);
+    text-align: center;
+}

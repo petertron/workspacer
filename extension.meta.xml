@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extension id="workspacer" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
+    <name>Workspacer</name>
+    <description>For Symphony 2.5+. Files in the Workspace folder can be managed and edited.</description>
+    <repo type="github">https://github.com/Petertron/workspacer</repo>
+    <types>
+        <type>Workflow</type>
+    </types>
+    <authors>
+        <author>
+            <name github="Petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
+            <email>petertron@mailservice.ms</email>
+            <website>http://www.peter-s.tk</website>
+        </author>
+    </authors>
+    <releases>
+        <release version="0.1.0" date="2015-08-29" min="2.5.0" max="3.0.0">
+            - Initial release.
+        </release>
+    </releases>
+</extension>

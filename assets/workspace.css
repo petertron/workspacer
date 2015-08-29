@@ -1,0 +1,131 @@
+fieldset {
+	margin: 16px 0 0 0;
+	/*background-color: white !important;*/
+}
+
+div.section-header {
+	clear: both;
+	position: relative;
+	margin-bottom: 5px;
+	background-color: rgba(0, 0, 0, 0.08);
+	border-top: 1px solid rgba(0, 0, 0, 0.09);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.09);
+/*	box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.05);
+	-webkit-box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.05);*/
+	/*min-height: 100%;*/
+}
+
+fieldset table {
+	margin-top: -2px;
+}
+
+#create-upload {
+	position: relative;
+	overflow: hidden;
+	display: none;
+}
+
+fieldset.create-dirs {
+	float: left;
+	width: 28%;
+}
+
+fieldset.create-dirs>div {
+	margin-left: 19px;
+}
+
+fieldset.upload-queue {
+	float: right;
+	width: 67%;
+}
+
+legend {
+	margin-left: 19px;
+}
+
+ul.actions fieldset.apply {
+	background-color: #83b340;
+	background-image: -webkit-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
+	background-image:	 -moz-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
+	background-image:	  -ms-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
+	background-image:	   -o-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
+	background-image:	linear-gradient(to bottom, #92c44d 0%, #92c44d 30%, #78a737 100%);
+	border-color: rgba(50, 70, 23, 0.3);
+	border-bottom-color: rgba(50, 70, 23, 0.5);
+	color: rgba(255, 255, 255, 0.9);
+	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
+}
+
+ul.actions li fieldset.apply select {
+	color: rgba(255, 255, 255, 0.9);
+	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
+}
+
+ul.actions li fieldset.apply button {
+	background: none;
+	color: rgba(255, 255, 255, 0.9);
+	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
+}
+
+ul.actions li fieldset.apply option {
+	background-color: white;
+	color: black;
+}
+
+ul.actions form button[type='submit'] {
+	display: inline-block;
+	height: 22px;
+}
+
+ul.actions li input[type='file'] {
+	margin: 0 0 0 10px;
+	height: 22px;
+}
+
+div.new-directories, div.upload-queue-buttons {
+	position: relative;
+	margin: 8px 0 3px 0;
+	padding-left: 19px;
+}
+
+button[name="add_files.upload_queue"] {
+	z-index: 3;
+}
+
+textarea[name='directory_names'] {
+	display: block;
+	margin: -14px 0 6px;
+	width: 280px;
+	min-height: 20px;
+	resize: vertical;
+}
+/*
+input[name='add-files-true-button'] {
+*/
+div#aftb {
+	position: absolute;
+	z-index: 0;
+	top: -2px;
+	left: 18px;
+	opacity: 0;
+	cursor: pointer;
+	overflow: hidden;
+}
+
+div#aftb input {
+	border: 0;
+	font-size: 1000px;
+	cursor: pointer;
+}
+
+form.form-insert {
+	padding: 8px;
+}
+
+.hidden {
+	display: none;
+}
+
+.relative {
+	position: relative;
+}
