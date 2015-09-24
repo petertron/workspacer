@@ -349,6 +349,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         if (isset($path_obj)) {
             $dir_path = $path_obj->getPath() . '/';
             $dir_path_encoded = $path_obj->getPathEncoded() . '/';
+            //echo $dir_path_encoded; die;
             $workspace_url .= $dir_path_encoded;
             $editor_url .= $dir_path_encoded;
             //$this->workspace_url = $workspace_url;
@@ -399,23 +400,19 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
         $this->Form->appendChild($fieldset);
 
+        $actions = new XMLElement('div', NULL, array('id' => 'form-actions'));
         if (!$this->_existing_file) {
-            $actions = new XMLElement('div', NULL, array('class' => 'actions'));
-            // Add 'create' button
             $actions->appendChild(
                 Widget::Input(
                     'action[save]',
                     __('Create File'),
                     'submit',
-                    array('class' =>'button', 'accesskey' => 's')
+                    array('class' =>'button new', 'accesskey' => 's')
                 )
             );
-            $this->Form->appendChild($actions);
-        }
-
-        $actions = new XMLElement('div', NULL, array('class' => 'actions'));
-        if (!$this->_existing_file) {
-            $actions->setAttribute('data-replacement-actions', '1');
+            $actions->setAttribute('class', 'actions new');
+        } else {
+            $actions->setAttribute('class', 'actions edit');
         }
 
         $actions->appendChild(
@@ -423,7 +420,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 'action[save]',
                 __('Save Changes'),
                 'submit',
-                array('class' => 'button', 'accesskey' => 's')
+                array('class' => 'button edit', 'accesskey' => 's')
             )
         );
         $actions->appendChild(
@@ -516,9 +513,9 @@ class contentExtensionWorkspacerView extends AdministrationPage
                     'action[save]',
                     __('Save Changes'),
                     'submit',
-                    array('class' => 'button', 'accesskey' => 's')
+                    array('class' => 'button edit', 'accesskey' => 's')
                 ),
-                array('class' => 'actions')
+                array('id' => 'form-actions', 'class' => 'actions')
             )
         );
     }

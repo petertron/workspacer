@@ -314,12 +314,57 @@ var Actions;
         return Paste;
     })(Base);
     Actions.Paste = Paste;
+    var IndentRight = (function (_super) {
+        __extends(IndentRight, _super);
+        function IndentRight() {
+            _super.call(this);
+            this.title = "indent right";
+            var break_pos;
+            var pos = Textspace.selection;
+            this.position = pos.start;
+            var slices = Textspace.getEditorTextSlices();
+            if (slices.before) {
+                break_pos = slices.before.lastIndexOf("\n") + 1;
+                if (break_pos < slices.before.length) {
+                    slices.selected = slices.before.slice(break_pos) + slices.selected;
+                    slices.before = slices.before.slice(0, break_pos);
+                }
+            }
+            if (slices.selected.slice(-1) !== "\n") {
+                break_pos = slices.after.indexOf("\n");
+                if (break_pos != -1) {
+                    slices.selected += slices.after.slice(0, break_pos);
+                    slices.after = slices.after.slice(break_pos);
+                }
+            }
+            this.old_text = slices.selected;
+            var selection_split = slices.selected.split("\n");
+            var indentation_pos;
+            for (var i in selection_split) {
+                selection_split[i] = "    " + selection_split[i];
+            }
+            slices.selected = selection_split.join("\n");
+            Textspace.text = slices.before + slices.selected + slices.after;
+            Textspace.selection.end = null;
+        }
+        IndentRight.prototype.undo = function () {
+            Textspace.textInsert(this.position, this.old_text);
+            Textspace.setSelection(this.position + this.old_text.length);
+        };
+        IndentRight.prototype.redo = function () {
+            Textspace.textRemove({ 'start': this.position, 'end': this.position + this.old_text.length });
+            Textspace.setSelection(this.position);
+        };
+        return IndentRight;
+    })(Base);
+    Actions.IndentRight = IndentRight;
 })(Actions || (Actions = {}));
 /// <reference path="jquery.d.ts"/>
 /// <reference path="Textspace.ts"/>
 /// <reference path="Actions.ts"/>
 var d = document;
 var settings = Symphony.Extensions.Workspacer['settings'];
+var Settings = settings;
 $.fn.appendText = function (text) {
     this.each(function () {
         $(this).append(d.createTextNode(text));
@@ -384,16 +429,22 @@ function EDITOR_MAIN_onKeyDown(event) {
     last_key_code = key;
     var char = String.fromCharCode(key);
     if (event.metaKey || event.ctrlKey) {
-        switch (char.toLowerCase()) {
-            case "s":
+        switch (key) {
+            case 39:
+                if (!Textspace.selection.collapsed) {
+                    event.preventDefault();
+                    Textspace.action("IndentRight");
+                }
+                break;
+            case 83:
                 event.preventDefault();
                 $('input[name="action[save]"]').trigger('click');
                 break;
-            case "y":
+            case 89:
                 event.preventDefault();
                 Textspace.redo();
                 break;
-            case "z":
+            case 90:
                 event.preventDefault();
                 Textspace.undo();
                 break;
@@ -496,9 +547,8 @@ function EDITOR_MENU_onFocusOut(event) {
     $(this).hide();
 }
 function saveDocument(event) {
-    if (!ajax_submit)
-        return;
     event.preventDefault();
+    event.stopPropagation();
     if ($(NAME_FIELD).val() == '')
         return;
     $.ajax({
@@ -523,14 +573,15 @@ function saveDocument(event) {
             if (data.new_filename) {
                 $('input[name="fields[existing_file]"]').val(data.new_filename);
                 $(SUBHEADING).text(data.new_filename);
-                history.replaceState({ 'a': 'b' }, '', directory_url + data.new_filename_encoded + '/');
-            }
-            if (replacement_actions) {
-                $(FORM).find('div.actions').replaceWith(replacement_actions);
-                replacement_actions = null;
+                history.replaceState({ 'a': 'b' }, '', Symphony.Context.get('symphony') + '/workspace/editor/' + data.new_path_encoded);
             }
             $(NOTIFIER).trigger('attach.notify', [data.alert_msg, data.alert_type]);
             setHighlighter();
+            if ($('#form-actions').hasClass('new')) {
+                $('#form-actions')
+                    .removeClass('new')
+                    .addClass('edit');
+            }
         }
     });
 }
@@ -543,10 +594,6 @@ $().ready(function () {
     FORM = (CONTENTS).find('form');
     NAME_FIELD = $(FORM).find('input[name="fields[name]"]');
     SAVING_POPUP = $('#saving-popup');
-    replacement_actions = $(FORM).find('div[data-replacement-actions="1"]').detach();
-    if (replacement_actions.length == 0)
-        replacement_actions = null;
-    ;
     in_workspace = ($(BODY).hasClass('template') == false);
     if (in_workspace) {
         directory_url = Symphony.Context.get('symphony')
@@ -604,14 +651,10 @@ $().ready(function () {
             ajax_submit = true;
         event.stopPropagation();
     });
-    $(FORM)
-        .click(function (event) {
-        if (event.target.name == 'action[save]')
-            ajax_submit = true;
-        if (event.target.name == 'action[delete]')
-            ajax_submit = false;
-    })
-        .submit(saveDocument);
+    $('#form-actions input.new')
+        .click(saveDocument);
+    $('#form-actions input.edit')
+        .click(saveDocument);
 });
 $(document).on("editor-main-ready", function (event) {
     Textspace.text = $('#text').text();

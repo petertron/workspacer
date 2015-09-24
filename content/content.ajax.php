@@ -174,6 +174,7 @@ class contentExtensionWorkspacerAjax
 
                         $this->_output['new_filename'] = $specified_file;
                         $this->_output['new_filename_encoded'] = rawurlencode($specified_file);
+                        $this->_output['new_path_encoded'] = $path_encoded . rawurlencode($specified_file) . '/';
 
                         $this->_output['alert_msg'] =
                             __('File created at %s.', array($time->generate()))

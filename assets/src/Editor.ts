@@ -16,6 +16,8 @@ var d = document;
 //Symphony.Extensions['Workspacer'] = {'highlighters': {}};
 
 var settings = Symphony.Extensions.Workspacer['settings'];
+var Settings = settings;
+
 // Functions for highlighter modules.
 
 $.fn.appendText = function(text)
@@ -134,21 +136,34 @@ function EDITOR_MAIN_onMouseUp(event)
 function EDITOR_MAIN_onKeyDown(event)
 {
     var key = event.which;
+    //alert (key);
     last_key_code = key;
     var char = String.fromCharCode(key);
     //alert (char);
 
     if (event.metaKey || event.ctrlKey) {
-        switch (char.toLowerCase()) {
-            case "s":
+        //switch (char.toLowerCase()) {
+        switch (key) {
+/*            case 37; // left arrow
+                if (!Textspace.selection.collapsed) {
+                    Textspace.action("IndentRight");
+                }
+                break;*/
+            case 39: // right arrow
+                if (!Textspace.selection.collapsed) {
+                    event.preventDefault();
+                    Textspace.action("IndentRight");
+                }
+                break;
+            case 83: // "s"
                 event.preventDefault();
                 $('input[name="action[save]"]').trigger('click');
                 break;
-            case "y":
+            case 89: // "y"
                 event.preventDefault();
                 Textspace.redo();
                 break;
-            case "z":
+            case 90: // "z"
                 event.preventDefault();
                 Textspace.undo();
                 //refreshEditorDisplay()
@@ -276,10 +291,9 @@ function EDITOR_MENU_onFocusOut(event)
 
 function saveDocument(event)
 {
-    if (!ajax_submit)
-        return;
-
     event.preventDefault();
+    event.stopPropagation();
+
     if($(NAME_FIELD).val() == '')
         return;
     //$(SAVING_POPUP).show();
@@ -308,15 +322,24 @@ function saveDocument(event)
             if (data.new_filename) {
                 $('input[name="fields[existing_file]"]').val(data.new_filename);
                 $(SUBHEADING).text(data.new_filename);
-                history.replaceState({'a': 'b'}, '', directory_url + data.new_filename_encoded + '/');
+                //history.replaceState({'a': 'b'}, '', directory_url + data.new_filename_encoded + '/');
+                history.replaceState(
+                    {'a': 'b'}, '',
+                    Symphony.Context.get('symphony') + '/workspace/editor/' + data.new_path_encoded
+                );
             }
-            if (replacement_actions) {
+            /*if (replacement_actions) {
                 $(FORM).find('div.actions').replaceWith(replacement_actions);
                 replacement_actions = null;
-            }
+            }*/
             $(NOTIFIER).trigger('attach.notify', [data.alert_msg, data.alert_type]);
             setHighlighter();
-            // *** if(data.alert_type == 'error') window.scrollTop = 0;
+            if ($('#form-actions').hasClass('new')) {
+                $('#form-actions')
+                .removeClass('new')
+                .addClass('edit');
+            }
+            // *** if (data.alert_type == 'error') window.scrollTop = 0;
         }
     });
 }
@@ -337,9 +360,9 @@ $().ready(function()
     FORM = (CONTENTS).find('form');
     NAME_FIELD = $(FORM).find('input[name="fields[name]"]');
     SAVING_POPUP = $('#saving-popup');
-    replacement_actions = $(FORM).find('div[data-replacement-actions="1"]').detach();
+/*    replacement_actions = $(FORM).find('div[data-replacement-actions="1"]').detach();
     if (replacement_actions.length == 0) replacement_actions = null;;
-
+*/
     //in_workspace = $(BODY).is('#extension-workspace_manager_b-view');
     in_workspace = ($(BODY).hasClass('template') == false);
     if (in_workspace) {
@@ -437,14 +460,15 @@ $().ready(function()
         event.stopPropagation();
     });
 
-    $(FORM)
-        .click(function(event) {
+    $('#form-actions input.new')
+        .click(saveDocument);
+    $('#form-actions input.edit')
+        .click(saveDocument);
+/*        .click(function(event) {
             if ((<HTMLInputElement> event.target).name == 'action[save]') ajax_submit = true;
             if ((<HTMLInputElement> event.target).name == 'action[delete]') ajax_submit = false;
-            //if(event.target.name == 'action[delete]') ajax_submit = false;
         })
-        .submit(saveDocument);
-
+        //.submit(saveDocument);*/
 });
 
 /*

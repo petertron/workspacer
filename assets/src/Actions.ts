@@ -258,4 +258,64 @@ module Actions
             Textspace.setSelection(this.position + this.new_text.length);
         }
     }
+
+    /*
+     * Block indent right
+     */
+    export class IndentRight extends Base
+    {
+        title = "indent right";
+
+        position: number;
+        private old_text: string;
+        private new_text: string;
+
+        constructor()
+        {
+            super();
+            var break_pos;
+            var pos = Textspace.selection;
+            this.position = pos.start;
+            var slices = Textspace.getEditorTextSlices();
+            if (slices.before) {
+                break_pos = slices.before.lastIndexOf("\n") + 1;
+                if (break_pos < slices.before.length) {
+                    slices.selected = slices.before.slice(break_pos) + slices.selected;
+                    slices.before = slices.before.slice(0, break_pos);
+                }
+            }
+            if (slices.selected.slice(-1) !== "\n") {
+                break_pos = slices.after.indexOf("\n");
+                if (break_pos != -1) {
+                    slices.selected += slices.after.slice(0, break_pos);
+                    slices.after = slices.after.slice(break_pos);
+                }
+            }
+            this.old_text = slices.selected;
+            // Do the shifting.
+            var selection_split = slices.selected.split("\n");
+            var indentation_pos;
+            for (var i in selection_split) {
+                //indentation_pos = getIndentation(selection_split[i]);
+                selection_split[i] = "    " + selection_split[i];
+                //Settings.indentation_width;
+            }
+            slices.selected = selection_split.join("\n");
+            Textspace.text = slices.before + slices.selected + slices.after;
+            Textspace.selection.end = null;
+        }
+
+        undo()
+        {
+            Textspace.textInsert(this.position, this.old_text);
+            Textspace.setSelection(this.position + this.old_text.length);
+        }
+
+        redo()
+        {
+            Textspace.textRemove({'start': this.position, 'end': this.position + this.old_text.length});
+            Textspace.setSelection(this.position);
+        }
+    }
+
 }

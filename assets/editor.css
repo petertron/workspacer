@@ -139,3 +139,11 @@ input[type="text"] {
     color: rgba(0, 0, 0, 0.75);
     text-align: center;
 }
+
+div.actions.new input.button.edit, div.actions.new button.delete {
+    display: none;
+}
+
+div.actions.edit input.button.new {
+    display: none;
+}
