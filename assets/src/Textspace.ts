@@ -116,7 +116,7 @@ module Textspace
 
     function getSelectionPoints()
     {
-        var selection = EDITOR_MAIN.contentWindow.getSelection();
+        var selection = window.getSelection();
         var s0 = selection.getRangeAt(0);
         var start_node = s0.startContainer;
         var start_offset = s0.startOffset;
@@ -130,7 +130,7 @@ module Textspace
     function caretPosFromNode(node, offset)
     {
         var r = document.createRange();
-        r.setStart(EDITOR_MAIN_PRE, 0);
+        r.setStart(PRE_TAG, 0);
         r.setEnd(node, offset);
         var div = document.createElement('div');
         div.appendChild(r.cloneContents());
@@ -145,7 +145,7 @@ module Textspace
 
     export function getEditorTextSlices()//: TextSlices
     {
-        var sel = EDITOR_MAIN.contentWindow.getSelection().getRangeAt(0),
+        var sel = window.getSelection().getRangeAt(0),
             r = document.createRange(),
             slices = {
                 'before': "",
@@ -153,7 +153,7 @@ module Textspace
                 'after': ""
             };
             //slices: TextSlices = new TextSlices();
-        r.setStart(EDITOR_MAIN_PRE, 0);
+        r.setStart(PRE_TAG, 0);
         r.setEnd(sel.startContainer, sel.startOffset);
         slices.before = getTextFromRange(r);
         if (!sel.collapsed) {
@@ -162,8 +162,8 @@ module Textspace
             slices.selected = getTextFromRange(r);
         }
         r.setStart(sel.endContainer, sel.endOffset);
-        r.setEnd(EDITOR_MAIN_PRE, EDITOR_MAIN_PRE.childNodes.length)
-        //r.setEnd(EDITOR_MAIN_PRE.lastChild, EDITOR_MAIN_PRE.lastChild.length);
+        r.setEnd(PRE_TAG, PRE_TAG.childNodes.length)
+        //r.setEnd(PRE_TAG.lastChild, PRE_TAG.lastChild.length);
         slices.after = getTextFromRange(r);
         //alert(slices.before);
         return slices;

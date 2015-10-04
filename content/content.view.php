@@ -297,7 +297,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $script->setAttributeArray(array('type' => 'text/javascript', 'src' => self::$assets_base_url . 'require.js', 'data-main' => self::$assets_base_url . 'editor.js'));
         $this->addElementToHead($script); //, $position);*/
 
-        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
+/*        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
         $entries = scandir($filepath);
         foreach ($entries as $entry) {
             if (is_file($filepath . $entry)) {
@@ -309,7 +309,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 }
             }
         }
-
+*/
         //$path = $this->_context[1];
         $path_parts = $this->_context;
         array_shift($path_parts);
@@ -384,7 +384,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $fieldset->appendChild($label);
         //$fieldset->appendChild((isset($this->_errors['name']) ? Widget::Error($label, $this->_errors['name']) : $label));
         //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '');
-        $this->editorXML($fieldset, $filename ? file_get_contents($path_abs) : '');
+        $this->editorXML($fieldset, $dir_path . $filename);
 /*
         $fieldset->appendChild(
             Widget::Textarea(
@@ -527,7 +527,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         return implode('/', $path_parts);
     }
 
-    function editorXML(&$fieldset, $text)
+    function editorXML(&$fieldset, $path)
     {
         $fieldset->appendChild(new XMLElement('p', __('Body'), array('id' => 'editor-label', 'class' => 'label')));
         //$fieldset->appendChild(new XMLElement('label', __('Body'), array('for' => 'editor')));
@@ -544,7 +544,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 )
             )
         );
-        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . '/workspace/editorframe/')));
+        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . "/workspace/editorframe/?path=$path")));
         //$menu = new XMLElement('div', null, array('id' => 'editor-menu', 'tabindex' => '0'));
         //$editor->appendChild($menu);
 
@@ -553,7 +553,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $fieldset->appendChild(new XMLElement('div', null, array('id' => 'editor-resize-handle')));
 
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
-        $fieldset->appendChild(new XMLElement('script', $text, array('id' => 'text', 'type' => 'text')));
     }
 
     function getFileTableRows()

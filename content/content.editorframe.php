@@ -36,7 +36,7 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
 
         $this->Html->setDTD('<!DOCTYPE html>');
         $this->Html->setAttribute('lang', Lang::get());
-        $this->addElementToHead(new XMLElement('meta', null, array('charset' => 'UTF-8')), 0);
+        $this->addElementToHead(new XMLElement('meta', null, array('charset' => 'UTF-8')));
         $this->addStylesheetToHead(self::$assets_base_url . 'editorframe.css');
         //$this->addStylesheetToHead(self::$assets_base_url . 'highlighters/highlight-xsl.css');
 
@@ -56,6 +56,43 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
             }
         }
 */
+        $script_content = 'var Settings = ' . json_encode(Symphony::Configuration()->get('workspacer')) . ';'
+           . PHP_EOL . 'Highlighters = {};' . PHP_EOL;
+        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
+        $entries = scandir($filepath);
+        foreach ($entries as $entry) {
+            $file = $filepath . $entry;
+            if (is_file($filepath . $entry)) {
+                $info = pathinfo($file);
+                if ($info['extension'] == 'js' and $info['filename'] != '') {
+                    $script_content .= file_get_contents($file) . PHP_EOL;
+                }
+            }
+        }
+        $doc_text = file_get_contents(WORKSPACE . '/' . $_GET['path']);
+        if ($doc_text) {
+            $doc_text = addslashes($doc_text);
+            //$doc_text = preg_replace("/(\x0D\x0C|\x0C)/", "Z", $doc_text);
+            $doc_text = preg_replace("/(\r\n|\n|\r)/", "\\n", $doc_text);
+        }
+        $script_content .= 'window.doc_text = "' . $doc_text . '"';
+        $script = new XMLElement('script', $text, array('id' => 'text', 'type' => 'text'));
+        $script->setSelfClosingTag(false);
+        $this->Body->appendChild($script);
+
+        $this->addElementToHead(new XMLElement(
+            'script', $script_content, array('type' => 'text/javascript')
+        ));
+
+        $script = new XMLElement('script');
+        $script->setSelfClosingTag(false);
+        $script->setAttributeArray(array(
+            'type' => 'text/javascript',
+            'src' => URL . '/extensions/workspacer/assets/editorframe.js',
+            'defer' => 'defer'
+        ));
+        $this->addElementToHead($script, null);
+
         $path_parts = $this->_context;
         array_shift($path_parts);
         $path = implode('/', $path_parts);
@@ -122,15 +159,6 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
         $pre->setSelfClosingTag(false);
         $this->Body->appendChild($pre);
 
-        $script = new XMLElement(
-            'script',
-            'parent.$(parent.document).trigger("editor-main-ready");'
-            //"var event = top.document.createEvent('Event');\n" .
-            //'event.initEvent("editor-main-ready", true, true);' .
-            //'top.document.dispatchEvent(event)'
-        );
-        $script->setSelfClosingTag(false);
-        $this->Body->appendChild($script);
     }
 }
-?>
+     //$fieldset->appendChild(new XMLElement('script', $text, array('id' => 'text', 'type' => 'text')));

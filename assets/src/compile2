@@ -1,0 +1,8 @@
+#!/bin/bash
+
+tsc --out temp.js --target ES5 --removeComments --suppressImplicitAnyIndexErrors Editorframe.ts
+#contents="(function($){$(< temp.js)})(jQuery);"
+contents="$(< temp.js)"
+#contents="$(< temp.js)"
+echo "$contents" > ../editorframe.js
+rm temp.js

@@ -149,12 +149,13 @@
         return array_out;
     }
 
-    Symphony.Extensions.Workspacer.highlighters['js'] = {
+    //Symphony.Extensions.Workspacer.highlighters['js'] = {
+    Highlighters['js'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
     };
-})(window.jQuery);
+})();
 
 //})(); //(jQuery.noConflict());
 

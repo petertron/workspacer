@@ -79,11 +79,12 @@
         return array_out;
     }
 
-    Symphony.Extensions.Workspacer.highlighters['php'] = {
+    //Symphony.Extensions.Workspacer.highlighters['php'] = {
+    Highlighters['php'] = {
         'style_prefix': "GEN_",
         'stylesheet': stylesheet,
         'highlight': highlighter
     };
 
-})(window.jQuery);
+})();
 

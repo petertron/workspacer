@@ -177,12 +177,10 @@
         return array_out;
     }
 
-    Symphony.Extensions.Workspacer.highlighters['css'] = {
+    //Symphony.Extensions.Workspacer.highlighters['css'] = {
+    Highlighters['css'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
     };
-})(window.jQuery);
-
-//})(); //(jQuery.noConflict());
-
+})();

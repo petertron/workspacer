@@ -342,14 +342,14 @@
 
         return array_out;
     }
-
-    Symphony.Extensions.Workspacer.highlighters['xsl'] = {
+    //Symphony.Extensions.Workspacer.highlighters['xsl'] = {
+    Highlighters['xsl'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
     };
 
-})(jQuery);
+})();
 
 /*var highlight_xsl = '.XSL_xml_dec {color: #885820} .XSL_attr_name, .attr_name {color: #024C78} .XSL_xsl_tag {color: #007005} .XSL_xsl_attr_val, .XSL_xsl_in_attr_val {color: #460480} .XSL_xsl_variable {color: #3A0480; font-style: italic} .XSL_comment {color: #585858} .XSL_xml_tag {color: #065002} .XSL_html_tag {color: #020678} .XSL_attr_val, .XSL_string_in_xsl_attr_val {color: #901603} .XSL_number_in_xsl_attr_val {color: #B85004} .XSL_text, .XSL_cdata {color: #000} .XSL_amp {color: #9A7004} .XSL_delimiter {color: #777}';
 */
