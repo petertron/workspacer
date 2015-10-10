@@ -1,0 +1,237 @@
+Textspace = ՐՏ_modules['Textspace']
+
+class Base:
+    #def __init__(self):
+    #    self.updatable = 'update' in self
+
+    def getName(self):
+        results = JS('/function (.{1,})\\\(/.exec((this).constructor.toString())')
+        return (results and results.length > 1) ? results[1] : ""
+
+    def isUpdatable(self):
+        return JS('"update" in self')
+
+#
+# Insert a character
+#
+class InsertChar(Base):
+    title = "insert"
+
+    def __init__(self, char):
+        #Base.__init__(self)
+        replaced = Textspace.replaceSelection(char)
+        self.position = replaced.position
+        self.old_text = replaced.text
+        self.new_text = char
+        Textspace.setSelection(self.position + 1)
+
+    def update(self, char):
+        Textspace.textInsert(self.position + self.new_text.length , char)
+        self.new_text += char
+        Textspace.setSelection(self.position + self.new_text.length)
+
+    def undo(self):
+        Textspace = Mod.Textspace
+        Textspace.textReplace({'start': self.position, 'end': self.position + self.new_text.length}, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textReplace({'start': self.position, 'end': self.position + self.old_text.length}, self.new_text)
+        Textspace.setSelection(self.position + self.new_text.length)
+
+#
+# Insert a newline character
+#
+class InsertLineBreak(Base):
+    title = "insert line break"
+
+    def __init__(self):
+        #Base.__init__(self)
+        replaced = Textspace.replaceSelection("\n")
+        self.position = replaced.position
+        self.old_text = replaced.text
+        Textspace.setSelection(self.position + 1)
+
+    def undo(self):
+        Textspace.textReplace({'start': self.position, 'end': self.position + 1}, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textReplace({'start': self.position, 'end': self.position + self.old_text.length}, "\n")
+        Textspace.setSelection(self.position + 1)
+
+#
+# Backspace
+#
+class Delete(Base):
+    title = "delete"
+
+    #position: number
+    #old_text: string
+
+    def __init__(self):
+        slices = Textspace.getEditorTextSlices()
+        if slices.selected:
+            self.old_text = slices.selected
+        else:
+            if !slices.before:
+                raise None
+            self.old_text = slices.before.slice(-1)
+        #slices.before = slices.before.slice(0, slices.before.length - 1)
+        slices.before = slices.before.slice(0, -1)
+        #console.log("Log: " + self.old_text.charCodeAt(0))
+
+        Textspace.setText(slices.before + slices.after)
+        self.position = slices.before.length
+        """sel = Textspace.selection
+        if sel.collapsed):
+        if sel.start == 0)
+        raise None
+        sel.end = sel.start
+        sel.start--
+        Textspace.selection.start = sel.start
+        }
+        self.position = sel.start
+        self.old_text = Textspace.textRemove(sel)"""
+        Textspace.setSelection(self.position)
+
+    def update(self):
+        if self.position == 0:
+            raise None
+        self.position -= 1
+        self.old_text = Textspace.textRemove({'start': self.position, 'end': self.position + 1}) + self.old_text
+        Textspace.setSelection(self.position)
+
+    def undo(self):
+        Textspace.textInsert(self.position, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textRemove({'start': self.position, 'end': self.position + self.old_text.length})
+        Textspace.setSelection(self.position)
+
+#
+# Forwards delete
+#
+class ForwardsDelete(Base):
+    title = "forwards delete"
+
+    #position: number
+    #old_text: string
+
+    def __init__(self):
+        #Base.__(init)__(self)
+        sel = Textspace.getSelection()
+        if sel.collapsed:
+            if sel.start == Textspace.getText().length:
+                raise None
+            sel.end = sel.start + 1
+        self.position = sel.start
+        self.old_text = Textspace.textRemove(sel)
+        Textspace.setSelection(self.position)
+
+    def update(self):
+        if Textspace.getSelection().start == Textspace.getText().length:
+            raise None
+        self.old_text += Textspace.textRemove({'start': self.position, 'end': self.position + 1})
+        Textspace.setSelection(self.position)
+
+    def undo(self):
+        Textspace.textInsert(self.position, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textRemove({'start': self.position, 'end': self.position + self.old_text.length})
+        Textspace.setSelection(self.position)
+
+#
+# Cut selected text
+#
+class Cut(Base):
+    title = "cut"
+
+    def __init__(self):
+        pos = Textspace.getSelection()
+        self.position = pos.start
+        self.old_text = Textspace.textRemove(pos)
+        Textspace.setSelection(pos.start, None)
+
+    def undo(self):
+        Textspace.textInsert(self.position, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textRemove({'start': self.position, 'end': self.position + self.old_text.length})
+        Textspace.setSelection(self.position)
+
+#
+# Paste
+#
+class Paste(Base):
+    title = "paste"
+
+    #position: number
+    #old_text: string
+    #new_text: string
+
+    def __init__(self, new_text):
+        replaced = Textspace.replaceSelection(new_text)
+        self.position = replaced.position
+        self.old_text = replaced.text
+        self.new_text = new_text
+        Textspace.setSelection(self.position + self.new_text.length)
+
+    def undo(self):
+        Textspace.textReplace({'start': self.position, 'end': self.position + self.new_text.length}, self.old_text)
+        Textspace.setSelection(self.position + self.old_text.length)
+
+    def redo(self):
+        Textspace.textReplace({'start': self.position, 'end': self.position + self.old_text.length}, self.new_text)
+        Textspace.setSelection(self.position + self.new_text.length)
+
+#
+# Block indent right
+#
+class IndentRight(Base):
+    title = "indent right"
+
+    #position: number
+    #private old_text: string
+    #private new_text: string
+
+    def __init__(self):
+        #Base.__(init)__(self)
+        break_pos = 0
+        pos = Textspace.selection
+        self.position = pos.start
+        slices = Textspace.getEditorTextSlices()
+        if slices.before:
+            break_pos = slices.before.lastIndexOf("\n") + 1
+        if break_pos < slices.before.length:
+            slices.selected = slices.before.slice(break_pos) + slices.selected
+            slices.before = slices.before.slice(0, break_pos)
+        if slices.selected.slice(-1) != "\n":
+            break_pos = slices.after.indexOf("\n")
+        if break_pos != -1:
+            slices.selected += slices.after.slice(0, break_pos)
+            slices.after = slices.after.slice(break_pos)
+            self.old_text = slices.selected
+        # Do the shifting.
+        selection_split = slices.selected.split("\n")
+        #indentation_pos
+        for i in selection_split:
+            #indentation_pos = getIndentation(selection_split[i])
+            selection_split[i] = "    " + selection_split[i]
+            #Settings.indentation_width
+
+            slices.selected = selection_split.join("\n")
+            Textspace.text = slices.before + slices.selected + slices.after
+            Textspace.selection.end = None
+
+        def undo(self):
+            Textspace.textInsert(self.position, self.old_text)
+            Textspace.setSelection(self.position + self.old_text.length)
+
+        def redo(self):
+            Textspace.textRemove({'start': self.position, 'end': self.position + self.old_text.length})
+            Textspace.setSelection(self.position)

@@ -86,7 +86,20 @@ var editor_resize = {
     'pointer_y': null
 };
 
+$(BODY)
+    .mouseup(
+    def(event):
+        editor_resize.mouse_down = false
+    )
+    .mouseleave(def(event)
+        editor_resize.mouse_down = false;
+    )
 
+/*    $('#editor-label')
+ *    .click(def(event) {
+ *        EDITOR_MAIN.focus()
+ *    })
+ *
 /**
  * Editor functions
  */

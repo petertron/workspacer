@@ -1,0 +1,165 @@
+#module Textspace:
+$ = window.parent.jQuery
+Actions = ՐՏ_modules["Actions"]
+
+PRE_TAG = document.querySelector('pre')
+
+selection = {'start': null, 'end': null, 'collapsed': null}
+caret_positioned = False
+
+undo_stack = []
+redo_stack = []
+
+def getSelection():
+    return selection
+
+_text = ""
+
+def getText():
+    return _text
+
+def setText(text):
+    nonlocal _text
+    _text = text
+
+#
+# Perform a named action
+#
+action = def(action_name, new_text):
+    nonlocal selection, caret_positioned
+    try:
+        selection = getSelectionPoints()
+        #alert("Sstart: " + selection.start)
+        action_class = Actions[action_name]
+
+        last_item = None
+        add_to_stack = True
+
+        if undo_stack.length > 0 and !caret_positioned:
+            last_item = undo_stack[undo_stack.length - 1]
+            if (last_item.isUpdatable() and last_item.getName() == action_name):
+                last_item.update(new_text)
+                add_to_stack = False
+
+        if add_to_stack:
+            undo_stack.push(new action_class(new_text))
+            redo_stack = []
+
+        caret_positioned = False
+        $(document).trigger('refreshEditorDisplay')
+
+    except as error:
+        if error:
+            alert(error.name + " : " + error.message)
+        else:
+            alert("Can't do!")
+
+#
+# Undo last action
+#
+undo = def():
+    if undo_stack.length > 0:
+        last_item = undo_stack.pop()
+        redo_stack.push(last_item)
+        last_item.undo()
+        #refreshEditorDisplay()
+        $(document).trigger('refreshEditorDisplay')
+
+#
+# Redo last undo
+#
+redo = def():
+    if redo_stack.length > 0:
+        last_item = redo_stack.pop()
+        undo_stack.push(last_item)
+        last_item.redo()
+        $(document).trigger('refreshEditorDisplay')
+
+def setSelection(start, end):
+    nonlocal selection
+    end = (end == undefined) ? start : end
+    selection = {'start': start, 'end': end, 'collapsed': (start == end)}
+
+def selectionCollapsed():
+    nonlocal selection
+    return (selection.start == selection.end)
+
+def textInsert(pos, new_text):
+    nonlocal _text
+    _text = _text.slice(0, pos) + new_text + _text.slice(pos)
+
+def textRemove(pos):
+    nonlocal _text
+    removed = _text.slice(pos.start, pos.end)
+    _text = _text.slice(0, pos.start) + _text.slice(pos.end)
+    return removed
+
+def textReplace(pos, new_text):
+    nonlocal _text
+    _text = _text.slice(0, pos.start) + new_text + _text.slice(pos.end)
+
+def replaceSelection(new_text):
+    nonlocal _text
+    slices = getEditorTextSlices()
+    _text = slices.before + new_text + slices.after
+    #old_text = selection.collapsed ? "" : text.slice(selection.start, selection.end)
+    #text = text.slice(0, selection.start) + new_text + text.slice(selection.end)
+    return {'position': slices.before.length, 'text': slices.selected}
+
+def registerCaretPos():
+    nonlocal selection, caret_positioned
+    selection = getSelectionPoints()
+    caret_positioned = True
+
+def getSelectionPoints():
+    sel = window.getSelection()
+    s0 = sel.getRangeAt(0)
+    start_node = s0.startContainer
+    start_offset = s0.startOffset
+    return {
+        'start': caretPosFromNode(start_node, start_offset),
+        'end': caretPosFromNode(s0.endContainer, s0.endOffset),
+        'collapsed': s0.collapsed
+    }
+
+def caretPosFromNode(node, offset):
+    nonlocal PRE_TAG
+    r = document.createRange()
+    r.setStart(PRE_TAG, 0)
+    r.setEnd(node, offset)
+    div = document.createElement('div')
+    div.appendChild(r.cloneContents())
+    return $(div).find('br').length + $(div).text().length
+
+def getEditorTextSlices():
+    nonlocal PRE_TAG
+    sel = window.getSelection().getRangeAt(0)
+    r = document.createRange()
+    slices = {
+        'before': "",
+        'selected': "",
+        'after': ""
+    }
+    #slices: TextSlices = new TextSlices()
+    r.setStart(PRE_TAG, 0)
+    r.setEnd(sel.startContainer, sel.startOffset)
+    slices.before = getTextFromRange(r)
+    if !sel.collapsed:
+        r.setStart(sel.startContainer, sel.startOffset)
+        r.setEnd(sel.endContainer, sel.endOffset)
+        slices.selected = getTextFromRange(r)
+
+    r.setStart(sel.endContainer, sel.endOffset)
+    r.setEnd(PRE_TAG, PRE_TAG.childNodes.length)
+    #r.setEnd(PRE_TAG.lastChild, PRE_TAG.lastChild.length)
+    slices.after = getTextFromRange(r)
+    #alert(slices.before)
+    return slices
+
+def getTextFromRange(range):
+    div = document.createElement('div')
+    div.appendChild(range.cloneContents())
+    breaks = div.getElementsByTagName('br')
+    for JS('var i = breaks.length; i > 0; i--'):
+        div.replaceChild(d.createTextNode("\n"), breaks[i - 1])
+    return div.textContent
