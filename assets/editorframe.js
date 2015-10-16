@@ -631,7 +631,7 @@
         caret_moved = false;
         x_margin = 3;
         y_margin = 2;
-        in_workspace = $(parent.document.body).data("0") !== "template";
+        in_workspace = !($(parent.document.body).data("0") === "template" || $(parent.document.body).hasClass("template"));
         new_file = null;
         document_modified = false;
         syntax_highlighter = null;

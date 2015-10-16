@@ -163,7 +163,7 @@
             el.form = $(el.contents).find("form");
             header_height = $(el.header).height();
             context_height = $(el.context).height();
-            in_workspace = $(el.body).data("0") !== "template";
+            in_workspace = !($(el.body).data("0") === "template" || $(el.body).hasClass("template"));
             if (in_workspace) {
                 directory_url = Symphony.Context.get("symphony") + Symphony.Context.get("env")["page-namespace"] + "/" + $(el.form).find("input[name=\"fields[dir_path_encoded]\"]").attr("value");
             }

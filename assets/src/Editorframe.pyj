@@ -18,8 +18,9 @@ caret_moved = False
 
 x_margin = 3
 y_margin = 2
+in_workspace = !($(parent.document.body).data('0') == 'template' or $(parent.document.body).hasClass('template'))
 
-in_workspace = ($(parent.document.body).data('0') != 'template')
+#in_workspace = ($(parent.document.body).data('0') != 'template')
 new_file = None
 document_modified = False
 syntax_highlighter = None
