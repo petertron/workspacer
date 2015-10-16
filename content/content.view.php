@@ -288,7 +288,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
     public function __viewEditor()
     {
         //echo var_dump($this->_context); die;
-        //$this->_context[2] = 'single';
         $this->addStylesheetToHead(self::$assets_base_url . 'editor.css');
         //$this->addScriptToHead(self::$assets_base_url . 'editor.js');
         $this->addScriptToHead(SYMPHONY_URL . '/extension/workspacer/editor_js/');
@@ -310,6 +309,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
             }
         }
 */
+        $this->Form->setAttribute('id', 'editor-form');
         //$path = $this->_context[1];
         $path_parts = $this->_context;
         array_shift($path_parts);
@@ -338,8 +338,51 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
         //$this->setPageType('table');
         $this->Body->setAttribute('spellcheck', 'false');
-        $this->Body->setAttribute('class', 'page-single');
+        $this->Body->setAttribute('class', 'page-single ' . ($filename ? 'edit' : 'new'));
         $this->appendSubheading($title);
+
+        $this->insertAction(
+            Widget::Input(
+                'fields[name]',
+                $filename,
+                'text',
+                array('id' => 'filename', 'placeholder' => __('File name'))
+            )
+        );
+        if (!$this->_existing_file) {
+            $this->insertAction(
+                Widget::Input(
+                    'action[save]',
+                    __('Create File'),
+                    'submit',
+                    array('class' =>'button new', 'accesskey' => 's')
+                )
+            );
+        }
+
+        $this->insertAction(
+            Widget::Input(
+                'action[save]',
+                __('Save Changes'),
+                'submit',
+                array('class' => 'button edit', 'accesskey' => 's')
+            )
+        );
+        $this->insertAction(
+            new XMLELement(
+                'button',
+                __('Delete'),
+                array(
+                    'form' => 'editor-form',
+                    'name' => 'action[delete]',
+                    'type' => 'submit',
+                    'class' => 'button confirm delete',
+                    'title' => 'Delete this file',
+                    'accesskey' => 'd',
+                    'data-message' => 'Are you sure you want to delete this file?'
+                )
+            )
+        );
 
         $workspace_url = SYMPHONY_URL . '/workspace/manager/';
         $editor_url = SYMPHONY_URL . '/workspace/editor/';
@@ -379,9 +422,9 @@ class contentExtensionWorkspacerView extends AdministrationPage
             Widget::Input('fields[dir_path_encoded]', $dir_path_encoded, 'hidden', array('id' => 'dir_path_encoded'))
         );
 
-        $label = Widget::Label(__('Name'));
-        $label->appendChild(Widget::Input('fields[name]', $filename));
-        $fieldset->appendChild($label);
+        //$label = Widget::Label(__('Name'));
+        //$label->appendChild(Widget::Input('fields[name]', $filename));
+        //$fieldset->appendChild($label);
         //$fieldset->appendChild((isset($this->_errors['name']) ? Widget::Error($label, $this->_errors['name']) : $label));
         //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '');
         $this->editorXML($fieldset, $dir_path . $filename);
@@ -399,14 +442,14 @@ class contentExtensionWorkspacerView extends AdministrationPage
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
 
         $this->Form->appendChild($fieldset);
-
+/*
         $actions = new XMLElement('div', NULL, array('id' => 'form-actions'));
         if (!$this->_existing_file) {
             $actions->appendChild(
                 Widget::Input(
                     'action[save]',
                     __('Create File'),
-                    'submit',
+                    'button',
                     array('class' =>'button new', 'accesskey' => 's')
                 )
             );
@@ -419,16 +462,17 @@ class contentExtensionWorkspacerView extends AdministrationPage
             Widget::Input(
                 'action[save]',
                 __('Save Changes'),
-                'submit',
+                'button',
                 array('class' => 'button edit', 'accesskey' => 's')
             )
         );
         $actions->appendChild(
             new XMLELement(
-                'button',
+                'input',
                 __('Delete'),
                 array(
                     'name' => 'action[delete]',
+                    'form' => 'editor-form',
                     'type' => 'submit',
                     'class' => 'button confirm delete',
                     'title' => 'Delete this file',
@@ -439,7 +483,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         );
 
         $this->Form->appendChild($actions);
-
+*/
         $text = new XMLElement('p', __('Saving'));
         $this->Form->appendChild(new XMLElement('div', $text, array('id' => 'saving-popup')));
     }
@@ -476,6 +520,14 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->insertBreadcrumbs($breadcrumbs);
 
         $this->insertAction(
+            Widget::Input(
+                'action[save]',
+                __('Save Changes'),
+                'submit',
+                array('class' => 'button edit', 'accesskey' => 's')
+            )
+        );
+        $this->insertAction(
             Widget::Anchor(
                 __('Edit Page'),
                 SYMPHONY_URL . '/blueprints/pages/edit/' . PageManager::fetchIDFromHandle($name) . '/',
@@ -488,25 +540,26 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->Form->setAttribute('action', SYMPHONY_URL . '/blueprints/pages/' . $name . '/');
 
         $fieldset = new XMLElement('fieldset');
-        $fieldset->appendChild(Widget::Input('fields[name]', $filename, 'hidden'));
+        $fieldset->appendChild(Widget::Input('fields[name]', $filename, 'hidden', array('id' => 'filename')));
         //$fieldset->appendChild((isset($this->_errors['name']) ? Widget::Error($label, $this->_errors['name']) : $label));
 
-        $this->editorXML($fieldset, $filename ? file_get_contents(WORKSPACE . '/pages/' . $filename) : '');
+        $this->editorXML($fieldset, $filename ? 'pages/' . $filename : '');
         //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents(WORKSPACE . '/pages/' . $filename), ENT_COMPAT, 'UTF-8') : '');
 
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
 
         $this->Form->appendChild($fieldset);
 
-        $this->Form->appendChild(
+/*        $this->Form->appendChild(
             new XMLElement(
                 'div',
                 new XMLElement('p', __('Saving')),
                 array('id' => 'saving-popup')
             )
         );
+*/
         //$this->_context = array('edit', 'pages', 'single');
-        $this->Form->appendChild(
+/*        $this->Form->appendChild(
             new XMLElement(
                 'div',
                 Widget::Input(
@@ -517,7 +570,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 ),
                 array('id' => 'form-actions', 'class' => 'actions')
             )
-        );
+        );*/
     }
 
     function getPath()
@@ -528,6 +581,30 @@ class contentExtensionWorkspacerView extends AdministrationPage
     }
 
     function editorXML(&$fieldset, $path)
+    {
+        $font_size = $this->settings->font_size ? $this->settings->font_size : '8.2pt';
+        $font_family = $this->settings->font_family ? $this->settings->font_family . ', monospace' : 'monospace';
+        $line_height = $this->settings->line_height ? $this->settings->line_height : '148%';
+        $editor = new XMLElement('div', null, array('id' => 'editor', 'tabindex' => '0'));
+        $editor->appendChild(
+            new XMLElement(
+                'div', null,
+                array(
+                    'id' => 'editor-line-numbers',
+                    'style' => "font-family: $font_family;font-size: $font_size;line-height: $line_height;"
+                )
+            )
+        );
+        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . "/workspace/editorframe/?path=$path")));
+        //$menu = new XMLElement('div', null, array('id' => 'editor-menu', 'tabindex' => '0'));
+        //$editor->appendChild($menu);
+
+        $fieldset->appendChild($editor);
+
+        //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
+    }
+
+/*    function editorXML(&$fieldset, $path)
     {
         $fieldset->appendChild(new XMLElement('p', __('Body'), array('id' => 'editor-label', 'class' => 'label')));
         //$fieldset->appendChild(new XMLElement('label', __('Body'), array('for' => 'editor')));
@@ -554,7 +631,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
     }
-
+*/
     function getFileTableRows()
     {
         $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');

@@ -31,7 +31,6 @@ class InsertChar(Base):
         Textspace.setSelection(self.position + self.new_text.length)
 
     def undo(self):
-        Textspace = Mod.Textspace
         Textspace.textReplace({'start': self.position, 'end': self.position + self.new_text.length}, self.old_text)
         Textspace.setSelection(self.position + self.old_text.length)
 
@@ -77,9 +76,9 @@ class Delete(Base):
             if !slices.before:
                 raise None
             self.old_text = slices.before.slice(-1)
-        #slices.before = slices.before.slice(0, slices.before.length - 1)
-        slices.before = slices.before.slice(0, -1)
-        #console.log("Log: " + self.old_text.charCodeAt(0))
+            #slices.before = slices.before.slice(0, slices.before.length - 1)
+            slices.before = slices.before.slice(0, -1)
+            #console.log("Log: " + self.old_text.charCodeAt(0))
 
         Textspace.setText(slices.before + slices.after)
         self.position = slices.before.length

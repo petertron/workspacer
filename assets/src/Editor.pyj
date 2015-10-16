@@ -4,79 +4,22 @@ d = document
 #Symphony.Extensions['Workspacer'] = {'highlighters': {}}
 
 Settings = Symphony.Extensions.Workspacer['settings']
-#settings = Settings
 
-# Document parts
-pg = {}
-BODY = None
-SUBHEADING = None
-CONTENTS = None
-FORM = None
-#NAME_FIELD
-#SAVING_POPUP
+el = None # Document parts
+ed = {} # Editor parts
 
-# Editor parts
-ed = {}
-"""
-ed.OUTER
-ed.LINE_NUMBERS
-ed.MAIN
-ed.MAIN_HIGHLIGHTER_STYLES
-ed.MAIN_PRE
-EDITOR_MENU
-ed.RESIZE_HANDLE
-"""
-replacement_actions = None
+header_height = None
+context_height = None
+
 workspace_url = None
 editor_url = None
 directory_url = None
-
-last_key_code = None
-caret_moved = False
-
-gutter_width = 34
-x_margin = 3
-y_margin = 2
 
 in_workspace = False
 new_file = False
 document_modified = False
 syntax_highlighter = None
-
-style_element1 = document.createElement('style')
-style_element1.type = "text/css"
-style_element2 = document.createElement('style')
-style_element2.type = "text/css"
-
-editor_height = 580
-
 editor_refresh_pending = False
-
-editor_resize = {
-    'height': 580,
-    'mouse_down': False,
-    'pointer_y': None
-}
-
-"""
-$(BODY)
-.mouseup(def(event):
-    editor_resize.mouse_down = False
-)
-.mouseleave(def(event):
-    editor_resize.mouse_down = False
-)
-
-    $('#editor-label')
- *    .click(def(event) {
- *        ed.MAIN.focus()
- *    })
- *
-"""
-
-#
-# Editor defs
-#
 
 """
 def ed.OUTER_onMouseDown(event):
@@ -85,21 +28,6 @@ def ed.OUTER_onMouseDown(event):
         #event.stopPropagation()
         $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])
         ed.MAIN_PRE.contentEditable = False
-"""
-
-def EDITOR_MAIN_onFocusIn(event):
-    if !($(ed.OUTER).hasClass('focus')):
-        $(ed.OUTER).addClass('focus')
-        #positionEditorCaret()
-
-def EDITOR_MAIN_onFocusOut(event):
-    if $(ed.OUTER).hasClass('focus'):
-        $(ed.OUTER).removeClass('focus')
-        #positionEditorCaret()
-
-def EDITOR_LINE_NUMBERS_onMouseDown(event):
-    event.preventDefault()
-    ed.MAIN.focus()
 
 def EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y):
     if $(self).is(':visible'):
@@ -108,7 +36,7 @@ def EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y):
     ul = d.createElement('ul')
     li = d.createElement('li')
     legend = d.createTextNode("Undo")
-    """
+
         if (Textspace.undo_stack.length > 0):
         li.className="active"
         $(li).data("action", "undo")
@@ -134,32 +62,31 @@ def EDITOR_MENU_onItemSelect(event):
         case "redo":
             Textspace.redo()
             break
-"""
 
 def EDITOR_MENU_onFocusOut(event):
     $(self).hide()
+"""
 
-def saveDocument(event):
-    event.preventDefault()
-    event.stopPropagation()
+#def saveDocument(event):
+#    event.preventDefault()
+#    event.stopPropagation()
 
-    if $(ed.NAME_FIELD).val() == '':
-        return
+def saveDocument():
+    if $(el.filename).val() == '': return
     #$(SAVING_POPUP).show()
     $.ajax({
         'type': 'POST',
         'url': Symphony.Context.get('symphony') + '/extension/workspacer/ajax/'
             + Symphony.Context.get('env')['0'] + '/',
-        #'data': $(FORM).serialize() + "&action%5Bsave%5D=1&ajax=1",
         'data': {
             'xsrf': $('input[name="xsrf"]').val(),
-            'ajax': '1',
             'action[save]': '1',
-            'fields[existing_file]': $('#existing_file').val(),
+            'fields[existing_file]': in_workspace ? $('#existing_file').val() : '',
             'fields[dir_path]': $('#dir_path').val(),
             'fields[dir_path_encoded]': $('#dir_path_encoded').val(),
-            'fields[name]': $('input[name="fields[name]"]').val(),
-            #'fields[body]': Textspace.text
+            #'fields[name]': $('input[name="fields[name]"]').val(),
+            'fields[name]': $(el.filename).val(),
+            'fields[body]': ed.MAIN.contentWindow.getText()
         },
         'dataType': 'json',
         'error': def(xhr, msg, error):
@@ -170,158 +97,115 @@ def saveDocument(event):
             #$(SAVING_POPUP).hide()
             if data.new_filename:
                 $('input[name="fields[existing_file]"]').val(data.new_filename)
-                $(SUBHEADING).text(data.new_filename)
+                $(el.subheading).text(data.new_filename)
                 #history.replaceState({'a': 'b'}, '', directory_url + data.new_filename_encoded + '/')
                 history.replaceState(
                     {'a': 'b'}, '',
                     Symphony.Context.get('symphony') + '/workspace/editor/' + data.new_path_encoded
                 )
-            #if replacement_actions:
-            #    $(pg.FORM).find('div.actions').replaceWith(replacement_actions)
-            #    replacement_actions = None
 
-            $(pg.NOTIFIER).trigger('attach.notify', [data.alert_msg, data.alert_type])
+            $('div.notifier').trigger('attach.notify', [data.alert_msg, data.alert_type])
             #setHighlighter()
-            if $('#form-actions').hasClass('new'):
-                $('#form-actions')
+            if $(el.body).hasClass('new'):
+                $(el.body)
                 .removeClass('new')
                 .addClass('edit')
-            # *** if (data.alert_type == 'error') window.scrollTop = 0
+            if data.alert_type == 'error': $(window).scrollTop(0)
+
+            setHeights()
     })
 
 #
 # Set editor up..
 #
 $().ready(def():
-    nonlocal Symphony, pg, ed #BODY, NOTIFIER, SUBHEADING, CONTENTS, FORM, NAME_FIELD, SAVING_POPUP
+    nonlocal Symphony, el, pg, ed, header_height, context_height
     #if (window.getSelection() == undefined) return
-    pg.BODY = Symphony.Elements.body
-    pg.NOTIFIER = $(Symphony.Elements.header).find('div.notifier')
-    pg.SUBHEADING = $('#symphony-subheading')
-    pg.CONTENTS = Symphony.Elements.contents
-    pg.FORM = (pg.CONTENTS).find('form')
-    pg.NAME_FIELD = $(FORM).find('input[name="fields[name]"]')
-    pg.SAVING_POPUP = $('#saving-popup')
+    el = Symphony.Elements
+    el.subheading = $('#symphony-subheading')
+    el.filename = $('#filename')
+    el.form = $(el.contents).find('form')
+    #el.name_field = $(el.form).find('input[name="fields[name]"]')
+    #pg.SAVING_POPUP = $('#saving-popup')
 
-    #replacement_actions = $(FORM).find('div[data-replacement-actions="1"]').detach()
-    #if (replacement_actions.length == 0): replacement_actions = None
+    header_height = $(el.header).height()
+    context_height = $(el.context).height()
 
-    #in_workspace = $(BODY).is('#extension-workspace_manager_b-view')
-    in_workspace = ($(BODY).hasClass('template') == False)
+    in_workspace = ($(el.body).data('0') != 'template')
     if in_workspace:
         directory_url = Symphony.Context.get('symphony')
-        + Symphony.Context.get('env')['page-namespace'] + '/' + $(FORM).find('input[name="fields[dir_path_encoded]"]').attr('value')
+        + Symphony.Context.get('env')['page-namespace'] + '/' + $(el.form).find('input[name="fields[dir_path_encoded]"]').attr('value')
 
     ed.OUTER = $('#editor')[0]
     ed.LINE_NUMBERS = $('#editor-line-numbers')[0]
-    #EDITOR_MENU = $('#editor-menu')[0]
-    ed.RESIZE_HANDLE = $('#editor-resize-handle')[0]
-
     ed.MAIN = $('#editor-main')[0]
+    #ed.MENU = $('#editor-menu')[0]
 
-    $(pg.BODY)
-    .mouseup(def(event):
-        editor_resize.mouse_down = False
-    )
-    .mouseleave(def(event):
-        editor_resize.mouse_down = False
+    $(window).resize(def(event):
+        setHeights()
     )
 
-    $('#editor-label')
-    .click(def(event):
+    $(document)
+    .on('editor-focusin', def(event):
+        if !($(ed.OUTER).hasClass('focus')): $(ed.OUTER).addClass('focus')
+    )
+    .on('editor-focusout', def(event):
+        if $(ed.OUTER).hasClass('focus'): $(ed.OUTER).removeClass('focus')
+    )
+    .on('editor-scrolltop', def(event, top):
+        ed.LINE_NUMBERS.scrollTop = top
+    )
+    .on('save-doc', def(event):
+        saveDocument()
+    )
+    .scroll(def(event):
+        setEditorHeight();
+    )
+
+    $(ed.LINE_NUMBERS)
+    .scrollTop(0)
+    .mousedown(def(event):
+        event.preventDefault()
         ed.MAIN.focus()
     )
 
-    $(ed.OUTER)
-    .css('height', editor_resize.height + 'px')
-    #.focusin(ed.OUTER_onFocusIn)
-    #.focusout(ed.OUTER_onFocusOut)
-    #.mousedown(ed.OUTER_onMouseDown)
-    #.mouseup(def(event)
-        #ed.MAIN_PRE.contentEditable = "True"
-    #)
-    .on('contextmenu', def(event):
-        return False
+    $('input[name="action[save]"]').click(def(event):
+        saveDocument()
     )
-
-#    .mouseup(def(event):
-#        s = window.getSelection().getRangeAt(0)
-#        positionEditorCaret()
-#        event.stopPropagation()
-#    )
-
-    # range.selectNode(document.body)
-
-    $(ed.LINE_NUMBERS)
-    .mousedown(ed.LINE_NUMBERS_onMouseDown)
-
-    #$(ed.MENU)
-    #.on('openmenu', EDITOR_MENU_onMenuOpen)
-    #.mouseup('li', EDITOR_MENU_onItemSelect)
-    #.focusout(EDITOR_MENU_onFocusOut)
-
-    $(ed.RESIZE_HANDLE)
-    .mousedown(def(event):
-        editor_resize.mouse_down = True
-        editor_resize.pointer_y = event.pageY
-    )
-    .mousemove(def(event):
-        if editor_resize.mouse_down == False: return
-                            #alert(editor_resize.pointer_y)
-        editor_resize.height += event.pageY - editor_resize.pointer_y
-        editor_resize.pointer_y = event.pageY
-        ed.OUTER.style.height = editor_resize.height + 'px'
-        ed.LINE_NUMBERS.style.height = ed.MAIN.clientHeight + 'px'
-    )
-    .mouseleave(def(event):
-        editor_resize.mouse_down = False
-    )
-
     #if(!$(body).hasClass('unsaved-changes')) $(body).addClass('unsaved-changes')
     #if !document_modified:
     #    document_modified = True
     #    breadcrumbs_filename.html(breadcrumbs_filename.html() + ' <small>↑</small>')
 
-    $(pg.NAME_FIELD).keydown(def(event):
-        if event.which == 13:
-            ajax_submit = True
-        event.stopPropagation()
-    )
-
-    $('#form-actions input.new')
-    .click(saveDocument)
-    $('#form-actions input.edit')
-    .click(saveDocument)
-
-#    .click(def(event):
-#        if ((event.target).name == 'action[save]') ajax_submit = True
-#        if ((event.target).name == 'action[delete]') ajax_submit = False
-#    )
-#    .submit(saveDocument)
-
+    Symphony.Utilities.requestAnimationFrame(setHeights)
 )
 
-"""
-    filename = None
-    ext = None
-
-    if in_workspace:
-        filename = $(ed.NAME_FIELD).val()
-        last_dot = filename.lastIndexOf(".")
-        if last_dot > 0:
-            ext = filename.slice(last_dot + 1)
-            syntax_highlighter = Symphony.Extensions.Workspacer.highlighters[ext]
-        else:
-            syntax_highlighter = None
-    else:
-        syntax_highlighter = Symphony.Extensions.Workspacer.highlighters.xsl
-"""
-
-window.displayLineNumbers = def(num_lines, h):
+window.displayLineNumbers = def(num_lines):
     l = ''
     for JS('var i = 1; i <= num_lines; i++'):
         l += i + "<br>"
     $(ed.LINE_NUMBERS)
-    .html(l)
-    #.html(l + '<br>')
-    .css('height', h + 'px')
+    .html(l + '<br><br>')
+
+def setHeights():
+    nonlocal el, ed, header_height, context_height
+    header_height = $(el.header).height() + $(el.nav).height()
+    context_height = $(el.context).height()
+    $(el.body)
+    .height($(window).height() + header_height) # + $('div.notifier').height())
+
+    $(el.wrapper)
+    .height($(window).height() + header_height)
+    .css('overflow', 'hidden')
+    $(ed.OUTER)
+    .css('overflow', 'hidden')
+    #.height($(window).height() + header_height)
+    setEditorHeight()
+
+    #.css('height', editor_height_min + $(window).scrollTop() + 'px')
+
+    #$('body').height(window.innerHeight + header_height)
+
+def setEditorHeight():
+    $(ed.OUTER).height($(window).height() - $('div.notifier').height() - header_height - context_height - 50 + $(window).scrollTop())
+    #$(ed.OUTER).height($(window).height() - header_height - context_height - 50 + $(window).scrollTop())

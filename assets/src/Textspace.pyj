@@ -161,5 +161,5 @@ def getTextFromRange(range):
     div.appendChild(range.cloneContents())
     breaks = div.getElementsByTagName('br')
     for JS('var i = breaks.length; i > 0; i--'):
-        div.replaceChild(d.createTextNode("\n"), breaks[i - 1])
+        div.replaceChild(document.createTextNode("\n"), breaks[i - 1])
     return div.textContent

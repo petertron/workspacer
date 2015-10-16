@@ -11,75 +11,47 @@ Context = Symphony.Context
 
 # Document parts
 BODY = document.body
-#PRE_TAG = document.querySelector('pre'),
-PRE_TAG = document.getElementsByTagName('pre')[0]
-
-# Editor parts
-#EDITOR_OUTER
-#EDITOR_LINE_NUMBERS
-#EDITOR_MAIN
-#BODY_HIGHLIGHTER_STYLES
-#EDITOR_MENU
-
-replacement_actions = None
-
-#workspace_url = None
-#editor_url
-#directory_url = None
+PRE_TAG = document.querySelector('pre')
 
 last_key_code = None
 caret_moved = False
 
-gutter_width = 34
 x_margin = 3
 y_margin = 2
 
-in_workspace = False
+in_workspace = ($(parent.document.body).data('0') != 'template')
 new_file = None
 document_modified = False
 syntax_highlighter = None
 
-style_element1 = document.createElement('style')
-style_element1.type = "text/css"
-style_element2 = document.createElement('style')
-style_element2.type = "text/css"
-
-#ajax_submit
-editor_height = 580
+editor_height = None
 
 editor_refresh_pending = false
-
-editor_resize = {
-    'height': 580,
-    'mouse_down': false,
-    'pointer_y': None
-}
 
 
 # Editor defs
 
-def EDITOR_OUTER_onMouseDown(event):
-    if event.which == 3 and $(EDITOR_MENU).is(':hidden'):
-        event.preventDefault()
-        #event.stopPropagation()
-        $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])
-        PRE_TAG.contentEditable = None
+$(BODY)
+.focusin(def(event):
+    $(parent.document).trigger('editor-focusin')
+)
+.focusout(def(event):
+    $(parent.document).trigger('editor-focusout')
+)
 
-#def BODY_onFocusIn(event):
-#    if !($(EDITOR_OUTER).hasClass('focus')):
-#        $(EDITOR_OUTER).addClass('focus')
-        #positionEditorCaret()
+$(document)
+.scroll(def(event):
+    $(parent.document).trigger('editor-scrolltop', $(window).scrollTop())
+)
 
-#def BODY_onFocusOut(event):
-#    if ($(EDITOR_OUTER).hasClass('focus'))):
-#        $(EDITOR_OUTER).removeClass('focus')
-#        PRE_TAG.contentEditable = "true"
-#        #positionEditorCaret()
+#def BODY_onMouseUp(event):
+#    Textspace.registerCaretPos()
 
-def BODY_onMouseUp(event):
+$(PRE_TAG)
+.mouseup(def(event):
     Textspace.registerCaretPos()
-
-$(PRE_TAG).keydown(def(event):
+)
+.keydown(def(event):
     #nonlocal Textspace
     key = event.which
     last_key_code = key
@@ -94,7 +66,7 @@ $(PRE_TAG).keydown(def(event):
             Textspace.action("IndentRight")
         else if key == 83: # "s"
             event.preventDefault()
-            $('input[name="action[save]"]').trigger('click')
+            $(parent.document).trigger('save-doc')
         else if key == 89: # "y"
             event.preventDefault()
             Textspace.redo()
@@ -115,12 +87,12 @@ $(PRE_TAG).keydown(def(event):
                 string = slices.before.split("\n").pop()
                 # Count characters
                 count = 0
-                for JS('i = 0; i < string.length; i++'):
+                for JS('var i = 0; i < string.length; i++'):
                     if (string[i] == "\t"):
                         count = count + ind_width - (count % ind_width)
                     else:
                         count += 1
-            for JS('i = 0; i < ind_width - (count % ind_width); i++'):
+            for JS('var i = 0; i < ind_width - (count % ind_width); i++'):
                 Textspace.action("InsertChar", " ")
         else:
             Textspace.action("InsertChar", "\t")
@@ -132,8 +104,7 @@ $(PRE_TAG).keydown(def(event):
         Textspace.action("ForwardsDelete")
     #if(([8, 13, 32, 45, 46].indexOf(key) != -1) or (key >= 48 and key <= 90) or (key >= 163 and key <= 222))
 )
-
-$(PRE_TAG).keypress(def(event):
+.keypress(def(event):
     if event.metaKey or event.ctrlKey: return
 
     key = event.which
@@ -144,23 +115,26 @@ $(PRE_TAG).keypress(def(event):
     event.preventDefault()
     Textspace.action("InsertChar", char)
 )
-
-$(PRE_TAG).keyup(def(event):
+.keyup(def(event):
     key = event.which
     if key >= 33 and key <= 40:
         Textspace.registerCaretPos()
 )
-
-$(PRE_TAG).on('cut', def(event):
-    event.preventDefault()
+.on('cut', def(event):
     Textspace.action("Cut")#, event.originalEvent.clipboardData.getData('text'))
 )
-
-$(PRE_TAG).on('paste', def(event):
+.on('paste', def(event):
     event.preventDefault()
     #pasted = event.originalEvent['clipboardData'].getData('text')
     Textspace.action("Paste", event.originalEvent['clipboardData'].getData('text'))
 )
+
+def EDITOR_OUTER_onMouseDown(event):
+    if event.which == 3 and $(EDITOR_MENU).is(':hidden'):
+        event.preventDefault()
+        #event.stopPropagation()
+        $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])
+        PRE_TAG.contentEditable = None
 
 def EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y):
     if $(this).is(':visible'):
@@ -196,66 +170,6 @@ def EDITOR_MENU_onItemSelect(event):
 #def EDITOR_MENU_onFocusOut(event)
 #    $(this).hide()
 
-def saveDocument(event):
-    event.preventDefault()
-    event.stopPropagation()
-
-    if $(NAME_FIELD).val() == '': return
-    #$(SAVING_POPUP).show()
-    $.ajax({
-        'type': 'POST',
-        'url': Context.get('symphony') + '/extension/workspacer/ajax/'
-            + Context.get('env')['0'] + '/',
-        #'data': $(FORM).serialize() + "&action%5Bsave%5D=1&ajax=1",
-        'data': {
-            'xsrf': $('input[name="xsrf"]').val(),
-            'ajax': '1',
-            'action[save]': '1',
-            'fields[existing_file]': $('#existing_file').val(),
-            'fields[dir_path]': $('#dir_path').val(),
-            'fields[dir_path_encoded]': $('#dir_path_encoded').val(),
-            'fields[name]': $('input[name="fields[name]"]').val(),
-            'fields[body]': Textspace.getText()
-        },
-        'dataType': 'json',
-        'error': def(xhr, msg, error):
-            #$('#saving-popup').hide()
-            alert(error + " - " + msg)
-        ,
-        'success': def(data):
-            #$(SAVING_POPUP).hide()
-            if data.new_filename:
-                $('input[name="fields[existing_file]"]').val(data.new_filename)
-                $(SUBHEADING).text(data.new_filename)
-                history.replaceState(
-                    {'a': 'b'}, '',
-                    Symphony.Context.get('symphony') + '/workspace/editor/' + data.new_path_encoded
-                )
-            #if (replacement_actions) {
-            #    $(FORM).find('div.actions').replaceWith(replacement_actions)
-            #    replacement_actions = None;
-
-            $(NOTIFIER).trigger('attach.notify', [data.alert_msg, data.alert_type])
-            setHighlighter()
-            if $('#form-actions').hasClass('new'):
-                $('#form-actions')
-                .removeClass('new')
-                .addClass('edit')
-            # *** if (data.alert_type == 'error') window.scrollTop = 0
-    })
-#if (window.getSelection() == undefined) return
-
-#SAVING_POPUP = $('#saving-popup')
-#    replacement_actions = $(FORM).find('div[data-replacement-actions="1"]').detach()
-#if replacement_actions.length == 0:
-#    replacement_actions = None
-
-#in_workspace = $(BODY).is('#extension-workspace_manager_b-view')
-#in_workspace = ($(BODY).hasClass('template') == false)
-#if (in_workspace) {
-#    directory_url = Context.get('symphony')
-#    + Context.get('env')['page-namespace'] + '/' + $(FORM).find('input[name="fields[dir_path_encoded]"]').attr('value')
-
 #    .on('contextmenu', def(event)
 #        return false;
 
@@ -276,12 +190,10 @@ def saveDocument(event):
     #    document_modified = true;
     #    breadcrumbs_filename.html(breadcrumbs_filename.html() + ' <small>↑</small>')
 
-#document.querySelector('#form-actions input.new').click(saveDocument)
 
 # Create highligther CSS
 
 css_string = ""
-#alert(Highlighters.length)
 for h in Highlighters:
     highlighter = Highlighters[h]
     prefix = "." + highlighter.style_prefix
@@ -293,11 +205,6 @@ for h in Highlighters:
 document.getElementById('highlighter-styles').textContent = css_string
 
 Textspace.setText(window.doc_text)
-#$(PRE_TAG).attr('style', $(EDITOR_LINE_NUMBERS).attr('style'))
-
-#$(style_element1).text('html {height: 100%;} body{height: 100%; margin: 0; overflow: scroll;} pre {display: inline-block; min-width: 100%; white-space: pre; background-color: white; min-height: 100%; margin: 0; padding: 3px 3px 0 37px; box-sizing: border-box; -moz-box-sizing: border-box; outline: none; -moz-tab-size: 4; -webkit-tab-size: 4; -ms-tab-size: 4; cursor: text;}')
-#BODY_HIGHLIGHTER_STYLES = $(BODY).find('#highlighter-styles')
-#setHighlighter()
 
 w = Settings['indentation_width']
 PRE_TAG.style.tabSize = w
@@ -305,10 +212,6 @@ PRE_TAG.style.MozTabSize = w
 PRE_TAG.style.WebkitTabSize = Settings['indentation_width']
 PRE_TAG.style.MsTabSize = Settings['indentation_width']
 PRE_TAG.style.OTabSize = Settings['indentation_width']
-
-#$(PRE_TAG)
-#    .focusin(BODY_onFocusIn)
-#    .focusout(BODY_onFocusOut)
 
 renderText()
 
@@ -321,14 +224,19 @@ def createRange(start_node, start_offset, end_node, end_offset):
     range.setEnd(end_node, end_offset)
     return range
 
-def setHighlighter():
-    nonlocal in_workspace
-    filename, ext
+$(document).on('refreshEditorDisplay', def(event):
+    if !editor_refresh_pending:
+        #requestAnimationFrame(rewriteEditorContents)
+        setTimeout(rewriteEditorContents, 1)
+        editor_refresh_pending = true
+)
 
-    in_workspace = false
+def setHighlighter():
+    nonlocal in_workspace, syntax_highlighter
+
     if in_workspace:
-        #filename = $(NAME_FIELD).val()
-        filename = "zart.xsl"
+        filename = $(parent.document).find('#existing_file').val()
+        #alert(filename)
         last_dot = filename.lastIndexOf(".")
         if last_dot > 0:
             ext = filename.slice(last_dot + 1)
@@ -339,12 +247,7 @@ def setHighlighter():
     else:
         syntax_highlighter = Highlighters.xsl
 
-$(document).on('refreshEditorDisplay', def(event):
-    if !editor_refresh_pending:
-        #requestAnimationFrame(rewriteEditorContents)
-        setTimeout(rewriteEditorContents, 1)
-        editor_refresh_pending = true
-)
+
 #
 # Write updated content to editor
 #
@@ -356,25 +259,26 @@ def rewriteEditorContents():
 #
 # Fill editor with highlighted text..
 #
-
 def renderText():
-    #frag, lines, num_lines
     nonlocal PRE_TAG
 
+    setHighlighter()
+
     PRE_TAG.innerHTML = ''
-    syntax_highlighter = Highlighters['xsl']
-    if (Textspace.getText()):
+    if Textspace.getText():
         frag = document.createDocumentFragment()
-        if (syntax_highlighter):
+        if syntax_highlighter:
             lines = syntax_highlighter.highlight(Textspace.getText())
             for JS('_i = 0; _i < lines.length; _i++'):
-                if (lines[_i]):
+                if lines[_i]:
                     frag.appendChild(lines[_i])
                 else:
                     frag.appendChild(document.createTextNode(""))
                 if JS('_i < (lines.length - 1)'):
                     #frag.appendChild(document.createElement('br'))
                     frag.appendChild(document.createTextNode("\n"))
+                #else:
+                    #frag.appendChild(document.createElement('br'))
         else:
             lines = Textspace.getText().split("\n")
             for JS('var _i = 0; _i < lines.length;'):
@@ -390,21 +294,10 @@ def renderText():
         PRE_TAG.appendChild(frag)
         num_lines = 1
 
-    parent.window.displayLineNumbers(num_lines, $(PRE_TAG).height())
-    # Line numbers
-    #$(EDITOR_LINE_NUMBERS).height($(EDITOR_MAIN).height())
-    #$(EDITOR_LINE_NUMBERS).height(EDITOR_MAIN.clientHeight)
-
-    #$(EDITOR_OUTER)
-        #.width(panel.editor.clientWidth)
-        #.css('width', panel.editor.clientWidth + 'px')
+    parent.window.displayLineNumbers(num_lines) #, $(PRE_TAG).height())
     #$(EDITOR_MAIN)
         #.css('minWidth', EDITOR_MAIN.clientWidth + 'px')
         #.css('minHeight', (editor.clientHeight - 4) + 'px')
-    #$(PRE_TAG)
-    #.css('minWidth', (EDITOR_MAIN.clientWidth - 42) + 'px')
-    #.css('minHeight', (EDITOR_MAIN.clientHeight - 4) + 'px')*/
-
 
 #
 # Caret.
@@ -431,10 +324,7 @@ def setEditorSelection():
     sel.addRange(range)
 
 def findNodeByPos(pos):
-    #node: any, offset
-    #found: any
-
-    if (pos == 0):
+    if pos == 0:
         node = PRE_TAG.firstChild
         offset = 0
     else:
@@ -444,12 +334,12 @@ def findNodeByPos(pos):
             offset = pos
             if node.nodeType == 3:
                 pos -= node.length
-            else if (node.nodeName.toLowerCase() == "br"):
+            else if node.nodeName.toLowerCase() == "br":
                 #alert(node.nodeName.toLowerCase())
                 pos -=1
 
             if node.nodeValue == "\n": continue
-            if (pos <= 0):
+            if pos <= 0:
                 found = node
                 break
         #if (!found) alert("Not found")
@@ -468,5 +358,8 @@ def findNodeByPos(pos):
 
 #   /*n = pos.left - x_margin;
 #    if(EDITOR_MAIN.scrollLeft > n) EDITOR_MAIN.scrollLeft = n;
-#    n = pos.left + x_margin + editor.selection.clientWidth - EDITOR_MAIN.clientWidth + gutter_width;
+#    n = pos.left + x_margin + editor.selection.clientWidth - EDITOR_MAIN.clientWidth;
 #    if (n > EDITOR_MAIN.scrollLeft) EDITOR_MAIN.scrollLeft = n;
+
+window.getText = def():
+    return Textspace.getText()

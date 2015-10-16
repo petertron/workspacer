@@ -3,8 +3,8 @@
     var d = document;
 
     var regexp = {
-        'tag_start': /(<!--|<\?|<!\[CDATA\[|<\/?)/,
-        //'tag_start': /<(!--|\?|!\[CDATA\[|\/?)?/,
+        //'tag_start': /(<!--|<\?|<!\[CDATA\[|<\/?)/,
+        'tag_start': /<(!--|\?|!\[CDATA\[|\/?)?/,
         'tag_end': /\/?>/,
         'xsl_tag_name': /^xsl:(apply-imports|apply-templates|attribute|attribute-set|call-template|choose|comment|copy-of|copy|decimal-format|element|fallback|for-each|if|import|include|key|message|namespace-alias|number|otherwise|output|param|preserve-space|processing-instruction|sort|strip-space|stylesheet|template|text|transform|value-of|variable|when|with-param)/,
         'html_tag_name': /^[a-zA-Z][a-zA-Z0-9:\-]*/,
@@ -88,9 +88,9 @@
                 var pos = this.text.indexOf(to_find);
                 if (pos > -1) {
                     return {
-                        before: this.text.slice(0, pos),
-                        found: to_find,
-                        after: this.text.slice(pos + to_find.length)
+                        'before': this.text.slice(0, pos),
+                        'found': to_find,
+                        'after': this.text.slice(pos + to_find.length)
                     };
                 }
             },

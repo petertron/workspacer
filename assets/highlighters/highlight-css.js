@@ -79,6 +79,14 @@
         'pseudoclass': "color: #065002"
     };
 
+    function textSpan(type, text)
+    {
+        var s = d.createElement('span');
+        s.className = type;
+        s.appendChild(d.createTextNode(text));
+        return s;
+    }
+
     var style_prefix = "CSS_";
 
     var before_colon = true
@@ -93,14 +101,14 @@
             var line_in = array_in[_i];
             if (line_in) {
                 last_index = 0;
-                var line_container = document.createDocumentFragment();
+                var frag = document.createDocumentFragment();
 
                 while (last_index < line_in.length) {
                     exp = outside_brace ? exp_outside : exp_inside;
                     exp.lastIndex = last_index;
                     match = exp.exec(line_in);
                     if (match.index > last_index) {
-                        $(line_container).appendText(line_in.slice(last_index, match.index));
+                        frag.appendChild(d.createTextNode(line_in.slice(last_index, match.index)));
                     }
                     last_index = exp.lastIndex;
                     m = match[0];
@@ -109,66 +117,66 @@
                         exp_end_comment.lastIndex = last_index;
                         match2 = exp_end_comment.exec(line_in);
                         last_index = exp_end_comment.lastIndex;
-                        $(line_container).appendSpan(COMMENT, m + match2[0]);
+                        frag.appendChild(textSpan(COMMENT, m + match2[0]));
                     }
                     else if (first_char == "'" || first_char == "\"") {
-                        $(line_container).appendSpan(STRING, m);
+                        frag.appendChild(textSpan(STRING, m));
                     }
                     else {
                         if (outside_brace) {
                             if(m == "{") {
                                 outside_brace = false;
                                 before_colon = true
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                             else if (first_char == ".") {
-                                $(line_container).appendSpan(CLASS, m);
+                                frag.appendChild(textSpan(CLASS, m));
                             }
                             else if (first_char == "#") {
-                                $(line_container).appendSpan(ID, m);
+                                frag.appendChild(textSpan(ID, m));
                             }
                             else if (first_char == ":" && pseudo_classes.indexOf(m.slice(1)) > -1) {
                                 //alert(m)
-                                $(line_container).appendSpan(PSEUDO_CLASS, m);
+                                frag.appendChild(textSpan(PSEUDO_CLASS, m));
                             }
                             else {
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                         }
                         else {
                             if (m == "}") {
                                 outside_brace = true;
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                             else if (m == ":") {
                                 before_colon = false;
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                             else if (m == ";") {
                                 before_colon = true;
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                             else if ('#.0123456789'.indexOf(first_char) > -1) {
-                                $(line_container).appendSpan(VALUE, m)
+                                frag.appendChild(textSpan(VALUE, m))
                             }
                             else if (first_char >= "a" && first_char <= "z") {
                                 if (before_colon && keywords.indexOf(m) > -1) {
-                                    $(line_container).appendSpan(KEYWORD, m);
+                                    frag.appendChild(textSpan(KEYWORD, m));
                                 }
                                 else if (!before_colon && values.indexOf(m) > -1) {
-                                    $(line_container).appendSpan(VALUE, m);
+                                    frag.appendChild(textSpan(VALUE, m));
                                 }
                                 else {
-                                    $(line_container).appendText(m);
+                                    frag.appendChild(d.createTextNode(m));
                                 }
                             }
                             else {
-                                $(line_container).appendText(m);
+                                frag.appendChild(d.createTextNode(m));
                             }
                         }
                     }
                 }
-                array_out[_i] = line_container;
+                array_out[_i] = frag;
             }
             else {
                 array_out[_i] = d.createTextNode("");

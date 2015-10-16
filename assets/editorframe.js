@@ -254,7 +254,7 @@
             div.appendChild(range.cloneContents());
             breaks = div.getElementsByTagName("br");
             for (var i = breaks.length; i > 0; i--) {
-                div.replaceChild(d.createTextNode("\n"), breaks[i - 1]);
+                div.replaceChild(document.createTextNode("\n"), breaks[i - 1]);
             }
             return div.textContent;
         }
@@ -348,8 +348,6 @@
         };
         InsertChar.prototype.undo = function undo(){
             var self = this;
-            var Textspace;
-            Textspace = Mod.Textspace;
             Textspace.textReplace({
                 "start": self.position,
                 "end": self.position + self.new_text.length
@@ -411,8 +409,8 @@
                     throw null;
                 }
                 self.old_text = slices.before.slice(-1);
+                slices.before = slices.before.slice(0, -1);
             }
-            slices.before = slices.before.slice(0, -1);
             Textspace.setText(slices.before + slices.after);
             self.position = slices.before.length;
             "sel = Textspace.selection\n        if sel.collapsed):\n        if sel.start == 0)\n        raise None\n        sel.end = sel.start\n        sel.start--\n        Textspace.selection.start = sel.start\n        }\n        self.position = sel.start\n        self.old_text = Textspace.textRemove(sel)";
@@ -619,7 +617,7 @@
         var __name__ = "__main__";
 
 
-        var $, Symphony, Context, BODY, PRE_TAG, replacement_actions, last_key_code, caret_moved, gutter_width, x_margin, y_margin, in_workspace, new_file, document_modified, syntax_highlighter, style_element1, style_element2, editor_height, editor_refresh_pending, editor_resize, highlighter, prefix, styles, css_string, key, h, w;
+        var $, Symphony, Context, BODY, PRE_TAG, last_key_code, caret_moved, x_margin, y_margin, in_workspace, new_file, document_modified, syntax_highlighter, editor_height, editor_refresh_pending, highlighter, prefix, styles, css_string, key, h, w;
         var Textspace = ՐՏ_modules["Textspace"];
         
         var Actions = ՐՏ_modules["Actions"];
@@ -628,39 +626,28 @@
         Symphony = window.parent.Symphony;
         Context = Symphony.Context;
         BODY = document.body;
-        PRE_TAG = document.getElementsByTagName("pre")[0];
-        replacement_actions = null;
+        PRE_TAG = document.querySelector("pre");
         last_key_code = null;
         caret_moved = false;
-        gutter_width = 34;
         x_margin = 3;
         y_margin = 2;
-        in_workspace = false;
+        in_workspace = $(parent.document.body).data("0") !== "template";
         new_file = null;
         document_modified = false;
         syntax_highlighter = null;
-        style_element1 = document.createElement("style");
-        style_element1.type = "text/css";
-        style_element2 = document.createElement("style");
-        style_element2.type = "text/css";
-        editor_height = 580;
+        editor_height = null;
         editor_refresh_pending = false;
-        editor_resize = {
-            "height": 580,
-            "mouse_down": false,
-            "pointer_y": null
-        };
-        function EDITOR_OUTER_onMouseDown(event) {
-            if (event.which === 3 && $(EDITOR_MENU).is(":hidden")) {
-                event.preventDefault();
-                $(EDITOR_MENU).trigger("openmenu", [ event.clientX, event.clientY ]);
-                PRE_TAG.contentEditable = null;
-            }
-        }
-        function BODY_onMouseUp(event) {
+        $(BODY).focusin(function(event) {
+            $(parent.document).trigger("editor-focusin");
+        }).focusout(function(event) {
+            $(parent.document).trigger("editor-focusout");
+        });
+        $(document).scroll(function(event) {
+            $(parent.document).trigger("editor-scrolltop", $(window).scrollTop());
+        });
+        $(PRE_TAG).mouseup(function(event) {
             Textspace.registerCaretPos();
-        }
-        $(PRE_TAG).keydown(function(event) {
+        }).keydown(function(event) {
             var key, last_key_code, char, ind_width, slices, string, count;
             key = event.which;
             last_key_code = key;
@@ -673,7 +660,7 @@
                     Textspace.action("IndentRight");
                 } else if (key === 83) {
                     event.preventDefault();
-                    $("input[name=\"action[save]\"]").trigger("click");
+                    $(parent.document).trigger("save-doc");
                 } else if (key === 89) {
                     event.preventDefault();
                     Textspace.redo();
@@ -694,7 +681,7 @@
                     if (slices.before) {
                         string = slices.before.split("\n").pop();
                         count = 0;
-                        for (i = 0; i < string.length; i++) {
+                        for (var i = 0; i < string.length; i++) {
                             if (string[i] === "\t") {
                                 count = count + ind_width - count % ind_width;
                             } else {
@@ -702,7 +689,7 @@
                             }
                         }
                     }
-                    for (i = 0; i < ind_width - (count % ind_width); i++) {
+                    for (var i = 0; i < ind_width - (count % ind_width); i++) {
                         Textspace.action("InsertChar", " ");
                     }
                 } else {
@@ -715,8 +702,7 @@
                 event.preventDefault();
                 Textspace.action("ForwardsDelete");
             }
-        });
-        $(PRE_TAG).keypress(function(event) {
+        }).keypress(function(event) {
             var key, char;
             if (event.metaKey || event.ctrlKey) {
                 return;
@@ -728,22 +714,25 @@
             char = String.fromCharCode(key);
             event.preventDefault();
             Textspace.action("InsertChar", char);
-        });
-        $(PRE_TAG).keyup(function(event) {
+        }).keyup(function(event) {
             var key;
             key = event.which;
             if (key >= 33 && key <= 40) {
                 Textspace.registerCaretPos();
             }
-        });
-        $(PRE_TAG).on("cut", function(event) {
-            event.preventDefault();
+        }).on("cut", function(event) {
             Textspace.action("Cut");
-        });
-        $(PRE_TAG).on("paste", function(event) {
+        }).on("paste", function(event) {
             event.preventDefault();
             Textspace.action("Paste", event.originalEvent["clipboardData"].getData("text"));
         });
+        function EDITOR_OUTER_onMouseDown(event) {
+            if (event.which === 3 && $(EDITOR_MENU).is(":hidden")) {
+                event.preventDefault();
+                $(EDITOR_MENU).trigger("openmenu", [ event.clientX, event.clientY ]);
+                PRE_TAG.contentEditable = null;
+            }
+        }
         function EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y) {
             var ul, li, legend;
             if ($(this).is(":visible")) {
@@ -767,45 +756,6 @@
             } else if (action = "redo") {
                 Textspace.redo();
             }
-        }
-        function saveDocument(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            if ($(NAME_FIELD).val() === "") {
-                return;
-            }
-            $.ajax({
-                "type": "POST",
-                "url": Context.get("symphony") + "/extension/workspacer/ajax/" + Context.get("env")["0"] + "/",
-                "data": {
-                    "xsrf": $("input[name=\"xsrf\"]").val(),
-                    "ajax": "1",
-                    "action[save]": "1",
-                    "fields[existing_file]": $("#existing_file").val(),
-                    "fields[dir_path]": $("#dir_path").val(),
-                    "fields[dir_path_encoded]": $("#dir_path_encoded").val(),
-                    "fields[name]": $("input[name=\"fields[name]\"]").val(),
-                    "fields[body]": Textspace.getText()
-                },
-                "dataType": "json",
-                "error": function(xhr, msg, error) {
-                    alert(error + " - " + msg);
-                },
-                "success": function(data) {
-                    if (data.new_filename) {
-                        $("input[name=\"fields[existing_file]\"]").val(data.new_filename);
-                        $(SUBHEADING).text(data.new_filename);
-                        history.replaceState({
-                            "a": "b"
-                        }, "", Symphony.Context.get("symphony") + "/workspace/editor/" + data.new_path_encoded);
-                    }
-                    $(NOTIFIER).trigger("attach.notify", [ data.alert_msg, data.alert_type ]);
-                    setHighlighter();
-                    if ($("#form-actions").hasClass("new")) {
-                        $("#form-actions").removeClass("new").addClass("edit");
-                    }
-                }
-            });
         }
         css_string = "";
         var ՐՏ_Iter2 = ՐՏ_Iterable(Highlighters);
@@ -837,12 +787,17 @@
             range.setEnd(end_node, end_offset);
             return range;
         }
+        $(document).on("refreshEditorDisplay", function(event) {
+            var editor_refresh_pending;
+            if (!editor_refresh_pending) {
+                setTimeout(rewriteEditorContents, 1);
+                editor_refresh_pending = true;
+            }
+        });
         function setHighlighter() {
-            var filename, last_dot, ext, syntax_highlighter;
-            [filename, ext];
-            in_workspace = false;
+            var filename, last_dot, ext;
             if (in_workspace) {
-                filename = "zart.xsl";
+                filename = $(parent.document).find("#existing_file").val();
                 last_dot = filename.lastIndexOf(".");
                 if (last_dot > 0) {
                     ext = filename.slice(last_dot + 1);
@@ -854,13 +809,6 @@
                 syntax_highlighter = Highlighters.xsl;
             }
         }
-        $(document).on("refreshEditorDisplay", function(event) {
-            var editor_refresh_pending;
-            if (!editor_refresh_pending) {
-                setTimeout(rewriteEditorContents, 1);
-                editor_refresh_pending = true;
-            }
-        });
         function rewriteEditorContents() {
             var editor_refresh_pending;
             renderText();
@@ -868,9 +816,9 @@
             editor_refresh_pending = false;
         }
         function renderText() {
-            var syntax_highlighter, lines, frag, num_lines;
+            var lines, frag, num_lines;
+            setHighlighter();
             PRE_TAG.innerHTML = "";
-            syntax_highlighter = Highlighters["xsl"];
             if (Textspace.getText()) {
                 frag = document.createDocumentFragment();
                 if (syntax_highlighter) {
@@ -902,7 +850,7 @@
                 PRE_TAG.appendChild(frag);
                 num_lines = 1;
             }
-            parent.window.displayLineNumbers(num_lines, $(PRE_TAG).height());
+            parent.window.displayLineNumbers(num_lines);
         }
         function setEditorSelection() {
             var range, pos, node_start, node_end, sel;
@@ -959,5 +907,8 @@
                 "offset": offset
             };
         }
+        window.getText = function() {
+            return Textspace.getText();
+        };
     })();
 })();

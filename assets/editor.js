@@ -100,74 +100,24 @@
         var __name__ = "__main__";
 
 
-        var d, Settings, pg, BODY, SUBHEADING, CONTENTS, FORM, ed, replacement_actions, workspace_url, editor_url, directory_url, last_key_code, caret_moved, gutter_width, x_margin, y_margin, in_workspace, new_file, document_modified, syntax_highlighter, style_element1, style_element2, editor_height, editor_refresh_pending, editor_resize;
+        var d, Settings, el, ed, header_height, context_height, workspace_url, editor_url, directory_url, in_workspace, new_file, document_modified, syntax_highlighter, editor_refresh_pending;
         d = document;
         Settings = Symphony.Extensions.Workspacer["settings"];
-        pg = {};
-        BODY = null;
-        SUBHEADING = null;
-        CONTENTS = null;
-        FORM = null;
+        el = null;
         ed = {};
-        "\ned.OUTER\ned.LINE_NUMBERS\ned.MAIN\ned.MAIN_HIGHLIGHTER_STYLES\ned.MAIN_PRE\nEDITOR_MENU\ned.RESIZE_HANDLE\n";
-        replacement_actions = null;
+        header_height = null;
+        context_height = null;
         workspace_url = null;
         editor_url = null;
         directory_url = null;
-        last_key_code = null;
-        caret_moved = false;
-        gutter_width = 34;
-        x_margin = 3;
-        y_margin = 2;
         in_workspace = false;
         new_file = false;
         document_modified = false;
         syntax_highlighter = null;
-        style_element1 = document.createElement("style");
-        style_element1.type = "text/css";
-        style_element2 = document.createElement("style");
-        style_element2.type = "text/css";
-        editor_height = 580;
         editor_refresh_pending = false;
-        editor_resize = {
-            "height": 580,
-            "mouse_down": false,
-            "pointer_y": null
-        };
-        "\n$(BODY)\n.mouseup(def(event):\n    editor_resize.mouse_down = False\n)\n.mouseleave(def(event):\n    editor_resize.mouse_down = False\n)\n\n    $('#editor-label')\n *    .click(def(event) {\n *        ed.MAIN.focus()\n *    })\n *\n";
-        "\ndef ed.OUTER_onMouseDown(event):\n    if (event.which == 3 && $(EDITOR_MENU).is(':hidden')) {\n        event.preventDefault()\n        #event.stopPropagation()\n        $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])\n        ed.MAIN_PRE.contentEditable = False\n";
-        function EDITOR_MAIN_onFocusIn(event) {
-            if (!$(ed.OUTER).hasClass("focus")) {
-                $(ed.OUTER).addClass("focus");
-            }
-        }
-        function EDITOR_MAIN_onFocusOut(event) {
-            if ($(ed.OUTER).hasClass("focus")) {
-                $(ed.OUTER).removeClass("focus");
-            }
-        }
-        function EDITOR_LINE_NUMBERS_onMouseDown(event) {
-            event.preventDefault();
-            ed.MAIN.focus();
-        }
-        function EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y) {
-            var ul, li, legend;
-            if ($(self).is(":visible")) {
-                event.stopPropagation();
-                return;
-            }
-            ul = d.createElement("ul");
-            li = d.createElement("li");
-            legend = d.createTextNode("Undo");
-            "\n        if (Textspace.undo_stack.length > 0):\n        li.className=\"active\"\n        $(li).data(\"action\", \"undo\")\n        legend.textContent = \"Undo \" + doings[$(Textspace.history).get(-1).action]\n\n    li.appendChild(legend)\n    ul.appendChild(li)\n    $(self)\n    .empty()\n    .append(ul)\n    .css('left', mouse_x)\n    .css('top', mouse_y)\n    .show()\n    .focus()\n\ndef EDITOR_MENU_onItemSelect(event):\n    event.preventDefault()\n    target = event.target\n    switch ($(target).data('action')) {\n        case \"undo\":\n            Textspace.undo()\n            break\n        case \"redo\":\n            Textspace.redo()\n            break\n";
-        }
-        function EDITOR_MENU_onFocusOut(event) {
-            $(self).hide();
-        }
-        function saveDocument(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            if ($(ed.NAME_FIELD).val() === "") {
+        "\ndef ed.OUTER_onMouseDown(event):\n    if (event.which == 3 && $(EDITOR_MENU).is(':hidden')) {\n        event.preventDefault()\n        #event.stopPropagation()\n        $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])\n        ed.MAIN_PRE.contentEditable = False\n\ndef EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y):\n    if $(self).is(':visible'):\n        event.stopPropagation()\n        return\n    ul = d.createElement('ul')\n    li = d.createElement('li')\n    legend = d.createTextNode(\"Undo\")\n\n        if (Textspace.undo_stack.length > 0):\n        li.className=\"active\"\n        $(li).data(\"action\", \"undo\")\n        legend.textContent = \"Undo \" + doings[$(Textspace.history).get(-1).action]\n\n    li.appendChild(legend)\n    ul.appendChild(li)\n    $(self)\n    .empty()\n    .append(ul)\n    .css('left', mouse_x)\n    .css('top', mouse_y)\n    .show()\n    .focus()\n\ndef EDITOR_MENU_onItemSelect(event):\n    event.preventDefault()\n    target = event.target\n    switch ($(target).data('action')) {\n        case \"undo\":\n            Textspace.undo()\n            break\n        case \"redo\":\n            Textspace.redo()\n            break\n\ndef EDITOR_MENU_onFocusOut(event):\n    $(self).hide()\n";
+        function saveDocument() {
+            if ($(el.filename).val() === "") {
                 return;
             }
             $.ajax({
@@ -175,12 +125,12 @@
                 "url": Symphony.Context.get("symphony") + "/extension/workspacer/ajax/" + Symphony.Context.get("env")["0"] + "/",
                 "data": {
                     "xsrf": $("input[name=\"xsrf\"]").val(),
-                    "ajax": "1",
                     "action[save]": "1",
-                    "fields[existing_file]": $("#existing_file").val(),
+                    "fields[existing_file]": in_workspace ? $("#existing_file").val() : "",
                     "fields[dir_path]": $("#dir_path").val(),
                     "fields[dir_path_encoded]": $("#dir_path_encoded").val(),
-                    "fields[name]": $("input[name=\"fields[name]\"]").val()
+                    "fields[name]": $(el.filename).val(),
+                    "fields[body]": ed.MAIN.contentWindow.getText()
                 },
                 "dataType": "json",
                 "error": function(xhr, msg, error) {
@@ -189,79 +139,82 @@
                 "success": function(data) {
                     if (data.new_filename) {
                         $("input[name=\"fields[existing_file]\"]").val(data.new_filename);
-                        $(SUBHEADING).text(data.new_filename);
+                        $(el.subheading).text(data.new_filename);
                         history.replaceState({
                             "a": "b"
                         }, "", Symphony.Context.get("symphony") + "/workspace/editor/" + data.new_path_encoded);
                     }
-                    $(pg.NOTIFIER).trigger("attach.notify", [ data.alert_msg, data.alert_type ]);
-                    if ($("#form-actions").hasClass("new")) {
-                        $("#form-actions").removeClass("new").addClass("edit");
+                    $("div.notifier").trigger("attach.notify", [ data.alert_msg, data.alert_type ]);
+                    if ($(el.body).hasClass("new")) {
+                        $(el.body).removeClass("new").addClass("edit");
                     }
+                    if (data.alert_type === "error") {
+                        $(window).scrollTop(0);
+                    }
+                    setHeights();
                 }
             });
         }
         $().ready(function() {
             var in_workspace, directory_url;
-            pg.BODY = Symphony.Elements.body;
-            pg.NOTIFIER = $(Symphony.Elements.header).find("div.notifier");
-            pg.SUBHEADING = $("#symphony-subheading");
-            pg.CONTENTS = Symphony.Elements.contents;
-            pg.FORM = pg.CONTENTS.find("form");
-            pg.NAME_FIELD = $(FORM).find("input[name=\"fields[name]\"]");
-            pg.SAVING_POPUP = $("#saving-popup");
-            in_workspace = $(BODY).hasClass("template") === false;
+            el = Symphony.Elements;
+            el.subheading = $("#symphony-subheading");
+            el.filename = $("#filename");
+            el.form = $(el.contents).find("form");
+            header_height = $(el.header).height();
+            context_height = $(el.context).height();
+            in_workspace = $(el.body).data("0") !== "template";
             if (in_workspace) {
-                directory_url = Symphony.Context.get("symphony") + Symphony.Context.get("env")["page-namespace"] + "/" + $(FORM).find("input[name=\"fields[dir_path_encoded]\"]").attr("value");
+                directory_url = Symphony.Context.get("symphony") + Symphony.Context.get("env")["page-namespace"] + "/" + $(el.form).find("input[name=\"fields[dir_path_encoded]\"]").attr("value");
             }
             ed.OUTER = $("#editor")[0];
             ed.LINE_NUMBERS = $("#editor-line-numbers")[0];
-            ed.RESIZE_HANDLE = $("#editor-resize-handle")[0];
             ed.MAIN = $("#editor-main")[0];
-            $(pg.BODY).mouseup(function(event) {
-                editor_resize.mouse_down = false;
-            }).mouseleave(function(event) {
-                editor_resize.mouse_down = false;
+            $(window).resize(function(event) {
+                setHeights();
             });
-            $("#editor-label").click(function(event) {
+            $(document).on("editor-focusin", function(event) {
+                if (!$(ed.OUTER).hasClass("focus")) {
+                    $(ed.OUTER).addClass("focus");
+                }
+            }).on("editor-focusout", function(event) {
+                if ($(ed.OUTER).hasClass("focus")) {
+                    $(ed.OUTER).removeClass("focus");
+                }
+            }).on("editor-scrolltop", function(event, top) {
+                ed.LINE_NUMBERS.scrollTop = top;
+            }).on("save-doc", function(event) {
+                saveDocument();
+            }).scroll(function(event) {
+                setEditorHeight();
+            });
+            $(ed.LINE_NUMBERS).scrollTop(0).mousedown(function(event) {
+                event.preventDefault();
                 ed.MAIN.focus();
             });
-            $(ed.OUTER).css("height", editor_resize.height + "px").on("contextmenu", function(event) {
-                return false;
+            $("input[name=\"action[save]\"]").click(function(event) {
+                saveDocument();
             });
-            $(ed.LINE_NUMBERS).mousedown(ed.LINE_NUMBERS_onMouseDown);
-            $(ed.RESIZE_HANDLE).mousedown(function(event) {
-                editor_resize.mouse_down = true;
-                editor_resize.pointer_y = event.pageY;
-            }).mousemove(function(event) {
-                if (editor_resize.mouse_down === false) {
-                    return;
-                }
-                editor_resize.height += event.pageY - editor_resize.pointer_y;
-                editor_resize.pointer_y = event.pageY;
-                ed.OUTER.style.height = editor_resize.height + "px";
-                ed.LINE_NUMBERS.style.height = ed.MAIN.clientHeight + "px";
-            }).mouseleave(function(event) {
-                editor_resize.mouse_down = false;
-            });
-            $(pg.NAME_FIELD).keydown(function(event) {
-                var ajax_submit;
-                if (event.which === 13) {
-                    ajax_submit = true;
-                }
-                event.stopPropagation();
-            });
-            $("#form-actions input.new").click(saveDocument);
-            $("#form-actions input.edit").click(saveDocument);
+            Symphony.Utilities.requestAnimationFrame(setHeights);
         });
-        "\n    filename = None\n    ext = None\n\n    if in_workspace:\n        filename = $(ed.NAME_FIELD).val()\n        last_dot = filename.lastIndexOf(\".\")\n        if last_dot > 0:\n            ext = filename.slice(last_dot + 1)\n            syntax_highlighter = Symphony.Extensions.Workspacer.highlighters[ext]\n        else:\n            syntax_highlighter = None\n    else:\n        syntax_highlighter = Symphony.Extensions.Workspacer.highlighters.xsl\n";
-        window.displayLineNumbers = function(num_lines, h) {
+        window.displayLineNumbers = function(num_lines) {
             var l;
             l = "";
             for (var i = 1; i <= num_lines; i++) {
                 l += i + "<br>";
             }
-            $(ed.LINE_NUMBERS).html(l).css("height", h + "px");
+            $(ed.LINE_NUMBERS).html(l + "<br><br>");
         };
+        function setHeights() {
+            header_height = $(el.header).height() + $(el.nav).height();
+            context_height = $(el.context).height();
+            $(el.body).height($(window).height() + header_height);
+            $(el.wrapper).height($(window).height() + header_height).css("overflow", "hidden");
+            $(ed.OUTER).css("overflow", "hidden");
+            setEditorHeight();
+        }
+        function setEditorHeight() {
+            $(ed.OUTER).height($(window).height() - $("div.notifier").height() - header_height - context_height - 50 + $(window).scrollTop());
+        }
     })();
 })();
