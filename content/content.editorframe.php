@@ -10,10 +10,8 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
 {
     const ID = 'workspacer';
     static $assets_base_url;
-    public $content_base_url;
-    public $extension_base_url;
-    public $_errors = array();
-    public $_existing_file;
+    //public $content_base_url;
+    //public $_existing_file;
 
     public function __construct()
     {
@@ -38,24 +36,11 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
         $this->Html->setAttribute('lang', Lang::get());
         $this->addElementToHead(new XMLElement('meta', null, array('charset' => 'UTF-8')));
         $this->addStylesheetToHead(self::$assets_base_url . 'editorframe.css');
-        //$this->addStylesheetToHead(self::$assets_base_url . 'highlighters/highlight-xsl.css');
 
         $style = new XMLElement('style', null, array('id' => 'highlighter-styles'));
         $style->setSelfClosingTag(false);
         $this->Head->appendChild($style);
-/*        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
-        $entries = scandir($filepath);
-        foreach ($entries as $entry) {
-            if (is_file($filepath . $entry)) {
-                $info = pathinfo($filepath . $entry);
-                if ($info['extension'] == 'css' and $info['filename'] != '') {
-                    $this->addStylesheetToHead(self::$assets_base_url . 'highlighters/' . $info['basename'], 'screen');
-                } elseif ($info['extension'] == 'js' and $info['filename'] != '') {
-                    Administration::instance()->Page->addScriptToHead(self::$assets_base_url . 'highlighters/' . $info['basename']);
-                }
-            }
-        }
-*/
+
         $script_content = 'var Settings = ' . json_encode(Symphony::Configuration()->get('workspacer')) . ';'
            . PHP_EOL . 'Highlighters = {};' . PHP_EOL;
         $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
@@ -116,29 +101,7 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
         }
 
         $this->setTitle(__(('%1$s &ndash; %2$s &ndash; %3$s'), array($title, __('Workspace'), __('Symphony'))));
-
         $this->Body->setAttribute('spellcheck', 'false');
-/*
-        $workspace_url = SYMPHONY_URL . '/workspace/manager/';
-        $editor_url = SYMPHONY_URL . '/workspace/editor/';
-
-        $path_string = SYMPHONY_URL . '/workspace/manager/';
-        if (isset($path_obj)) {
-            $dir_path = $path_obj->getPath() . '/';
-            $dir_path_encoded = $path_obj->getPathEncoded() . '/';
-            $workspace_url .= $dir_path_encoded;
-            $editor_url .= $dir_path_encoded;
-            $path_parts = $path_obj->getPathParts();
-            $parts_encoded = $path_obj->getPathPartsEncoded();
-        }
-
-        //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '');
-        //$this->editorXML($fieldset, $filename ? file_get_contents($path_abs) : '');
-
-                //$this->_existing_file ? @file_get_contents($path_abs, ENT_COMPAT, 'UTF-8') : '',
-                $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '',
-                array('id' => 'text-area', 'class' => 'code hidden')
-        );*/
 
         $name = $this->_context[1];
         $title = $filename;
@@ -160,4 +123,3 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
 
     }
 }
-     //$fieldset->appendChild(new XMLElement('script', $text, array('id' => 'text', 'type' => 'text')));

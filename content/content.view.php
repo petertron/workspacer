@@ -222,95 +222,15 @@ class contentExtensionWorkspacerView extends AdministrationPage
             }
         }
     }
-/*
-    public function __ajaxIndex()
-    {
-        $context = $this->_context;
-        $path_abs = WORKSPACE;
-        if (isset($context[1])){
-            $path_abs .= '/' . $context[1];
-        }
-        if (isset($_FILES['uploaded_file'])) {
-            move_uploaded_file($_FILES['uploaded_file']['tmp_name'], 'workspace/' . $context[1] . '/' . $_FILES['uploaded_file']['name']);
-        } elseif (isset($_POST['action'])) {
-            $fields = $_POST['fields'];
-            switch ($_POST['action']) {
-                case 'create-dir':
-                    foreach ($fields['names'] as $name) {
-                        if ($name != '') @mkdir($path_abs . '/' . $name);
-                    }
-                    break;
-            }
-        } elseif (isset($_POST['with-selected'])) {
-            $checked = (is_array($_POST['items'])) ? array_keys($_POST['items']) : null;
-            if (is_array($checked) && !empty($checked)) {
-                switch ($_POST['with-selected']) {
-                    case 'delete':
-                        //$canProceed = true;
-                        foreach ($checked as $name) {
-                            $file = $path_abs . '/' . $name;
-                            if (is_dir($file)) @rmdir($file);
-                            if (is_file($file)) @unlink($file);
-/*                              if(preg_match('/\/$/', $name) == 1){
-                                $name = trim($name, '/');
-                                try {
-                                    rmdir($dir_abs . '/' . $name);
-                                }
-                                catch(Exception $ex) {
-                                    $this->pageAlert(
-                                        __('Failed to delete %s.', array('<code>' . $name . '</code>'))
-                                        . ' ' . __('Directory %s not empty or permissions are wrong.', array('<code>' . $name . '</code>'))
-                                        , Alert::ERROR
-                                    );
-                                    $canProceed = false;
-                                }
-                            }
-                            elseif(!General::deleteFile($dir_abs . '/'. $name)) {
-                                $this->pageAlert(
-                                    __('Failed to delete %s.', array('<code>' . $name . '</code>'))
-                                    . ' ' . __('Please check permissions on %s.', array('<code>/workspace/' . $this->_context['target_d'] . '/' . $name . '</code>'))
-                                    , Alert::ERROR
-                                );
-                                $canProceed = false;
-                            }
-                        }
-
-                        //if ($canProceed) redirect(Administration::instance()->getCurrentPageURL());
-                        break;
-                }
-            }
-        }
-    }*/
 
     /*
     * File page view.
     */
     public function __viewEditor()
     {
-        //echo var_dump($this->_context); die;
         $this->addStylesheetToHead(self::$assets_base_url . 'editor.css');
-        //$this->addScriptToHead(self::$assets_base_url . 'editor.js');
         $this->addScriptToHead(SYMPHONY_URL . '/extension/workspacer/editor_js/');
-        /*$script = new XMLElement('script');
-        $script->setSelfClosingTag(false);
-        $script->setAttributeArray(array('type' => 'text/javascript', 'src' => self::$assets_base_url . 'require.js', 'data-main' => self::$assets_base_url . 'editor.js'));
-        $this->addElementToHead($script); //, $position);*/
-
-/*        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
-        $entries = scandir($filepath);
-        foreach ($entries as $entry) {
-            if (is_file($filepath . $entry)) {
-                $info = pathinfo($filepath . $entry);
-                if ($info['extension'] == 'css' && $info['filename'] != '') {
-                    $this->addStylesheetToHead(self::$assets_base_url . 'highlighters/' . $info['basename'], 'screen');
-                } elseif ($info['extension'] == 'js' && $info['filename'] != '') {
-                    Administration::instance()->Page->addScriptToHead(self::$assets_base_url . 'highlighters/' . $info['basename']);
-                }
-            }
-        }
-*/
         $this->Form->setAttribute('id', 'editor-form');
-        //$path = $this->_context[1];
         $path_parts = $this->_context;
         array_shift($path_parts);
         $path = implode('/', $path_parts);
@@ -422,68 +342,10 @@ class contentExtensionWorkspacerView extends AdministrationPage
             Widget::Input('fields[dir_path_encoded]', $dir_path_encoded, 'hidden', array('id' => 'dir_path_encoded'))
         );
 
-        //$label = Widget::Label(__('Name'));
-        //$label->appendChild(Widget::Input('fields[name]', $filename));
-        //$fieldset->appendChild($label);
-        //$fieldset->appendChild((isset($this->_errors['name']) ? Widget::Error($label, $this->_errors['name']) : $label));
-        //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '');
         $this->editorXML($fieldset, $dir_path . $filename);
-/*
-        $fieldset->appendChild(
-            Widget::Textarea(
-                'fields[body]',
-                30,
-                100,
-                //$this->_existing_file ? @file_get_contents($path_abs, ENT_COMPAT, 'UTF-8') : '',
-                $filename ? htmlentities(file_get_contents($path_abs), ENT_COMPAT, 'UTF-8') : '',
-                array('id' => 'text-area', 'class' => 'code hidden')
-            )
-        );*/
-        //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
 
         $this->Form->appendChild($fieldset);
-/*
-        $actions = new XMLElement('div', NULL, array('id' => 'form-actions'));
-        if (!$this->_existing_file) {
-            $actions->appendChild(
-                Widget::Input(
-                    'action[save]',
-                    __('Create File'),
-                    'button',
-                    array('class' =>'button new', 'accesskey' => 's')
-                )
-            );
-            $actions->setAttribute('class', 'actions new');
-        } else {
-            $actions->setAttribute('class', 'actions edit');
-        }
 
-        $actions->appendChild(
-            Widget::Input(
-                'action[save]',
-                __('Save Changes'),
-                'button',
-                array('class' => 'button edit', 'accesskey' => 's')
-            )
-        );
-        $actions->appendChild(
-            new XMLELement(
-                'input',
-                __('Delete'),
-                array(
-                    'name' => 'action[delete]',
-                    'form' => 'editor-form',
-                    'type' => 'submit',
-                    'class' => 'button confirm delete',
-                    'title' => 'Delete this file',
-                    'accesskey' => 'd',
-                    'data-message' => 'Are you sure you want to delete this file?'
-                )
-            )
-        );
-
-        $this->Form->appendChild($actions);
-*/
         $text = new XMLElement('p', __('Saving'));
         $this->Form->appendChild(new XMLElement('div', $text, array('id' => 'saving-popup')));
     }
@@ -509,7 +371,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $filename = $name . '.xsl';
         $title = $filename;
         $this->setTitle(__(('%1$s &ndash; %2$s &ndash; %3$s'), array($title, __('Pages'), __('Symphony'))));
-        //$this->setPageType('table');
         $this->Body->setAttribute('spellcheck', 'false');
         $this->Body->setAttribute('class', 'page-single');
         $this->appendSubheading($title);
@@ -558,19 +419,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
             )
         );
 */
-        //$this->_context = array('edit', 'pages', 'single');
-/*        $this->Form->appendChild(
-            new XMLElement(
-                'div',
-                Widget::Input(
-                    'action[save]',
-                    __('Save Changes'),
-                    'submit',
-                    array('class' => 'button edit', 'accesskey' => 's')
-                ),
-                array('id' => 'form-actions', 'class' => 'actions')
-            )
-        );*/
     }
 
     function getPath()
