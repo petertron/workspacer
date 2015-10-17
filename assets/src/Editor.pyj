@@ -119,7 +119,7 @@ def saveDocument():
 # Set editor up..
 #
 $().ready(def():
-    nonlocal Symphony, el, pg, ed, header_height, context_height
+    nonlocal Symphony, el, pg, ed, header_height, context_height, in_workspace
     #if (window.getSelection() == undefined) return
     el = Symphony.Elements
     el.subheading = $('#symphony-subheading')

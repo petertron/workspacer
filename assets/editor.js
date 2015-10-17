@@ -156,7 +156,7 @@
             });
         }
         $().ready(function() {
-            var in_workspace, directory_url;
+            var directory_url;
             el = Symphony.Elements;
             el.subheading = $("#symphony-subheading");
             el.filename = $("#filename");
