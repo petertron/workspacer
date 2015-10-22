@@ -51,6 +51,7 @@ $(document)
 $(PRE_TAG)
 .mouseup(def(event):
     Textspace.registerCaretPos()
+    #alert ("Wipe")
 )
 .keydown(def(event):
     #nonlocal Textspace
@@ -270,7 +271,7 @@ def renderText():
         frag = document.createDocumentFragment()
         if syntax_highlighter:
             lines = syntax_highlighter.highlight(Textspace.getText())
-            for JS('_i = 0; _i < lines.length; _i++'):
+            for JS('var _i = 0; _i < lines.length; _i++'):
                 if lines[_i]:
                     frag.appendChild(lines[_i])
                 else:

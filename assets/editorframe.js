@@ -823,7 +823,7 @@
                 frag = document.createDocumentFragment();
                 if (syntax_highlighter) {
                     lines = syntax_highlighter.highlight(Textspace.getText());
-                    for (_i = 0; _i < lines.length; _i++) {
+                    for (var _i = 0; _i < lines.length; _i++) {
                         if (lines[_i]) {
                             frag.appendChild(lines[_i]);
                         } else {
