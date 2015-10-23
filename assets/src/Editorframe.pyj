@@ -310,6 +310,7 @@ def renderText():
 # Caret.
 #
 def setEditorSelection():
+    nonlocal PRE_TAG
     range = document.createRange()
     if (Textspace.getText()):
         pos = Textspace.getSelection()
@@ -329,6 +330,14 @@ def setEditorSelection():
     sel = window.getSelection()
     sel.removeAllRanges()
     sel.addRange(range)
+
+    #rect = range.getBoundingClientRect()
+    rect = node_start.node.parentElement.getBoundingClientRect()
+    #alert(rect.left + " : " + rect.right + " : " + rect.top)
+    o = rect.bottom - $(document.body).height()
+    #alert(rect.bottom + " : " + $(document.body).height() + " : " + $(window).scrollTop())
+    if o > 0:
+        $(window).scrollTop($(window).scrollTop() + Math.round(o))
 
 def findNodeByPos(pos):
     if pos == 0:

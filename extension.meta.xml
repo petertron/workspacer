@@ -14,6 +14,10 @@
         </author>
     </authors>
     <releases>
+        <release version="0.2.1" date="2015-10-23" min="2.5.0" max="3.0.0">
+            - Editor caret can be placed on last line in Blink-based browsers.
+            - Editor window scrolls when text is entered on bottom line.
+        </release>
         <release version="0.2.0" date="2015-10-16" min="2.5.0" max="3.0.0">
             - Height of editor is set to fit available space in browser window.
             - 'Save' and 'delete' buttons moved to page context area.
