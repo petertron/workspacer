@@ -331,13 +331,12 @@ def setEditorSelection():
     sel.removeAllRanges()
     sel.addRange(range)
 
-    #rect = range.getBoundingClientRect()
-    rect = node_start.node.parentElement.getBoundingClientRect()
-    #alert(rect.left + " : " + rect.right + " : " + rect.top)
-    o = rect.bottom - $(document.body).height()
-    #alert(rect.bottom + " : " + $(document.body).height() + " : " + $(window).scrollTop())
-    if o > 0:
-        $(window).scrollTop($(window).scrollTop() + Math.round(o))
+    el = node_start.node.parentNode
+    if el.nodeName.toLowerCase() != "pre":
+        rect = el.getBoundingClientRect()
+        o = rect.bottom - $(document.body).height()
+        if o > 0:
+            $(window).scrollTop($(window).scrollTop() + Math.round(o))
 
 def findNodeByPos(pos):
     if pos == 0:

@@ -849,7 +849,7 @@
             parent.window.displayLineNumbers(num_lines);
         }
         function setEditorSelection() {
-            var range, pos, node_start, node_end, sel, rect, o;
+            var range, pos, node_start, node_end, sel, el, rect, o;
             range = document.createRange();
             if (Textspace.getText()) {
                 pos = Textspace.getSelection();
@@ -869,10 +869,13 @@
             sel = window.getSelection();
             sel.removeAllRanges();
             sel.addRange(range);
-            rect = node_start.node.parentElement.getBoundingClientRect();
-            o = rect.bottom - $(document.body).height();
-            if (o > 0) {
-                $(window).scrollTop($(window).scrollTop() + Math.round(o));
+            el = node_start.node.parentNode;
+            if (el.nodeName.toLowerCase() !== "pre") {
+                rect = el.getBoundingClientRect();
+                o = rect.bottom - $(document.body).height();
+                if (o > 0) {
+                    $(window).scrollTop($(window).scrollTop() + Math.round(o));
+                }
             }
         }
         function findNodeByPos(pos) {
