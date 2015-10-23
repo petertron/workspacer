@@ -146,8 +146,6 @@
                 var error = ՐՏ_Exception;
                 if (error) {
                     alert(error.name + " : " + error.message);
-                } else {
-                    alert("Can't do!");
                 }
             }
         };
@@ -249,15 +247,9 @@
             return slices;
         }
         function getTextFromRange(range) {
-            var div, breaks;
-            div = document.createElement("div");
-            div.appendChild(range.cloneContents());
-            breaks = div.getElementsByTagName("br");
-            for (var i = breaks.length; i > 0; i--) {
-                div.replaceChild(document.createTextNode("\n"), breaks[i - 1]);
-            }
-            return div.textContent;
+            return range.toString();
         }
+        "\ndef getTextFromRange(range):\n    div = document.createElement('div')\n    div.appendChild(range.cloneContents())\n    #breaks = div.getElementsByTagName('br')\n    #for JS('var i = breaks.length; i > 0; i--'):\n    #    div.replaceChild(document.createTextNode(\"\n\"), breaks[i - 1])\n    return div.textContent\n";
         ՐՏ_modules["Textspace"]["$"] = $;
 
         ՐՏ_modules["Textspace"]["Actions"] = Actions;
@@ -816,7 +808,7 @@
             editor_refresh_pending = false;
         }
         function renderText() {
-            var lines, frag, num_lines;
+            var sec, lines, frag, num_lines;
             setHighlighter();
             PRE_TAG.innerHTML = "";
             if (Textspace.getText()) {
@@ -824,14 +816,18 @@
                 if (syntax_highlighter) {
                     lines = syntax_highlighter.highlight(Textspace.getText());
                     for (var _i = 0; _i < lines.length; _i++) {
+                        sec = document.createElement("section");
                         if (lines[_i]) {
-                            frag.appendChild(lines[_i]);
+                            sec.appendChild(lines[_i]);
                         } else {
-                            frag.appendChild(document.createTextNode(""));
+                            sec.appendChild(document.createTextNode(""));
                         }
                         if (_i < (lines.length - 1)) {
-                            frag.appendChild(document.createTextNode("\n"));
+                            sec.appendChild(document.createTextNode("\n"));
+                        } else {
+                            sec.appendChild(document.createElement("br"));
                         }
+                        frag.appendChild(sec);
                     }
                 } else {
                     lines = Textspace.getText().split("\n");

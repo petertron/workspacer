@@ -51,8 +51,8 @@ action = def(action_name, new_text):
     except as error:
         if error:
             alert(error.name + " : " + error.message)
-        else:
-            alert("Can't do!")
+        #else:
+        #    alert("Can't do!")
 
 #
 # Undo last action
@@ -62,7 +62,6 @@ undo = def():
         last_item = undo_stack.pop()
         redo_stack.push(last_item)
         last_item.undo()
-        #refreshEditorDisplay()
         $(document).trigger('refreshEditorDisplay')
 
 #
@@ -102,8 +101,6 @@ def replaceSelection(new_text):
     nonlocal _text
     slices = getEditorTextSlices()
     _text = slices.before + new_text + slices.after
-    #old_text = selection.collapsed ? "" : text.slice(selection.start, selection.end)
-    #text = text.slice(0, selection.start) + new_text + text.slice(selection.end)
     return {'position': slices.before.length, 'text': slices.selected}
 
 def registerCaretPos():
@@ -140,7 +137,6 @@ def getEditorTextSlices():
         'selected': "",
         'after': ""
     }
-    #slices: TextSlices = new TextSlices()
     r.setStart(PRE_TAG, 0)
     r.setEnd(sel.startContainer, sel.startOffset)
     slices.before = getTextFromRange(r)
@@ -153,13 +149,17 @@ def getEditorTextSlices():
     r.setEnd(PRE_TAG, PRE_TAG.childNodes.length)
     #r.setEnd(PRE_TAG.lastChild, PRE_TAG.lastChild.length)
     slices.after = getTextFromRange(r)
-    #alert(slices.before)
     return slices
 
 def getTextFromRange(range):
+    return range.toString()
+
+"""
+def getTextFromRange(range):
     div = document.createElement('div')
     div.appendChild(range.cloneContents())
-    breaks = div.getElementsByTagName('br')
-    for JS('var i = breaks.length; i > 0; i--'):
-        div.replaceChild(document.createTextNode("\n"), breaks[i - 1])
+    #breaks = div.getElementsByTagName('br')
+    #for JS('var i = breaks.length; i > 0; i--'):
+    #    div.replaceChild(document.createTextNode("\n"), breaks[i - 1])
     return div.textContent
+"""

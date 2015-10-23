@@ -45,7 +45,6 @@ class InsertLineBreak(Base):
     title = "insert line break"
 
     def __init__(self):
-        #Base.__init__(self)
         replaced = Textspace.replaceSelection("\n")
         self.position = replaced.position
         self.old_text = replaced.text

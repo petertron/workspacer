@@ -272,15 +272,20 @@ def renderText():
         if syntax_highlighter:
             lines = syntax_highlighter.highlight(Textspace.getText())
             for JS('var _i = 0; _i < lines.length; _i++'):
+                sec = document.createElement('section')
                 if lines[_i]:
-                    frag.appendChild(lines[_i])
+                    sec.appendChild(lines[_i])
                 else:
-                    frag.appendChild(document.createTextNode(""))
+                    sec.appendChild(document.createTextNode(""))
                 if JS('_i < (lines.length - 1)'):
-                    #frag.appendChild(document.createElement('br'))
-                    frag.appendChild(document.createTextNode("\n"))
+                #sec.appendChild(document.createElement('br'))
+                    sec.appendChild(document.createTextNode("\n"))
+                else:
+                    sec.appendChild(document.createElement('br'))
+                    #frag.appendChild(document.createTextNode("\n"))
                 #else:
                     #frag.appendChild(document.createElement('br'))
+                frag.appendChild(sec)
         else:
             lines = Textspace.getText().split("\n")
             for JS('var _i = 0; _i < lines.length;'):
