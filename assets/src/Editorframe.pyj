@@ -221,10 +221,10 @@ renderText()
 # Create range.
 #
 def createRange(start_node, start_offset, end_node, end_offset):
-    range = document.createRange()
-    range.setStart(start_node, start_offset)
-    range.setEnd(end_node, end_offset)
-    return range
+    r = document.createRange()
+    r.setStart(start_node, start_offset)
+    r.setEnd(end_node, end_offset)
+    return r
 
 $(document).on('refreshEditorDisplay', def(event):
     if !editor_refresh_pending:
@@ -311,7 +311,7 @@ def renderText():
 #
 def setEditorSelection():
     nonlocal PRE_TAG
-    range = document.createRange()
+    r = document.createRange()
     if (Textspace.getText()):
         pos = Textspace.getSelection()
         #console.log("pos.start = " + pos.start)
@@ -321,15 +321,15 @@ def setEditorSelection():
             node_end = findNodeByPos(pos.end)
         else:
             node_end = node_start
-        range.setStart(node_start.node, node_start.offset)
-        range.setEnd(node_end.node, node_end.offset)
+        r.setStart(node_start.node, node_start.offset)
+        r.setEnd(node_end.node, node_end.offset)
     else:
-        range.setStart(PRE_TAG.firstChild,0)
-        range.setEnd(PRE_TAG.firstChild,0)
+        r.setStart(PRE_TAG.firstChild,0)
+        r.setEnd(PRE_TAG.firstChild,0)
 
     sel = window.getSelection()
     sel.removeAllRanges()
-    sel.addRange(range)
+    sel.addRange(r)
 
     el = node_start.node.parentNode
     if el.nodeName.toLowerCase() != "pre":

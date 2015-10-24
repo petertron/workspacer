@@ -21,59 +21,8 @@ document_modified = False
 syntax_highlighter = None
 editor_refresh_pending = False
 
-"""
-def ed.OUTER_onMouseDown(event):
-    if (event.which == 3 && $(EDITOR_MENU).is(':hidden')) {
-        event.preventDefault()
-        #event.stopPropagation()
-        $(EDITOR_MENU).trigger('openmenu', [event.clientX, event.clientY])
-        ed.MAIN_PRE.contentEditable = False
-
-def EDITOR_MENU_onMenuOpen(event, mouse_x, mouse_y):
-    if $(self).is(':visible'):
-        event.stopPropagation()
-        return
-    ul = d.createElement('ul')
-    li = d.createElement('li')
-    legend = d.createTextNode("Undo")
-
-        if (Textspace.undo_stack.length > 0):
-        li.className="active"
-        $(li).data("action", "undo")
-        legend.textContent = "Undo " + doings[$(Textspace.history).get(-1).action]
-
-    li.appendChild(legend)
-    ul.appendChild(li)
-    $(self)
-    .empty()
-    .append(ul)
-    .css('left', mouse_x)
-    .css('top', mouse_y)
-    .show()
-    .focus()
-
-def EDITOR_MENU_onItemSelect(event):
-    event.preventDefault()
-    target = event.target
-    switch ($(target).data('action')) {
-        case "undo":
-            Textspace.undo()
-            break
-        case "redo":
-            Textspace.redo()
-            break
-
-def EDITOR_MENU_onFocusOut(event):
-    $(self).hide()
-"""
-
-#def saveDocument(event):
-#    event.preventDefault()
-#    event.stopPropagation()
-
 def saveDocument():
     if $(el.filename).val() == '': return
-    #$(SAVING_POPUP).show()
     $.ajax({
         'type': 'POST',
         'url': Symphony.Context.get('symphony') + '/extension/workspacer/ajax/'
@@ -118,7 +67,7 @@ def saveDocument():
 #
 # Set editor up..
 #
-$().ready(def():
+$(document).ready(def():
     nonlocal Symphony, el, pg, ed, header_height, context_height, in_workspace
     #if (window.getSelection() == undefined) return
     el = Symphony.Elements
