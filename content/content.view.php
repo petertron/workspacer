@@ -443,7 +443,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 )
             )
         );
-        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . "/workspace/editorframe/?path=$path")));
+        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . "/workspace/editorframe/$path")));
         //$menu = new XMLElement('div', null, array('id' => 'editor-menu', 'tabindex' => '0'));
         //$editor->appendChild($menu);
 

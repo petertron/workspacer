@@ -118,14 +118,15 @@ Class extension_Workspacer extends Extension
 
         $page = trim($_GET['symphony-page'], '/');
 
-        if ($offset = $this->startsWith($page, 'blueprints/pages/template')) {
-            $new_page = 'view/template' . substr($page, $offset);
-        } elseif ($this->startsWith($page, 'workspace/editorframe')) {
+        if (is_string($path_remainder = $this->startsWith($page, 'blueprints/pages/template'))) {
+            $new_page = 'view/template' . $path_remainder;
+        } elseif (is_string($path_remainder = $this->startsWith($page, 'workspace/editorframe'))) {
             $new_page = 'editorframe';
-        } elseif ($offset = $this->startsWith($page, 'workspace/manager')) {
-            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'manager/' . substr($page, $offset);
-        } elseif ($offset = $this->startsWith($page, 'workspace/editor')) {
-            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'editor/' . substr($page, $offset);
+            $_GET['path'] = $path_remainder;
+        } elseif (is_string($path_remainder = $this->startsWith($page, 'workspace/manager'))) {
+            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'manager/' . $path_remainder;
+        } elseif (is_string($path_remainder = $this->startsWith($page, 'workspace/editor'))) {
+            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'editor/' . $path_remainder;
         } else {
             return;
         }
@@ -133,10 +134,16 @@ Class extension_Workspacer extends Extension
         $_GET['symphony-page'] = '/extension/workspacer/' . $new_page;
     }
 
-    function startsWith($main_string, $test_string)
+    function startsWith($string1, $string2)
     {
-        $length = strlen($test_string);
-        return (strncmp($main_string, $test_string, $length) == 0) ? $length : false;
+        $length = strlen($string2);
+        if (substr($string1, 0, $length) == $string2) {
+            $remainder = substr($string1, $length);
+            if (!$remainder) $remainder = '';
+            return $remainder;
+        } else {
+            return false;
+        }
     }
 
     /**
