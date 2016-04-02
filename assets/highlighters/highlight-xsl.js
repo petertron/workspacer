@@ -344,7 +344,7 @@
         return array_out;
     }
     //Symphony.Extensions.Workspacer.highlighters['xsl'] = {
-    Highlighters['xsl'] = {
+    window.Highlighters['xsl'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter

@@ -41,8 +41,7 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
         $style->setSelfClosingTag(false);
         $this->Head->appendChild($style);
 
-        $script_content = 'var Settings = ' . json_encode(Symphony::Configuration()->get('workspacer')) . ';'
-           . PHP_EOL . 'Highlighters = {};' . PHP_EOL;
+        $script_content = 'window.Settings = ' . json_encode(Symphony::Configuration()->get('workspacer')) . ';' . PHP_EOL . 'window.Highlighters = {};' . PHP_EOL;
         $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
         $entries = scandir($filepath);
         foreach ($entries as $entry) {

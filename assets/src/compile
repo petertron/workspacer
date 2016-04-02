@@ -1,7 +1,7 @@
 #!/bin/bash
 
-rapydscript -p -b -o temp.js Editor.pyj
-contents="(function($){$(< temp.js)})(jQuery);"
+coffee -c -o ../ editor.coffee
+#contents="(function($){$(< temp.js)})(jQuery);"
 #contents="$(< temp.js)"
-echo "$contents" > ../editor.js
-rm temp.js
+#echo "$contents" > ../editor.js
+#rm temp.js

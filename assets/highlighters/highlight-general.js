@@ -88,7 +88,7 @@
     }
 
     //Symphony.Extensions.Workspacer.highlighters['php'] = {
-    Highlighters['php'] = {
+    window.Highlighters['php'] = {
         'style_prefix': "GEN_",
         'stylesheet': stylesheet,
         'highlight': highlighter

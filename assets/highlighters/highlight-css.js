@@ -186,7 +186,7 @@
     }
 
     //Symphony.Extensions.Workspacer.highlighters['css'] = {
-    Highlighters['css'] = {
+    window.Highlighters['css'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
