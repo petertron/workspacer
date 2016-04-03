@@ -26,7 +26,6 @@ setEditorHeight = ->
     #$(ed.OUTER).height($(window).height() - header_height - context_height - 50 + $(window).scrollTop())
 
 setHeights = ->
-    #nonlocal el, ed, header_height, context_height
     header_height = $(el.header).height() + $(el.nav).height()
     context_height = $(el.context).height()
     $(el.body)
@@ -92,7 +91,6 @@ saveDocument = ->
 # Set editor up..
 #
 $(document).ready(->
-    #nonlocal Symphony, el, pg, ed, header_height, context_height, in_workspace
     #if (window.getSelection() == undefined) return
     el = Symphony.Elements
     el.subheading = $('#symphony-subheading')

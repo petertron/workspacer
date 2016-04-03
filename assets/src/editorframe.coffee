@@ -337,8 +337,8 @@ for k, highlighter of window.Highlighters
     prefix = "." + highlighter.style_prefix
     styles = highlighter.stylesheet
     for key, value of styles
-        css_string += "#{prefix + key} {#{value}} "
-        css_string += "\n"
+        css_string += "#{prefix + key} {#{value}}\n"
+        #css_string += "\n"
 
 document.getElementById('highlighter-styles').textContent = css_string
 

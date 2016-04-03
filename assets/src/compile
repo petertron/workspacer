@@ -1,7 +1,0 @@
-#!/bin/bash
-
-coffee -c -o ../ editor.coffee
-#contents="(function($){$(< temp.js)})(jQuery);"
-#contents="$(< temp.js)"
-#echo "$contents" > ../editor.js
-#rm temp.js
