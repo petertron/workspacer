@@ -109,20 +109,32 @@ class contentExtensionWorkspacerAjax
 
         if (isset($_POST['action']['save']) and isset($_POST['fields'])){
             $fields = $_POST['fields'];
-            $existing_file = $fields['existing_file'];
-            $specified_file = $fields['name'];
+            $current_filename = $fields['current_filename'];
+            $new_filename = $fields['new_filename'];
             $dir_abs = WORKSPACE . '/' . $fields['dir_path'];
-            $create_file = ($specified_file !== $existing_file);
+            //$create_file = ($specified_file !== $existing_file);
 
-            if ($create_file) {
-                if (is_file($dir_abs . $specified_file)) {
+            if ($current_filename && $new_filename) {
+                if ($new_filename == $current_filename) {
+                    $new_filename = null;
+                } else {
+                    $current_filename = null;
+                }
+            }
+            // Create file if there is no current file
+            if ($new_filename) {
+                if (is_file($dir_abs . $new_filename)) {
                     $this->_output['alert_type'] = 'error';
                     $this->_output['alert_msg'] = __('A file with that name already exists. Please choose another.');
                     $this->error_occurred = true;
+                } else {
+                    $filename = $new_filename;
                 }
+            } else {
+                $filename = $current_filename;
             }
 
-            if( !($this->error_occurred)){
+            if (!($this->error_occurred)) {
                 if ($create_file){
                     /**
                     * Just before the file has been created
@@ -154,7 +166,7 @@ class contentExtensionWorkspacerAjax
                 }
 
                 // Write the file
-                if (!$write = General::writeFile($dir_abs . $specified_file, $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))) {
+                if (!$write = General::writeFile($dir_abs . $filename, $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))) {
                     $this->_output['alert_type'] = 'error';
                     $this->_output['alert_msg'] = __('File could not be written to disk. Please check permissions.');
                     /*$this->_output['alert_msg'] = __('File could not be written to disk.')
@@ -167,14 +179,14 @@ class contentExtensionWorkspacerAjax
                     $editor_url = SYMPHONY_URL . '/workspace/editor/' . $path_encoded;
                     $time = Widget::Time();
                     // Remove any existing file if the filename has changed
-                    if ($create_file) {
-                        if ($existing_file) {
+                    if ($new_filename) {
+                        /*if ($existing_file) {
                             General::deleteFile($dir_abs . $existing_file);
-                        }
+                        }*/
 
-                        $this->_output['new_filename'] = $specified_file;
-                        $this->_output['new_filename_encoded'] = rawurlencode($specified_file);
-                        $this->_output['new_path_encoded'] = $path_encoded . rawurlencode($specified_file) . '/';
+                        $this->_output['new_filename'] = $new_filename;
+                        $this->_output['new_filename_encoded'] = rawurlencode($new_filename);
+                        $this->_output['new_path_encoded'] = $path_encoded . rawurlencode($new_filename) . '/';
 
                         $this->_output['alert_msg'] =
                             __('File created at %s.', array($time->generate()))

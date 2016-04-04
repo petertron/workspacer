@@ -258,51 +258,8 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
         //$this->setPageType('table');
         $this->Body->setAttribute('spellcheck', 'false');
-        $this->Body->setAttribute('class', 'page-single ' . ($filename ? 'edit' : 'new'));
+        //$this->Body->setAttribute('class', 'page-single ' . ($filename ? 'edit' : 'new'));
         $this->appendSubheading($title);
-
-        $this->insertAction(
-            Widget::Input(
-                'fields[name]',
-                $filename,
-                'text',
-                array('id' => 'filename', 'placeholder' => __('File name'))
-            )
-        );
-        if (!$this->_existing_file) {
-            $this->insertAction(
-                Widget::Input(
-                    'action[save]',
-                    __('Create File'),
-                    'submit',
-                    array('class' =>'button new', 'accesskey' => 's')
-                )
-            );
-        }
-
-        $this->insertAction(
-            Widget::Input(
-                'action[save]',
-                __('Save Changes'),
-                'submit',
-                array('class' => 'button edit', 'accesskey' => 's')
-            )
-        );
-        $this->insertAction(
-            new XMLELement(
-                'button',
-                __('Delete'),
-                array(
-                    'form' => 'editor-form',
-                    'name' => 'action[delete]',
-                    'type' => 'submit',
-                    'class' => 'button confirm delete',
-                    'title' => 'Delete this file',
-                    'accesskey' => 'd',
-                    'data-message' => 'Are you sure you want to delete this file?'
-                )
-            )
-        );
 
         $workspace_url = SYMPHONY_URL . '/workspace/manager/';
         $editor_url = SYMPHONY_URL . '/workspace/editor/';
@@ -330,6 +287,8 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->Form->setAttribute('class', 'two columns');
         $this->Form->setAttribute('action', $editor_url . $path_encoded . (isset($filename) ? rawurlencode($filename) . '/' : ''));
 
+        $this->Form->setAttribute('data-filename', $filename);
+
         $fieldset = new XMLElement('fieldset');
         //$fieldset->setAttribute('class', 'primary column');
         $fieldset->appendChild(
@@ -345,6 +304,59 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->editorXML($fieldset, $dir_path . $filename);
 
         $this->Form->appendChild($fieldset);
+        
+        $actions = new XMLElement('div', null, array('class' => 'actions ' . ($filename ? 'edit' : 'new')));
+        $actions->appendChild(
+            new XMLELement(
+                'button',
+                __('Delete'),
+                array(
+                    'form' => 'editor-form',
+                    'name' => 'action[delete]',
+                    'type' => 'submit',
+                    'class' => 'button confirm delete',
+                    'title' => 'Delete this file',
+                    'accesskey' => 'd',
+                    'data-message' => 'Are you sure you want to delete this file?'
+                )
+            )
+        );
+        $actions->appendChild(
+            Widget::Input(
+                'action[save-as]',
+                __('Save As'),
+                'button',
+                array('class' => 'button save-as')
+            )
+        );
+/*        $actions->appendChild(
+            Widget::Input(
+                'fields[name]',
+                $filename,
+                'text',
+                array('id' => 'filename', 'placeholder' => __('File name'))
+            )
+        );*/
+        if (!$this->_existing_file) {
+            $actions->appendChild(
+                Widget::Input(
+                    'action[create]',
+                    __('Create File'),
+                    'button',
+                    array('class' =>'button new', 'accesskey' => 's')
+                )
+            );
+        }
+
+        $actions->appendChild(
+            Widget::Input(
+                'action[save]',
+                __('Save Changes'),
+                'button',
+                array('class' => 'button edit', 'accesskey' => 's')
+            )
+        );
+        $this->Form->appendChild($actions);
 
         $text = new XMLElement('p', __('Saving'));
         $this->Form->appendChild(new XMLElement('div', $text, array('id' => 'saving-popup')));

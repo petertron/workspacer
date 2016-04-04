@@ -398,7 +398,7 @@ renderText = function() {
     frag = document.createDocumentFragment();
     if (syntax_highlighter) {
       lines = syntax_highlighter.highlight(Textspace.getText());
-      for (_i = j = 0, ref = lines.length; 0 <= ref ? j <= ref : j >= ref; _i = 0 <= ref ? ++j : --j) {
+      for (_i = j = 0, ref = lines.length; 0 <= ref ? j < ref : j > ref; _i = 0 <= ref ? ++j : --j) {
         sec = document.createElement('section');
         if (lines[_i]) {
           sec.appendChild(lines[_i]);
@@ -414,9 +414,9 @@ renderText = function() {
       }
     } else {
       lines = Textspace.getText().split("\n");
-      for (_i = l = 0, ref1 = lines.length; 0 <= ref1 ? l <= ref1 : l >= ref1; _i = 0 <= ref1 ? ++l : --l) {
+      for (_i = l = 0, ref1 = lines.length; 0 <= ref1 ? l < ref1 : l > ref1; _i = 0 <= ref1 ? ++l : --l) {
         frag.appendChild(document.createTextNode(lines[_i]));
-        if (_i + 1 < lines.length) {
+        if (_i < (lines.length - 1)) {
           frag.appendChild(document.createTextNode("\n"));
         }
       }
@@ -424,7 +424,7 @@ renderText = function() {
     PRE_TAG.appendChild(frag);
     num_lines = lines.length;
   } else {
-    frag = document.createElement('span');
+    frag = document.createElement('section');
     frag.appendChild(document.createTextNode(""));
     PRE_TAG.appendChild(frag);
     num_lines = 1;
@@ -642,8 +642,7 @@ for (k in ref) {
   styles = highlighter.stylesheet;
   for (key in styles) {
     value = styles[key];
-    css_string += (prefix + key) + " {" + value + "} ";
-    css_string += "\n";
+    css_string += (prefix + key) + " {" + value + "}\n";
   }
 }
 

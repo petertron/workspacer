@@ -60,7 +60,7 @@ renderText = ->
         frag = document.createDocumentFragment()
         if syntax_highlighter
             lines = syntax_highlighter.highlight(Textspace.getText())
-            for _i in [0..lines.length]
+            for _i in [0...lines.length]
                 sec = document.createElement('section')
                 if lines[_i]
                     sec.appendChild(lines[_i])
@@ -77,16 +77,17 @@ renderText = ->
                 frag.appendChild(sec)
         else
             lines = Textspace.getText().split("\n")
-            for _i in [0..lines.length]
+            for _i in [0...lines.length]
                 frag.appendChild(document.createTextNode(lines[_i]))
-                if (_i + 1 < lines.length)
+                if (_i < (lines.length - 1))
                     frag.appendChild(document.createTextNode("\n"))
 
         PRE_TAG.appendChild(frag)
         num_lines = lines.length
     else
-        frag = document.createElement('span')
+        frag = document.createElement('section')
         frag.appendChild(document.createTextNode(""))
+        #frag.appendChild
         PRE_TAG.appendChild(frag)
         num_lines = 1
 
@@ -165,6 +166,7 @@ findNodeByPos = (pos) ->
 
 # 
 # Editor defs
+#
 
 $(BODY)
 .focusin((event) ->
@@ -185,7 +187,6 @@ $(document)
 $(PRE_TAG)
 .mouseup((event) ->
     Textspace.registerCaretPos()
-    #alert ("Wipe")
 )
 .keydown((event) ->
     key = event.which
@@ -338,7 +339,6 @@ for k, highlighter of window.Highlighters
     styles = highlighter.stylesheet
     for key, value of styles
         css_string += "#{prefix + key} {#{value}}\n"
-        #css_string += "\n"
 
 document.getElementById('highlighter-styles').textContent = css_string
 

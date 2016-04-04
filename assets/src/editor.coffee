@@ -16,20 +16,20 @@ editor_url = null
 directory_url = null
 
 in_workspace = false
+current_filename = null
 new_file = false
 document_modified = false
 syntax_highlighter = null
 editor_refresh_pending = false
 
 setEditorHeight = ->
-    $(ed.OUTER).height($(window).height() - $('div.notifier').height() - header_height - context_height - 50 + $(window).scrollTop())
-    #$(ed.OUTER).height($(window).height() - header_height - context_height - 50 + $(window).scrollTop())
+    $(ed.OUTER).height($(window).height() - header_height - context_height - 106 + $(window).scrollTop())
 
 setHeights = ->
     header_height = $(el.header).height() + $(el.nav).height()
     context_height = $(el.context).height()
-    $(el.body)
-    .height($(window).height() + header_height) # + $('div.notifier').height())
+    #$(el.body)
+    #.height($(window).height() + header_height) # + $('div.notifier').height())
 
     $(el.wrapper)
     .height($(window).height() + header_height)
@@ -43,20 +43,27 @@ setHeights = ->
 
     #$('body').height(window.innerHeight + header_height)
 
-saveDocument = ->
-    if $(el.filename).val() == ''
-        return
+save = ->
+    name = if !current_filename then prompt("File name:") else filename
+    if name
+        saveDocument(input)
+
+saveDocument = (new_filename) ->
+    if !current_filename and !new_filename
+        if !(new_filename = prompt("File name:"))
+            return
+
     $.ajax({
         'type': 'POST',
         'url': Symphony.Context.get('symphony') + '/extension/workspacer/ajax/' + Symphony.Context.get('env')['0'] + '/',
         'data': {
             'xsrf': $('input[name="xsrf"]').val(),
             'action[save]': '1',
-            'fields[existing_file]': if in_workspace then $('#existing_file').val() else '',
             'fields[dir_path]': $('#dir_path').val(),
             'fields[dir_path_encoded]': $('#dir_path_encoded').val(),
-            #'fields[name]': $('input[name="fields[name]"]').val(),
-            'fields[name]': $(el.filename).val(),
+            #'fields[name]': if new_name then new_name else filename,
+            'fields[current_filename]': current_filename,
+            'fields[new_filename]': new_filename,
             'fields[body]': ed.MAIN.contentWindow.getText()
         },
         'dataType': 'json',
@@ -67,16 +74,17 @@ saveDocument = ->
         'success': (data) ->
             #$(SAVING_POPUP).hide()
             if data.new_filename
-                $('input[name="fields[existing_file]"]').val(data.new_filename)
+                #$('input[name="fields[existing_file]"]').val(data.new_filename)
                 $(el.subheading).text(data.new_filename)
                 #history.replaceState({'a': 'b'}, '', directory_url + data.new_filename_encoded + '/')
                 history.replaceState(
                     {'a': 'b'}, '',
                     Symphony.Context.get('symphony') + '/workspace/editor/' + data.new_path_encoded
                 )
+                if $(el.actions).hasClass('new')
+                    $(el.actions).removeClass('new').addClass('edit')
 
             $('div.notifier').trigger('attach.notify', [data.alert_msg, data.alert_type])
-            #setHighlighter()
             if $(el.body).hasClass('new')
                 $(el.body)
                 .removeClass('new')
@@ -96,6 +104,9 @@ $(document).ready(->
     el.subheading = $('#symphony-subheading')
     el.filename = $('#filename')
     el.form = $(el.contents).find('form')
+    current_filename = $(el.form).data('filename')
+    el.actions = el.form.find('div.actions')
+
     #el.name_field = $(el.form).find('input[name="fields[name]"]')
     #pg.SAVING_POPUP = $('#saving-popup')
 
@@ -142,8 +153,17 @@ $(document).ready(->
         ed.MAIN.focus()
     )
 
+    $('input[name="action[create]"]').click((event) ->
+        saveDocument() 
+    )
+
     $('input[name="action[save]"]').click((event) ->
         saveDocument()
+    )
+
+    $('input[name="action[save-as]"]').click((event) ->
+        if new_filename = prompt("Save as")
+            saveDocument(new_filename)
     )
     #if(!$(body).hasClass('unsaved-changes')) $(body).addClass('unsaved-changes')
     #if !document_modified:
