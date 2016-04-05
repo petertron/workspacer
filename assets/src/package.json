@@ -4,7 +4,7 @@
   "description": "Compile CoffeeScript to JS",
   "scripts": {
     "comp1": "coffee -c -o ../ editor.coffee",
-    "comp2": "browserify -t coffeeify editorframe.coffee > ../editorframe.js"
+    "comp2": "browserify -t coffeeify --bare editorframe.coffee > ../editorframe.js"
   },
   "author": "Peter S",
   "license": "ISC"

@@ -378,7 +378,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
     {
         $this->addStylesheetToHead(self::$assets_base_url . 'editor.css');
         $this->addScriptToHead(SYMPHONY_URL . '/extension/workspacer/editor_js/');
-        $this->addScriptToHead(self::$assets_base_url . 'highlighters/highlight-xsl.js');
         $name = $this->_context[1];
         $filename = $name . '.xsl';
         $title = $filename;
@@ -393,14 +392,6 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->insertBreadcrumbs($breadcrumbs);
 
         $this->insertAction(
-            Widget::Input(
-                'action[save]',
-                __('Save Changes'),
-                'submit',
-                array('class' => 'button edit', 'accesskey' => 's')
-            )
-        );
-        $this->insertAction(
             Widget::Anchor(
                 __('Edit Page'),
                 SYMPHONY_URL . '/blueprints/pages/edit/' . PageManager::fetchIDFromHandle($name) . '/',
@@ -411,10 +402,14 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
         $this->Form->setAttribute('class', 'columns');
         $this->Form->setAttribute('action', SYMPHONY_URL . '/blueprints/pages/' . $name . '/');
+        //$this->Form->setAttribute('action', $editor_url . $path_encoded . (isset($filename) ? rawurlencode($filename) . '/' : ''));
+        $this->Form->setAttribute('data-filename', $filename);
 
         $fieldset = new XMLElement('fieldset');
-        $fieldset->appendChild(Widget::Input('fields[name]', $filename, 'hidden', array('id' => 'filename')));
         //$fieldset->appendChild((isset($this->_errors['name']) ? Widget::Error($label, $this->_errors['name']) : $label));
+        $fieldset->appendChild(
+            Widget::Input('fields[existing_file]', $filename, 'hidden', array('id' => 'existing_file'))
+        );
 
         $this->editorXML($fieldset, $filename ? 'pages/' . $filename : '');
         //$this->editorXML($fieldset, $filename ? htmlentities(file_get_contents(WORKSPACE . '/pages/' . $filename), ENT_COMPAT, 'UTF-8') : '');
@@ -422,6 +417,17 @@ class contentExtensionWorkspacerView extends AdministrationPage
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
 
         $this->Form->appendChild($fieldset);
+        
+        $actions = new XMLElement('div', null, array('class' => 'actions edit'));
+        $actions->appendChild(
+            Widget::Input(
+                'action[save]',
+                __('Save Changes'),
+                'button',
+                array('class' => 'button edit', 'accesskey' => 's')
+            )
+        );
+        $this->Form->appendChild($actions);
 
 /*        $this->Form->appendChild(
             new XMLElement(

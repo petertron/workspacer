@@ -52,7 +52,6 @@ saveDocument = (new_filename) ->
     if !current_filename and !new_filename
         if !(new_filename = prompt("File name:"))
             return
-
     $.ajax({
         'type': 'POST',
         'url': Symphony.Context.get('symphony') + '/extension/workspacer/ajax/' + Symphony.Context.get('env')['0'] + '/',
@@ -61,7 +60,6 @@ saveDocument = (new_filename) ->
             'action[save]': '1',
             'fields[dir_path]': $('#dir_path').val(),
             'fields[dir_path_encoded]': $('#dir_path_encoded').val(),
-            #'fields[name]': if new_name then new_name else filename,
             'fields[current_filename]': current_filename,
             'fields[new_filename]': new_filename,
             'fields[body]': ed.MAIN.contentWindow.getText()
@@ -74,8 +72,10 @@ saveDocument = (new_filename) ->
         'success': (data) ->
             #$(SAVING_POPUP).hide()
             if data.new_filename
+                current_filename = data.new_filename
                 #$('input[name="fields[existing_file]"]').val(data.new_filename)
-                $(el.subheading).text(data.new_filename)
+                $(el.subheading).text(current_filename)
+                $('title').html("#{current_filename} &ndash; Workspace &ndash; Symphony")
                 #history.replaceState({'a': 'b'}, '', directory_url + data.new_filename_encoded + '/')
                 history.replaceState(
                     {'a': 'b'}, '',
@@ -83,6 +83,7 @@ saveDocument = (new_filename) ->
                 )
                 if $(el.actions).hasClass('new')
                     $(el.actions).removeClass('new').addClass('edit')
+                el.iframe.setHighlighter(current_filename)
 
             $('div.notifier').trigger('attach.notify', [data.alert_msg, data.alert_type])
             if $(el.body).hasClass('new')
@@ -103,11 +104,14 @@ $(document).ready(->
     el = Symphony.Elements
     el.subheading = $('#symphony-subheading')
     el.filename = $('#filename')
-    el.form = $(el.contents).find('form')
+    el.form = $(el.contents).find('form')[0]
+    el.iframe = $(el.form).find('iframe')[0].contentWindow
+    #el.iframe = window.frames[0]
     current_filename = $(el.form).data('filename')
-    el.actions = el.form.find('div.actions')
+    el.actions = $(el.form).find('div.actions')
 
-    #el.name_field = $(el.form).find('input[name="fields[name]"]')
+    #alert window.frames[0]
+    #alert el.iframe#.contentWindow
     #pg.SAVING_POPUP = $('#saving-popup')
 
     header_height = $(el.header).height()
@@ -175,7 +179,7 @@ $(document).ready(->
 
 window.displayLineNumbers = (num_lines) ->
     l = ''
-    for i in [1..(num_lines + 1)]
+    for i in [1..num_lines]
         l += i + "<br>"
     $(ed.LINE_NUMBERS)
     .html(l + '<br><br>')

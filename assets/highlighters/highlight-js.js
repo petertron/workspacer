@@ -158,7 +158,6 @@
         return array_out;
     }
 
-    //Symphony.Extensions.Workspacer.highlighters['js'] = {
     window.Highlighters['js'] = {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,

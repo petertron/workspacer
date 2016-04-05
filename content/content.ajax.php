@@ -212,7 +212,7 @@ class contentExtensionWorkspacerAjax
     public function __ajaxTemplate()
     {
         $fields = $_POST['fields'];
-        if (!$write = General::writeFile(WORKSPACE . '/pages/' . $fields['name'], $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))){
+        if (!$write = General::writeFile(WORKSPACE . '/pages/' . $fields['current_filename'], $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))){
             $this->_output['alert_type'] = 'error';
             $this->_output['alert_msg'] = __('File could not be written to disk. Please check permissions.');
         } else {

@@ -6,7 +6,6 @@ $ = window.parent.jQuery
 Symphony = window.parent.Symphony
 #Settings = Symphony.Extensions.Workspacer['settings'];
 Context = Symphony.Context
-# Functions for highlighter modules.
 
 # Document parts
 BODY = document.body
@@ -28,10 +27,10 @@ editor_height = null
 
 editor_refresh_pending = false
 
-setHighlighter = ->
+window.setHighlighter = (filename) ->
     if in_workspace
-        filename = $(parent.document).find('#existing_file').val()
-        #alert(filename)
+        if !filename
+            filename = $(parent.document).find('#existing_file').val()
         last_dot = filename.lastIndexOf(".")
         if last_dot > 0
             ext = filename.slice(last_dot + 1)
@@ -41,6 +40,8 @@ setHighlighter = ->
 
     else
         syntax_highlighter = Highlighters.xsl
+
+    renderText()
 
 #
 # Write updated content to editor
@@ -54,7 +55,7 @@ rewriteEditorContents = ->
 # Fill editor with highlighted text..
 #
 renderText = ->
-    setHighlighter()
+    #setHighlighter()
     PRE_TAG.innerHTML = ''
     if Textspace.getText()
         frag = document.createDocumentFragment()
@@ -78,17 +79,33 @@ renderText = ->
         else
             lines = Textspace.getText().split("\n")
             for _i in [0...lines.length]
-                frag.appendChild(document.createTextNode(lines[_i]))
+                #frag.appendChild(document.createTextNode(lines[_i]))
+                #if (_i < (lines.length - 1))
+                #    frag.appendChild(document.createTextNode("\n"))
+
+                sec = document.createElement('section')
+                if lines[_i]
+                    sec.appendChild(document.createTextNode(lines[_i]))
+                else
+                    sec.appendChild(document.createTextNode(""))
                 if (_i < (lines.length - 1))
-                    frag.appendChild(document.createTextNode("\n"))
+                #sec.appendChild(document.createElement('br'))
+                    sec.appendChild(document.createTextNode("\n"))
+                else
+                    sec.appendChild(document.createElement('br'))
+                    #frag.appendChild(document.createTextNode("\n"))
+                #else:
+                    #frag.appendChild(document.createElement('br'))
+                frag.appendChild(sec)
 
         PRE_TAG.appendChild(frag)
         num_lines = lines.length
     else
-        frag = document.createElement('section')
-        frag.appendChild(document.createTextNode(""))
+        #frag = document.createElement('section')
+        #frag.appendChild(document.createTextNode(""))
         #frag.appendChild
-        PRE_TAG.appendChild(frag)
+        #PRE_TAG.appendChild(frag)
+        PRE_TAG.innerHTML = "<section></section><br>"
         num_lines = 1
 
     parent.window.displayLineNumbers(num_lines) #, $(PRE_TAG).height())
@@ -124,6 +141,7 @@ setEditorSelection = ->
     else
         r.setStart(PRE_TAG.firstChild,0)
         r.setEnd(PRE_TAG.firstChild,0)
+        node_start = findNodeByPos(0)
 
     sel = window.getSelection()
     sel.removeAllRanges()
@@ -202,6 +220,7 @@ $(PRE_TAG)
             Textspace.action("IndentRight")
         else if key == 83 # "s"
             event.preventDefault()
+            event.stopPropagation()
             $(parent.document).trigger('save-doc')
         else if key == 89 # "y"
             event.preventDefault()
@@ -219,19 +238,21 @@ $(PRE_TAG)
         if Settings['indentation_method'] == "spaces"
             ind_width = Settings['indentation_width']
             slices = Textspace.getEditorTextSlices()
+            count = 0
             if slices.before
                 string = slices.before.split("\n").pop()
                 # Count characters
-                count = 0
-                #for i = 0; i < string.length; i++
-                for i in [0..string.length]
+                for i in [0...string.length]
                     if (string[i] == "\t")
                         count = count + ind_width - (count % ind_width)
                     else
-                        count += 1
-            #for (i = 0; i < ind_width - (count % ind_width); i++)
-            for i in [0..(ind_width - (count % ind_width))]
-                Textspace.action("InsertChar", " ")
+                        count++ # += 1
+
+            spaces = ""
+            for i in [0...(ind_width - (count % ind_width))]
+                spaces += " "
+            Textspace.action("InsertChar", spaces)
+
         else
             Textspace.action("InsertChar", "\t")
     else if key == 13
@@ -335,7 +356,7 @@ EDITOR_MENU_onItemSelect = (event) ->
 
 css_string = ""
 for k, highlighter of window.Highlighters
-    prefix = "." + highlighter.style_prefix
+    prefix = ".#{highlighter.style_prefix}"
     styles = highlighter.stylesheet
     for key, value of styles
         css_string += "#{prefix + key} {#{value}}\n"
@@ -351,7 +372,8 @@ PRE_TAG.style.WebkitTabSize = Settings['indentation_width']
 PRE_TAG.style.MsTabSize = Settings['indentation_width']
 PRE_TAG.style.OTabSize = Settings['indentation_width']
 
-renderText()
+setHighlighter()
+#renderText()
 
 
 $(document).on('refreshEditorDisplay', (event) ->

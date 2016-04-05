@@ -40,7 +40,7 @@ exports.InsertChar = InsertChar = (function(superClass) {
     this.position = replaced.position;
     this.old_text = replaced.text;
     this.new_text = char;
-    Textspace.setSelection(this.position + 1);
+    Textspace.setSelection(this.position + this.new_text.length);
   }
 
   InsertChar.prototype.update = function(char) {
@@ -332,7 +332,7 @@ exports.IndentRight = IndentRight = (function(superClass) {
 
 
 },{}],2:[function(require,module,exports){
-var $, BODY, Context, EDITOR_MENU_onItemSelect, EDITOR_MENU_onMenuOpen, EDITOR_OUTER_onMouseDown, PRE_TAG, Symphony, caret_moved, createRange, css_string, document_modified, editor_height, editor_refresh_pending, findNodeByPos, highlighter, in_workspace, k, key, last_key_code, new_file, prefix, ref, renderText, rewriteEditorContents, setEditorSelection, setHighlighter, styles, syntax_highlighter, value, w, x_margin, y_margin;
+var $, BODY, Context, EDITOR_MENU_onItemSelect, EDITOR_MENU_onMenuOpen, EDITOR_OUTER_onMouseDown, PRE_TAG, Symphony, caret_moved, createRange, css_string, document_modified, editor_height, editor_refresh_pending, findNodeByPos, highlighter, in_workspace, k, key, last_key_code, new_file, prefix, ref, renderText, rewriteEditorContents, setEditorSelection, styles, syntax_highlighter, value, w, x_margin, y_margin;
 
 window.Textspace = require('./textspace.coffee');
 
@@ -368,20 +368,23 @@ editor_height = null;
 
 editor_refresh_pending = false;
 
-setHighlighter = function() {
-  var ext, filename, last_dot;
+window.setHighlighter = function(filename) {
+  var ext, last_dot;
   if (in_workspace) {
-    filename = $(parent.document).find('#existing_file').val();
+    if (!filename) {
+      filename = $(parent.document).find('#existing_file').val();
+    }
     last_dot = filename.lastIndexOf(".");
     if (last_dot > 0) {
       ext = filename.slice(last_dot + 1);
-      return syntax_highlighter = window.Highlighters[ext];
+      syntax_highlighter = window.Highlighters[ext];
     } else {
-      return syntax_highlighter = null;
+      syntax_highlighter = null;
     }
   } else {
-    return syntax_highlighter = Highlighters.xsl;
+    syntax_highlighter = Highlighters.xsl;
   }
+  return renderText();
 };
 
 rewriteEditorContents = function() {
@@ -392,7 +395,6 @@ rewriteEditorContents = function() {
 
 renderText = function() {
   var _i, frag, j, l, lines, num_lines, ref, ref1, sec;
-  setHighlighter();
   PRE_TAG.innerHTML = '';
   if (Textspace.getText()) {
     frag = document.createDocumentFragment();
@@ -415,18 +417,24 @@ renderText = function() {
     } else {
       lines = Textspace.getText().split("\n");
       for (_i = l = 0, ref1 = lines.length; 0 <= ref1 ? l < ref1 : l > ref1; _i = 0 <= ref1 ? ++l : --l) {
-        frag.appendChild(document.createTextNode(lines[_i]));
-        if (_i < (lines.length - 1)) {
-          frag.appendChild(document.createTextNode("\n"));
+        sec = document.createElement('section');
+        if (lines[_i]) {
+          sec.appendChild(document.createTextNode(lines[_i]));
+        } else {
+          sec.appendChild(document.createTextNode(""));
         }
+        if (_i < (lines.length - 1)) {
+          sec.appendChild(document.createTextNode("\n"));
+        } else {
+          sec.appendChild(document.createElement('br'));
+        }
+        frag.appendChild(sec);
       }
     }
     PRE_TAG.appendChild(frag);
     num_lines = lines.length;
   } else {
-    frag = document.createElement('section');
-    frag.appendChild(document.createTextNode(""));
-    PRE_TAG.appendChild(frag);
+    PRE_TAG.innerHTML = "<section></section><br>";
     num_lines = 1;
   }
   return parent.window.displayLineNumbers(num_lines);
@@ -457,6 +465,7 @@ setEditorSelection = function() {
   } else {
     r.setStart(PRE_TAG.firstChild, 0);
     r.setEnd(PRE_TAG.firstChild, 0);
+    node_start = findNodeByPos(0);
   }
   sel = window.getSelection();
   sel.removeAllRanges();
@@ -518,7 +527,7 @@ $(document).scroll(function(event) {
 $(PRE_TAG).mouseup(function(event) {
   return Textspace.registerCaretPos();
 }).keydown(function(event) {
-  var char, count, i, ind_width, j, key, l, ref, ref1, results, slices, string;
+  var char, count, i, ind_width, j, key, l, ref, ref1, slices, spaces, string;
   key = event.which;
   last_key_code = key;
   char = String.fromCharCode(key);
@@ -530,6 +539,7 @@ $(PRE_TAG).mouseup(function(event) {
       Textspace.action("IndentRight");
     } else if (key === 83) {
       event.preventDefault();
+      event.stopPropagation();
       $(parent.document).trigger('save-doc');
     } else if (key === 89) {
       event.preventDefault();
@@ -548,22 +558,22 @@ $(PRE_TAG).mouseup(function(event) {
     if (Settings['indentation_method'] === "spaces") {
       ind_width = Settings['indentation_width'];
       slices = Textspace.getEditorTextSlices();
+      count = 0;
       if (slices.before) {
         string = slices.before.split("\n").pop();
-        count = 0;
-        for (i = j = 0, ref = string.length; 0 <= ref ? j <= ref : j >= ref; i = 0 <= ref ? ++j : --j) {
+        for (i = j = 0, ref = string.length; 0 <= ref ? j < ref : j > ref; i = 0 <= ref ? ++j : --j) {
           if (string[i] === "\t") {
             count = count + ind_width - (count % ind_width);
           } else {
-            count += 1;
+            count++;
           }
         }
       }
-      results = [];
-      for (i = l = 0, ref1 = ind_width - (count % ind_width); 0 <= ref1 ? l <= ref1 : l >= ref1; i = 0 <= ref1 ? ++l : --l) {
-        results.push(Textspace.action("InsertChar", " "));
+      spaces = "";
+      for (i = l = 0, ref1 = ind_width - (count % ind_width); 0 <= ref1 ? l < ref1 : l > ref1; i = 0 <= ref1 ? ++l : --l) {
+        spaces += " ";
       }
-      return results;
+      return Textspace.action("InsertChar", spaces);
     } else {
       return Textspace.action("InsertChar", "\t");
     }
@@ -662,7 +672,7 @@ PRE_TAG.style.MsTabSize = Settings['indentation_width'];
 
 PRE_TAG.style.OTabSize = Settings['indentation_width'];
 
-renderText();
+setHighlighter();
 
 $(document).on('refreshEditorDisplay', function(event) {
   if (!editor_refresh_pending) {

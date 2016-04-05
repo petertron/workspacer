@@ -22,7 +22,7 @@ exports.InsertChar = class InsertChar extends TextAction
         @position = replaced.position
         @old_text = replaced.text
         @new_text = char
-        Textspace.setSelection(@position + 1)
+        Textspace.setSelection(@position + @new_text.length)
 
     update: (char) ->
         Textspace.textInsert(@position + @new_text.length , char)
