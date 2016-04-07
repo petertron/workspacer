@@ -115,7 +115,6 @@ Class extension_Workspacer extends Extension
     public function modifyLauncher()
     {
         if (!isset($_GET['symphony-page'])) return;
-
         $page = trim($_GET['symphony-page'], '/');
 
         if (is_string($path_remainder = $this->startsWith($page, 'blueprints/pages/template'))) {
@@ -124,14 +123,14 @@ Class extension_Workspacer extends Extension
             $new_page = 'editorframe';
             $_GET['path'] = $path_remainder;
         } elseif (is_string($path_remainder = $this->startsWith($page, 'workspace/manager'))) {
-            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'manager/' . $path_remainder;
+            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'manager' . $path_remainder;
         } elseif (is_string($path_remainder = $this->startsWith($page, 'workspace/editor'))) {
-            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'editor/' . $path_remainder;
+            $new_page = (isset($_POST['ajax']) ? 'ajax/' : 'view/') . 'editor' . $path_remainder;
         } else {
             return;
         }
 
-        $_GET['symphony-page'] = '/extension/workspacer/' . $new_page;
+        $_GET['symphony-page'] = '/extension/workspacer/' . $new_page . '/';
     }
 
     function startsWith($string1, $string2)
