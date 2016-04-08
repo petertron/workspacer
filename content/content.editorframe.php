@@ -53,7 +53,7 @@ class contentExtensionWorkspacerEditorframe extends HTMLPage
                 }
             }
         }
-        $doc_text = file_get_contents(WORKSPACE . '/' . $_GET['path']);
+        $doc_text = file_get_contents(WORKSPACE . $_GET['path']);
         if ($doc_text) {
             $doc_text = addslashes($doc_text);
             $doc_text = preg_replace("/(\r\n|\n|\r)/", "\\n", $doc_text);
