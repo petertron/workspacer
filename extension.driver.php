@@ -19,7 +19,7 @@ Class extension_Workspacer extends Extension
         $this->config();
     }
 
-    public function update()
+    public function update($previous_version = false)
     {
         $this->config();
     }
