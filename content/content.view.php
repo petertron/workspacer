@@ -45,7 +45,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->addStylesheetToHead(self::$assets_base_url . 'workspace.css');
         $this->addScriptToHead(self::$assets_base_url . 'workspace.js');
         $this->setTitle(__('%1$s &ndash; %2$s', array(__('Workspace'), __('Symphony'))));
-        $this->setPageType('table');
+        $this->setPageType('index');
         $workspace_url = SYMPHONY_URL . '/workspace/manager/';
         $editor_url = SYMPHONY_URL . '/workspace/editor/';
 
@@ -140,10 +140,9 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $create_upload->appendChild($fieldset);
         $this->Form->appendChild($create_upload);
 
-        // Files fieldset.
+        // Files list.
 
-        $fieldset = new XMLElement('fieldset', NULL, array('class' => 'table'));
-        $fieldset->appendChild(
+        $this->Form->appendChild(
             Widget::Table(
                 Widget::TableHead(
                     array(
@@ -160,7 +159,11 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 array('data-interactive' => 'data-interactive')
             )
         );
-        $this->Form->appendChild($fieldset);
+
+        $version = new XMLElement('p', 'Symphony ' . Symphony::Configuration()->get('version', 'symphony'), array(
+            'id' => 'version'
+        ));
+        $this->Form->appendChild($version);
 
         $this->Form->appendChild(
             new XMLElement(
@@ -304,7 +307,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->editorXML($fieldset, $dir_path . $filename);
 
         $this->Form->appendChild($fieldset);
-        
+
         $actions = new XMLElement('div', null, array('class' => 'actions ' . ($filename ? 'edit' : 'new')));
         $actions->appendChild(
             new XMLELement(
@@ -417,7 +420,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         //$fieldset->appendChild((isset($this->_errors['body']) ? Widget::Error($label, $this->_errors['body']) : $label));
 
         $this->Form->appendChild($fieldset);
-        
+
         $actions = new XMLElement('div', null, array('class' => 'actions edit'));
         $actions->appendChild(
             Widget::Input(
