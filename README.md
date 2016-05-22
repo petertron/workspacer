@@ -8,7 +8,7 @@ The folder needs to be named "workspacer". Install in the usual way for a Sympho
 
 ##Changes for version 0.3
 
-* THe filename box has been removed. When saving a new file the editor will prompt you for a name.
+* The filename box has been removed. When saving a new file the editor will prompt you for a name.
 * There is a new save-as button.
 
 ##Usage
