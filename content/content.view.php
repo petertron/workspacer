@@ -58,6 +58,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
             $path_string = SYMPHONY_URL . '/workspace/manager/';
             $breadcrumbs = array(Widget::Anchor(__('Workspace'), $path_string));
             $parts_encoded = $path_obj->getPathPartsEncoded();
+            reset($parts_encoded);
             foreach ($path_parts as $path_part) {
                 $path_string .= current($parts_encoded) . '/';
                 array_push($breadcrumbs, Widget::Anchor(__(Helpers::capitalizeWords($path_part)), $path_string));
