@@ -149,7 +149,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                     array(
                         array(__('Name'), 'col'),
                         array(__('Type'), 'col'),
-                        array(__('Size (Bytes)'), 'col'),
+                        array(__('Size'), 'col'),
                         array(__('Last Modified'), 'col'),
                     )
                 ),
@@ -540,10 +540,20 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 } else {
                     $type = 'file';
                 }
+                $size = $file_obj->getSize();
+                if ($size >= 1073741824) {
+                    $size_str = strval(round($size / 1073741824, 2)) . ' GiB';
+                } elseif ($size >= 1048576) {
+                    $size_str = strval(round($size / 1048576, 2)) . ' MiB';
+                } elseif ($size >= 1024) {
+                    $size_str = strval(round($size / 1024, 2)) . ' KiB';
+                } else {
+                    $size_str = strval($size) . ' B';
+                }
                 $table_columns = array(
                     $col1,
                     Widget::TableData($type),
-                    Widget::TableData($file_obj->getSize()),
+                    Widget::TableData($size_str),
                     Widget::TableData(date($format, $file_obj->getMTime()))
                 );
             } else {

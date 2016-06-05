@@ -83,9 +83,10 @@
         }
     }
 
-    function applyTemplates(data) {
+    function applyTemplates(data)
+    {
         $(templated_areas).each(function() {
-            if(data[$(this).data('data')]) {
+            if (data[$(this).data('data')]) {
                 $(this).empty().append($('#' + $(this).attr('data-tmpl')).tmpl(data));
             }
         });
@@ -188,7 +189,7 @@
                         break;
                 }
             }
-            else if(namespace == 'uploads') {
+            else if (namespace == 'uploads') {
                 var local_buttons = buttons.uploads;
                 switch(command) {
                     case 'upload':
@@ -217,11 +218,11 @@
             .on('submit', function(event) {
                 var self = this;
                 var selected = $(self).find('option:selected')[0];
-                if (selected.getAttribute('value') == ''){
+                if (selected.getAttribute('value') == '') {
                     event.preventDefault();
                     return;
                 }
-                if (selected.getAttribute('value') == 'delete'){
+                if (selected.getAttribute('value') == 'delete') {
                     event.preventDefault();
                     // Remove any selected files in upload queue
                     var checked = $('#create-upload tbody input[type="checkbox"]:checked');
@@ -242,6 +243,8 @@
                         },
                         'success': function(data) {
                             $('#files').html(data.html);
+                            $('#with-selected').prop('disabled', true).prop('selectedIndex', 0);
+                            $('.actions fieldset.apply').addClass('inactive');
                             applyTemplates(data);
                         }
                     });
