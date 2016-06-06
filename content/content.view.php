@@ -3,7 +3,7 @@
 require_once TOOLKIT . '/class.administrationpage.php';
 require_once EXTENSIONS . '/workspacer/lib/class.path_object.php';
 
-use workspacer\Helpers as Helpers;
+use workspacer\ws;
 use workspacer\PathObject as PathObject;
 
 class contentExtensionWorkspacerView extends AdministrationPage
@@ -54,14 +54,14 @@ class contentExtensionWorkspacerView extends AdministrationPage
             $workspace_url .= $path_encoded . '/';
             $editor_url .= $path_encoded . '/';
             $path_parts = $path_obj->getPathParts();
-            $subheading = Helpers::capitalizeWords(array_pop($path_parts));
+            $subheading = ws\capitalizeWords(array_pop($path_parts));
             $path_string = SYMPHONY_URL . '/workspace/manager/';
             $breadcrumbs = array(Widget::Anchor(__('Workspace'), $path_string));
             $parts_encoded = $path_obj->getPathPartsEncoded();
             reset($parts_encoded);
             foreach ($path_parts as $path_part) {
                 $path_string .= current($parts_encoded) . '/';
-                array_push($breadcrumbs, Widget::Anchor(__(Helpers::capitalizeWords($path_part)), $path_string));
+                array_push($breadcrumbs, Widget::Anchor(__(ws\capitalizeWords($path_part)), $path_string));
                 next($parts_encoded);
             }
         } else {
@@ -280,9 +280,10 @@ class contentExtensionWorkspacerView extends AdministrationPage
             //$this->editor_url = $editor_url;
             $path_parts = $path_obj->getPathParts();
             $parts_encoded = $path_obj->getPathPartsEncoded();
+            reset($parts_encoded);
             foreach ($path_parts as $path_part) {
                 $path_string .= current($parts_encoded) . '/';
-                array_push($breadcrumbs, Widget::Anchor(__(Helpers::capitalizeWords($path_part)), $path_string));
+                array_push($breadcrumbs, Widget::Anchor(__(ws\capitalizeWords($path_part)), $path_string));
                 next($parts_encoded);
             }
         }
@@ -391,7 +392,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
         $this->appendSubheading($title);
         $breadcrumbs = array(
             Widget::Anchor(__('Pages'), SYMPHONY_URL . '/blueprints/pages/'),
-            new XMLElement('span', __(Helpers::capitalizeWords($name)))
+            new XMLElement('span', __(ws\capitalizeWords($name)))
         );
         $this->insertBreadcrumbs($breadcrumbs);
 
@@ -540,20 +541,10 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 } else {
                     $type = 'file';
                 }
-                $size = $file_obj->getSize();
-                if ($size >= 1073741824) {
-                    $size_str = strval(round($size / 1073741824, 2)) . ' GiB';
-                } elseif ($size >= 1048576) {
-                    $size_str = strval(round($size / 1048576, 2)) . ' MiB';
-                } elseif ($size >= 1024) {
-                    $size_str = strval(round($size / 1024, 2)) . ' KiB';
-                } else {
-                    $size_str = strval($size) . ' B';
-                }
                 $table_columns = array(
                     $col1,
                     Widget::TableData($type),
-                    Widget::TableData($size_str),
+                    Widget::TableData(ws\readableSize($file_obj->getSize())),
                     Widget::TableData(date($format, $file_obj->getMTime()))
                 );
             } else {

@@ -1,5 +1,7 @@
 <?php
 
+use workspacer\ws;
+
 class contentExtensionWorkspacerAjax
 {
     private $_context;
@@ -27,6 +29,7 @@ class contentExtensionWorkspacerAjax
         $path_parts = $this->_context;
         array_shift($path_parts);
         $path = implode('/', $path_parts);
+        $this->path = $path;
 
         $path_abs = WORKSPACE;
         if (isset($path)){
@@ -36,7 +39,7 @@ class contentExtensionWorkspacerAjax
         if (isset($_FILES['uploaded_file'])) {
             //echo file_get_contents($_FILES['uploaded_file']['tmp_name']); die;
 
-            move_uploaded_file($_FILES['uploaded_file']['tmp_name'], 'workspace/' . $context[1] . '/' . $_FILES['uploaded_file']['name']);
+            move_uploaded_file($_FILES['uploaded_file']['tmp_name'], 'workspace/' . (isset($path) ? $path . '/' : null) . $_FILES['uploaded_file']['name']);
             //move_uploaded_file($_FILES['uploaded_file']['tmp_name'], WORKSPACE . '/' . $context[1] . '/' . $_FILES['uploaded_file']['name']);
         } elseif (isset($_POST['action'])) {
             $fields = $_POST['fields'];
@@ -87,8 +90,9 @@ class contentExtensionWorkspacerAjax
             }
         }
 
-        $this->workspace_url = SYMPHONY_URL . '/workspace/manager/' . $this->_context[1] . '/';
-        $this->editor_url = SYMPHONY_URL . '/workspace/editor/' . $this->_context[1] . '/';
+        //$this->workspace_url = SYMPHONY_URL . '/workspace/manager/' . $this->_context[1] . '/';
+        $this->workspace_url = SYMPHONY_URL . '/workspace/manager/' . ($this->path ? $this->path . '/' : null);
+        $this->editor_url = SYMPHONY_URL . '/workspace/editor/' . ($this->path ? $this->path . '/' : null);
 
         $html = '';
         foreach ($this->getFileTableRows() as $table_row) {
@@ -276,7 +280,7 @@ class contentExtensionWorkspacerAjax
                 $table_columns = array(
                     $col1,
                     Widget::TableData($type),
-                    Widget::TableData($file_obj->getSize()),
+                    Widget::TableData(ws\readableSize($file_obj->getSize())),
                     Widget::TableData(date($format, $file_obj->getMTime()))
                 );
             } else {

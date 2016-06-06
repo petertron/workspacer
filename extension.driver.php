@@ -2,7 +2,7 @@
 
 require EXTENSIONS . '/workspacer/lib/class.helpers.php';
 
-use workspacer\Helpers as Helpers;
+use workspacer\ws;
 
 Class extension_Workspacer extends Extension
 {
@@ -67,7 +67,7 @@ Class extension_Workspacer extends Extension
                     array(
                         'relative' => false,
                         'link' => '/workspace/manager/' . $entry . '/',
-                        'name' => Helpers::capitalizeWords($entry),
+                        'name' => ws\capitalizeWords($entry),
                         'visible' => 'yes'
                     )
                 );
