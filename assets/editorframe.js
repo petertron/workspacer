@@ -658,7 +658,7 @@ for (k in ref) {
 
 document.getElementById('highlighter-styles').textContent = css_string;
 
-Textspace.setText(window.doc_text);
+Textspace.setText(PRE_TAG.textContent);
 
 w = Settings['indentation_width'];
 

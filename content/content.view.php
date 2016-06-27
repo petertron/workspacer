@@ -4,7 +4,7 @@ require_once TOOLKIT . '/class.administrationpage.php';
 require_once EXTENSIONS . '/workspacer/lib/class.path_object.php';
 
 use workspacer\ws;
-use workspacer\PathObject as PathObject;
+use workspacer\PathObject;
 
 class contentExtensionWorkspacerView extends AdministrationPage
 {
@@ -453,6 +453,43 @@ class contentExtensionWorkspacerView extends AdministrationPage
 
     function editorXML(&$fieldset, $path)
     {
+        $file_contents = file_get_contents(WORKSPACE . '/' . trim($path, '/'));
+        $file_contents = htmlspecialchars($file_contents);
+
+        $script_content = 'window.Settings = ' . json_encode(Symphony::Configuration()->get('workspacer')) . ';' . PHP_EOL . 'window.Highlighters = {};' . PHP_EOL;
+        $filepath = EXTENSIONS . '/workspacer/assets/highlighters/';
+        $entries = scandir($filepath);
+        foreach ($entries as $entry) {
+            $file = $filepath . $entry;
+            if (is_file($filepath . $entry)) {
+                $info = pathinfo($file);
+                if ($info['extension'] == 'js' and $info['filename'] != '') {
+                    $script_content .= file_get_contents($file) . PHP_EOL;
+                }
+            }
+        }
+
+        $font_size = $this->settings->font_size ? $this->settings->font_size : '8.2pt';
+        $font_family = $this->settings->font_family ? $this->settings->font_family . ', monospace' : 'monospace';
+        $line_height = $this->settings->line_height ? $this->settings->line_height : '148%';
+        $tab_size = $this->settings->indentation_width ? $this->settings->indentation_width : '4';
+
+        $srcdoc = <<<EOT
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="/extensions/workspacer/assets/editorframe.css"/>
+<style id="highlighter-styles"></style>
+<script src="/extensions/workspacer/assets/editorframe.js" defer></script>
+<script>$script_content</script>
+</head>
+<body spellcheck="false">
+<pre contenteditable="true" style="font-size:$font_size;font-family:$font_family;line-height:$line_height;tab_size:$tab_size;">$file_contents</pre>
+</body>
+</html>
+EOT;
+
         $font_size = $this->settings->font_size ? $this->settings->font_size : '8.2pt';
         $font_family = $this->settings->font_family ? $this->settings->font_family . ', monospace' : 'monospace';
         $line_height = $this->settings->line_height ? $this->settings->line_height : '148%';
@@ -466,7 +503,7 @@ class contentExtensionWorkspacerView extends AdministrationPage
                 )
             )
         );
-        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'src' => SYMPHONY_URL . "/workspace/editorframe/$path")));
+        $editor->appendChild(new XMLElement('iframe', null, array('id' => 'editor-main', 'srcdoc' => htmlspecialchars($srcdoc))));
         //$menu = new XMLElement('div', null, array('id' => 'editor-menu', 'tabindex' => '0'));
         //$editor->appendChild($menu);
 

@@ -182,7 +182,7 @@ findNodeByPos = (pos) ->
     #if (!found) alert("Not found")
     return {'node': node, 'offset': offset}
 
-# 
+#
 # Editor defs
 #
 
@@ -363,7 +363,10 @@ for k, highlighter of window.Highlighters
 
 document.getElementById('highlighter-styles').textContent = css_string
 
-Textspace.setText(window.doc_text)
+#Textspace.setText(window.doc_text)
+#Textspace.setText(document.querySelector('pre').innerHTML)
+Textspace.setText(PRE_TAG.textContent)
+#alert PRE_TAG.innerHTML
 
 w = Settings['indentation_width']
 PRE_TAG.style.tabSize = w

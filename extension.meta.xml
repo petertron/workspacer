@@ -14,6 +14,10 @@
         </author>
     </authors>
     <releases>
+        <release version="0.4.0" date="2016-06-27" min="2.5.0" max="3.0.0">
+            - Iframe now uses 'srcdoc' attribute.
+            - URL bugs fixed.
+        </release>
         <release version="0.3.2" date="2016-04-08" min="2.5.0" max="3.0.0">
             - Fixed "file not found" fault.
         </release>

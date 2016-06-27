@@ -84,7 +84,7 @@ Class extension_Workspacer extends Extension
     }
 
 
-// Delegates ***************************
+    // Delegates
 
     public function getSubscribedDelegates()
     {
