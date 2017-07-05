@@ -163,4 +163,5 @@
     return $(ed.LINE_NUMBERS).html(l + '<br><br>');
   };
 
-}).call(this);
+//}).call(this);
+})(jQuery);
