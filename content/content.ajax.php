@@ -1,9 +1,13 @@
 <?php
 
-use workspacer\ws;
+use Workspacer as WS;
+
+require_once WS\EXTENSION . '/lib/trait.files.php';
 
 class contentExtensionWorkspacerAjax
 {
+    use Files;
+
     private $_context;
     private $_output;
     public $_errors;
@@ -24,213 +28,139 @@ class contentExtensionWorkspacerAjax
         }
     }
 
-    public function __ajaxManager()
-    {
-        $path_parts = $this->_context;
-        array_shift($path_parts);
-        $path = implode('/', $path_parts);
-        $this->path = $path;
-
-        $path_abs = WORKSPACE;
-        if (isset($path)){
-            $path_abs .= '/' . $path;
+    function pageAlert($msg, $type) {
+        if (!isset($this->_output['alert_msg'])) {
+            $this->_output['alert_msg'] = $msg;
+            $this->_output['alert_type'] = $type;
         }
-        $this->path_abs = $path_abs;
-        if (isset($_FILES['uploaded_file'])) {
-            //echo file_get_contents($_FILES['uploaded_file']['tmp_name']); die;
+    }
 
-            move_uploaded_file($_FILES['uploaded_file']['tmp_name'], 'workspace/' . (isset($path) ? $path . '/' : null) . $_FILES['uploaded_file']['name']);
-            //move_uploaded_file($_FILES['uploaded_file']['tmp_name'], WORKSPACE . '/' . $context[1] . '/' . $_FILES['uploaded_file']['name']);
-        } elseif (isset($_POST['action'])) {
-            $fields = $_POST['fields'];
-            switch ($_POST['action']) {
-                case 'create-dir':
-                    foreach ($fields['names'] as $name) {
-                        if ($name != '') @mkdir($path_abs . '/' . $name);
-                    }
+    public function __ajaxManage()
+    {
+        $path_abs = WORKSPACE;
+
+        $this->path_abs = $path_abs;
+        if (isset($_GET['action'])) {
+            //$this->dir_paths = $_GET['dir_paths'];
+            //$this->current_dir_num = $_GET['current_dir_num'];
+            //$this->current_dir_path = $this->dir_paths[$this->current_dir_num];
+            switch ($_GET['action']) {
+                case 'directory-data':
+                    $this->_output['files'] = $this->getDirectoryEntries($_GET['dir_path']);
+                    break;
+                case 'load':
+                    $text = file_get_contents(WORKSPACE . '/' . $_GET['file_path']);
+                    $this->_output['text'] = $text;
                     break;
             }
-        } elseif (isset($_POST['with-selected'])) {
-            $checked = (is_array($_POST['items'])) ? array_keys($_POST['items']) : null;
-            if (is_array($checked) && !empty($checked)) {
-                switch ($_POST['with-selected']) {
-                    case 'delete':
-                        //$canProceed = true;
-                        foreach ($checked as $name) {
-                            $file = $path_abs . '/' . $name;
-                            if (is_dir($file)) @rmdir($file);
-                            if (is_file($file)) @unlink($file);
-/*							if(preg_match('/\/$/', $name) == 1){
-                                $name = trim($name, '/');
-                                try {
-                                    rmdir($dir_abs . '/' . $name);
-                                }
-                                catch(Exception $ex) {
-                                    $this->pageAlert(
-                                        __('Failed to delete %s.', array('<code>' . $name . '</code>'))
-                                        . ' ' . __('Directory %s not empty or permissions are wrong.', array('<code>' . $name . '</code>'))
-                                        , Alert::ERROR
-                                    );
-                                    $canProceed = false;
+        } elseif (isset($_POST['action']) || isset($_POST['with-selected'])) {
+            if (isset($_POST['action'])) {
+                $fields = $_POST['fields'];
+                switch ($_POST['action']) {
+                    case 'create':
+                        $file_path_abs = $this->getWorkspaceFullPath($_POST['file_path']);
+                        if (file_exists($file_path_abs)) {
+                            $this->alert('File already exists.');
+                        } else {
+                            General::writeFile($file_path_abs, $_POST['text']);
+                            $this->outputFileLists2();
+                        }
+                        break;
+                    case 'save':
+                        $file_path_abs = $this->getWorkspaceFullPath($_POST['file_path']);
+                        General::writeFile($file_path_abs, $_POST['text']);
+                        if ($_POST['body_id'] != 'blueprints-pages') {
+                            $this->outputFileLists2();
+                        }
+                        break;
+                    case 'create_dirs':
+                        $items = $_POST['items'];
+                        $dir_path_abs = $this->getWorkspaceFullPath($_POST['dir_path']);
+                        if (is_array($items) && !empty($items)) {
+                            foreach ($items as $new_dir_name) {
+                                if ($new_dir_name) {
+                                    $file_path_abs = $dir_path_abs . '/' . $new_dir_name;
+                                    General::realiseDirectory($file_path_abs);
                                 }
                             }
-                            elseif(!General::deleteFile($dir_abs . '/'. $name)) {
-                                $this->pageAlert(
-                                    __('Failed to delete %s.', array('<code>' . $name . '</code>'))
-                                    . ' ' . __('Please check permissions on %s.', array('<code>/workspace/' . $this->_context['target_d'] . '/' . $name . '</code>'))
-                                    , Alert::ERROR
-                                );
-                                $canProceed = false;
-                            }*/
+                            $this->outputDirList();
+                            $this->outputFileLists2();
                         }
-
-                        //if ($canProceed) redirect(Administration::instance()->getCurrentPageURL());
                         break;
                 }
-            }
-        }
-
-        //$this->workspace_url = SYMPHONY_URL . '/workspace/manager/' . $this->_context[1] . '/';
-        $this->workspace_url = SYMPHONY_URL . '/workspace/manager/' . ($this->path ? $this->path . '/' : null);
-        $this->editor_url = SYMPHONY_URL . '/workspace/editor/' . ($this->path ? $this->path . '/' : null);
-
-        $html = '';
-        foreach ($this->getFileTableRows() as $table_row) {
-            $html .= $table_row->generate();
-        }
-        $this->_output['html'] = $html;
-    }
-
-    /*
-    * Editor Page.
-    */
-    public function __ajaxEditor()
-    {
-        $context = $this->_context;
-        $path_parts = $this->_context;
-        array_shift($path_parts);
-        $path = implode('/', $path_parts);
-
-        if (isset($_POST['action']['save']) and isset($_POST['fields'])){
-            $fields = $_POST['fields'];
-            $current_filename = $fields['current_filename'];
-            $new_filename = $fields['new_filename'];
-            $dir_abs = WORKSPACE . '/' . $fields['dir_path'];
-            //$create_file = ($specified_file !== $existing_file);
-
-            if ($current_filename && $new_filename) {
-                if ($new_filename == $current_filename) {
-                    $new_filename = null;
-                } else {
-                    $current_filename = null;
-                }
-            }
-            // Create file if there is no current file
-            if ($new_filename) {
-                if (is_file($dir_abs . $new_filename)) {
-                    $this->_output['alert_type'] = 'error';
-                    $this->_output['alert_msg'] = __('A file with that name already exists. Please choose another.');
-                    $this->error_occurred = true;
-                } else {
-                    $filename = $new_filename;
-                }
-            } else {
-                $filename = $current_filename;
-            }
-
-            if (!($this->error_occurred)) {
-                if ($create_file){
-                    /**
-                    * Just before the file has been created
-                    *
-                    * @delegate UtilityPreCreate
-                    * @since Symphony 2.2
-                    * @param string $context
-                    * '/blueprints/css/'
-                    * @param string $file
-                    *  The path to the Utility file
-                    * @param string $contents
-                    *  The contents of the `$fields['body']`, passed by reference
-                    */
-                    //Symphony::ExtensionManager()->notifyMembers('FilePreCreate', '/assets/' . $this->category . '/', array('file' => $file, 'contents' => &$fields['body']));
-                } else {
-                    /**
-                    * Just before the file has been updated
-                    *
-                    * @delegate UtilityPreEdit
-                    * @since Symphony 2.2
-                    * @param string $context
-                    * '/blueprints/css/'
-                    * @param string $file
-                    *  The path to the Utility file
-                    * @param string $contents
-                    *  The contents of the `$fields['body']`, passed by reference
-                    */
-                    //Symphony::ExtensionManager()->notifyMembers('FilePreEdit', '/assets/' . $this->category . '/', array('file' => $file, 'contents' => &$fields['body']));
-                }
-
-                // Write the file
-                if (!$write = General::writeFile($dir_abs . $filename, $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))) {
-                    $this->_output['alert_type'] = 'error';
-                    $this->_output['alert_msg'] = __('File could not be written to disk. Please check permissions.');
-                    /*$this->_output['alert_msg'] = __('File could not be written to disk.')
-                        . ' ' . __('Please check permissions on %s.', array('<code>/workspace/' . '' . '</code>'));*/
-                } else {
-                // Write Successful
-                    $path_encoded = $fields['dir_path_encoded'];
-                    $this->_output['alert_type'] = 'success';
-                    $workspace_url = SYMPHONY_URL . '/workspace/manager/' . $path_encoded;
-                    $editor_url = SYMPHONY_URL . '/workspace/editor/' . $path_encoded;
-                    $time = Widget::Time();
-                    // Remove any existing file if the filename has changed
-                    if ($new_filename) {
-                        /*if ($existing_file) {
-                            General::deleteFile($dir_abs . $existing_file);
-                        }*/
-
-                        $this->_output['new_filename'] = $new_filename;
-                        $this->_output['new_filename_encoded'] = rawurlencode($new_filename);
-                        $this->_output['new_path_encoded'] = $path_encoded . rawurlencode($new_filename) . '/';
-
-                        $this->_output['alert_msg'] =
-                            __('File created at %s.', array($time->generate()))
-                            . ' <a href="' . $editor_url . '" accesskey="c">'
-                            . __('Create another?')
-                            . '</a> <a href="' . $workspace_url . '" accesskey="a">'
-                            . __('View current directory')
-                            . '</a>';
-                    } else {
-                        $this->_output['alert_msg'] =
-                            __('File updated at %s.', array($time->generate()))
-                            . ' <a href="' . $editor_url . '" accesskey="c">'
-                            . __('Create another?')
-                            . '</a> <a href="' . $workspace_url . '" accesskey="a">'
-                            . __('View current directory')
-                            . '</a>';
+            } elseif (isset($_POST['with-selected'])) {
+                //$checked = is_array($_POST['items']) ? array_keys($_POST['items']) : null;
+                $dir_path_abs_current = $this->getWorkspaceFullPath($_POST['sets'][0]['dir_path']);
+                $dir_path_abs_other = $this->getWorkspaceFullPath($_POST['sets'][1]['dir_path']);
+                foreach ($_POST['sets'] as $set) {
+                    $checked = is_array($set['items']) ? $set['items'] : null;
+                    if (is_array($checked) && !empty($checked)) {
+                        switch ($_POST['with-selected']) {
+                            case 'delete':
+                                //$canProceed = true;
+                                foreach ($checked as $filename => $v) {
+                                    $file_path_abs = $dir_path_abs_current . '/' . $filename;
+                                    if (is_dir($file_path_abs)) {
+                                        try {
+                                            rmdir($file_path_abs);
+                                        } catch (Exception $ex) {
+                                            $file_path = $this->getWorkspaceRelativePath($file_path_abs);
+                                            $this->pageAlert(
+                                                __('Failed to delete %s.', array('<code>' . $file_path . '</code>'))
+                                                . ' ' . __('Directory %s is not empty or permissions are wrong.', array('<code>' . $file_path . '</code>'))
+                                                , Alert::ERROR
+                                            );
+                                            //$canProceed = false;
+                                        }
+                                    } elseif (!General::deleteFile($file_path_abs)) {
+                                        $file_path = $this->getWorkspaceRelativePath($file_path_abs);
+                                        $this->pageAlert(
+                                            __('Failed to delete %s.', array('<code>' . $file_path . '</code>'))
+                                            . ' ' . __('Please check permissions on %s.', array('<code>/workspace/' . '' . '/' . $file_path . '</code>'))
+                                            , Alert::ERROR
+                                        );
+                                        //$canProceed = false;
+                                    }
+                                }
+                                //if ($canProceed) redirect(Administration::instance()->getCurrentPageURL());
+                                $this->outputDirList();
+                                $this->outputFileLists();
+                                break;
+                            case 'move':
+                                foreach ($checked as $filename => $v) {
+                                    $source = $dir_path_abs_current . '/' . $filename;
+                                    $destination = $dir_path_abs_other . '/' . $filename;
+                                    if ($destination != $source) {
+                                        if (file_exists($source) && !file_exists($destination)) {
+                                            rename($source, $destination);
+                                        }
+                                    }
+                                }
+                                $this->outputDirList();
+                                $this->outputFileLists();
+                                break;
+                            case 'copy':
+                                foreach ($checked as $filename => $v) {
+                                    $source = $dir_path_abs_current . '/' . $filename;
+                                    $destination = $dir_path_abs_other . '/' . $filename;
+                                    if ($destination != $source) {
+                                        if (file_exists($source) && !file_exists($destination)) {
+                                            copy($source, $destination);
+                                        }
+                                    }
+                                }
+                                $this->outputDirList();
+                                $this->outputFileLists();
+                                break;
+                        }
                     }
+                    list($dir_path_abs_current, $dir_path_abs_other) = array($dir_path_abs_other, $dir_path_abs_current);
                 }
             }
+            /*if ($_POST['body_id'] == 'blueprints-workspace') {
+                //$this->outputTableBodiesHTML();
+            }*/
         }
-    }
-
-    public function __ajaxTemplate()
-    {
-        $fields = $_POST['fields'];
-        if (!$write = General::writeFile(WORKSPACE . '/pages/' . $fields['current_filename'], $fields['body'], Symphony::Configuration()->get('write_mode', 'file'))){
-            $this->_output['alert_type'] = 'error';
-            $this->_output['alert_msg'] = __('File could not be written to disk. Please check permissions.');
-        } else {
-            $time = Widget::Time();
-            $this->_output['alert_type'] = 'success';
-            $this->_output['alert_msg'] =
-                __('Page updated at %s.', array($time->generate()))
-                . ' <a href="' . SYMPHONY_URL . '/blueprints/pages/new/" accesskey="c">'
-                . __('Create another?')
-                . '</a><a href="' . SYMPHONY_URL . '/blueprints/pages/" accesskey="a">'
-                . __('View all Pages')
-                . '</a>';
-        }
-
     }
 
     public function generate($page = NULL)
@@ -240,68 +170,39 @@ class contentExtensionWorkspacerAjax
         exit();
     }
 
-    function getFileTableRows()
+    function getWorkspaceFullPath($path)
     {
-        $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
-        $finfo = class_exists(finfo) ? new finfo() : null;
-        $table_rows = array();
+        return WORKSPACE . ($path ? '/' . $path : '');
+    }
 
-        foreach (new DirectoryIterator($this->path_abs) as $file_obj) {
-            if ($file_obj->isDot()) continue;
+    function getWorkspaceRelativePath($path_abs) {
+        return substr($path_abs, strlen(WORKSPACE) + 1);
+    }
 
-            if ($file_obj->isDir()) {
-                $href = $this->workspace_url;
-            } else {
-                $href = $this->editor_url;
-            }
-            $name = $file_obj->getFilename();
-            $col1 = new XMLElement('td');
-            $col1->appendChild(Widget::Anchor($name, $href . $name . '/', $name));
-            $col1->appendChild(new XMLElement(
-                'label',
-                __('Select File ' . $name),
-                array('class' => 'accessible', 'for' => $name)
-            ));
-            $col1->appendChild(Widget::Input(
-                "items[$name]", 'on', 'checkbox'//, 'page-1'
-            ));
-            //$table_columns = array($col1);
-
-            if (!$file_obj->isLink()) {
-                if ($finfo) {
-                    $type = $finfo->file($file_obj->getPathname());
-                    $comma_pos = strpos($type, ',');
-                    if ($comma_pos) {
-                        $type = substr($type, 0, $comma_pos);
-                    }
-                } else {
-                    $type = 'file';
-                }
-                $table_columns = array(
-                    $col1,
-                    Widget::TableData($type),
-                    Widget::TableData(ws\readableSize($file_obj->getSize())),
-                    Widget::TableData(date($format, $file_obj->getMTime()))
-                );
-            } else {
-                $table_columns = array(
-                    $col1,
-                    Widget::TableData('symlink'),
-                    Widget::TableData('-'),
-                    Widget::TableData('-')
-                );
-            }
-
-            $table_rows[$name] = Widget::TableRow($table_columns);
+    function outputFileLists()
+    {
+        $this->_output['files'] = array();
+        foreach ($_POST['sets'] as $set_num => $set) {
+            $this->_output['files'][$set_num] = $this->getDirectoryEntries($set['dir_path']);
         }
+    }
 
-        if (count($table_rows) > 0) {
-            ksort ($table_rows);
-            return array_values($table_rows);
-        } else {
-            return array(Widget::TableRow(
-                array(Widget::TableData(__('None found.'), 'inactive', null, 4))
-            ));
+    function outputFileLists2()
+    {
+        if (is_array($_POST['dir_paths']) && !empty($_POST['dir_paths'])) {
+            $this->_output['files'] = array();
+            foreach ($_POST['dir_paths'] as $index => $dir_path) {
+                $this->_output['files'][$index] = $this->getDirectoryEntries($dir_path);
+            }
         }
+    }
+
+    function outputDirList() {
+        $this->_output['directories'] = $this->getRecursiveDirList();
+    }
+
+    function alert($content)
+    {
+        $this->_output['alert'] = $content;
     }
 }

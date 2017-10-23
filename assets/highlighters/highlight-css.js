@@ -1,4 +1,6 @@
-(function($) {
+(function ($) {
+    "use strict";
+
     var d = document;
 
     var pseudo_classes = (
@@ -52,7 +54,7 @@
         'vertical visible wait white wider w-resize ' +
         'x-fast x-high x-large x-loud x-low x-slow x-small x-soft xx-large xx-small yellow'
     ).split(' ');
-
+/*
     var COMMENT = 'CSS_comment',
         STRING = 'CSS_string',
         ID = 'CSS_id',
@@ -60,24 +62,31 @@
         PSEUDO_CLASS = 'CSS_pseudoclass',
         KEYWORD = 'CSS_keyword',
         VALUE = 'CSS_value';
+*/
+    var COMMENT = 'comment',
+        STRING = 'string',
+        ID = 'id',
+        CLASS = 'class',
+        PSEUDO_CLASS = 'pseudoclass',
+        KEYWORD = 'keyword',
+        VALUE = 'value';
 
     var exp_outside = /\{|[\.#][a-z_][a-z0-9_\-]*|\'[^']*\'?|\"[^"]*\"?|\/\*|\:[a-z]+|$/gi,
         exp_inside = /[:;}]|[a-z][a-z\-]+|\d+\.?\d*\%?|\.\d+\%?|\#[0-9a-f]{3,6}|\'[^']*\'?|\"[^"]*\"?|\/\*|$/gi,
         exp_end_comment = /[^]*?\*\/|$/g;
 
-    var stylesheet = {
-        'comment': "color: #808080",
-        'string': "color: #901203",
-        'escape': "color: #C08004",
-        'objectpart': "color: #024C78",
-        'keyword': "color: #020678",
-        'value': "color: #024C78",
-        'number': "color: #A6680C",
-        'hex': "color: #608004",
-        'id': "color: #460480",
-        'class': "color: #A46008",
-        'pseudoclass': "color: #065002"
-    };
+    var stylesheet =
+        `.comment {color: #808080}
+        .string {color: #901203}
+        .escape {color: #C08004}
+        .objectpart {color: #024C78}
+        .keyword {color: #020678}
+        .value {color: #024C78}
+        .number {color: #A6680C}
+        .hex {color: #608004}
+        .id {color: #460480}
+        .class {color: #A46008}
+        .pseudoclass {color: #065002}`
 
     function textSpan(type, text)
     {
@@ -89,106 +98,102 @@
 
     var style_prefix = "CSS_";
 
-    var before_colon = true
+    var before_colon = true,
         outside_brace = true;
 
-    var highlighter = function(source_text) {
-        if (source_text.length == 0) return null;
-        var array_in = source_text.split("\n"), array_out = [];
-        var exp, match, m, last_index = 0;
+    var highlighter = function(text)
+    {
+        if (!text)
+            return null;
 
-        for (var _i = 0; _i < array_in.length; _i++) {
-            var line_in = array_in[_i];
-            if (line_in) {
-                last_index = 0;
-                var frag = document.createDocumentFragment();
+        var line_in = text,
+            frag_out = document.createDocumentFragment(),
+            exp,
+            match,
+            match2,
+            m,
+            last_index = 0,
+            first_char;
 
-                while (last_index < line_in.length) {
-                    exp = outside_brace ? exp_outside : exp_inside;
-                    exp.lastIndex = last_index;
-                    match = exp.exec(line_in);
-                    if (match.index > last_index) {
-                        frag.appendChild(d.createTextNode(line_in.slice(last_index, match.index)));
-                    }
-                    last_index = exp.lastIndex;
-                    m = match[0];
-                    first_char = m.charAt(0);
-                    if (m == "/*") {
-                        exp_end_comment.lastIndex = last_index;
-                        match2 = exp_end_comment.exec(line_in);
-                        last_index = exp_end_comment.lastIndex;
-                        frag.appendChild(textSpan(COMMENT, m + match2[0]));
-                    }
-                    else if (first_char == "'" || first_char == "\"") {
-                        frag.appendChild(textSpan(STRING, m));
-                    }
-                    else {
-                        if (outside_brace) {
-                            if(m == "{") {
-                                outside_brace = false;
-                                before_colon = true
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                            else if (first_char == ".") {
-                                frag.appendChild(textSpan(CLASS, m));
-                            }
-                            else if (first_char == "#") {
-                                frag.appendChild(textSpan(ID, m));
-                            }
-                            else if (first_char == ":" && pseudo_classes.indexOf(m.slice(1)) > -1) {
-                                //alert(m)
-                                frag.appendChild(textSpan(PSEUDO_CLASS, m));
-                            }
-                            else {
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                        }
-                        else {
-                            if (m == "}") {
-                                outside_brace = true;
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                            else if (m == ":") {
-                                before_colon = false;
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                            else if (m == ";") {
-                                before_colon = true;
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                            else if ('#.0123456789'.indexOf(first_char) > -1) {
-                                frag.appendChild(textSpan(VALUE, m))
-                            }
-                            else if (first_char >= "a" && first_char <= "z") {
-                                if (before_colon && keywords.indexOf(m) > -1) {
-                                    frag.appendChild(textSpan(KEYWORD, m));
-                                }
-                                else if (!before_colon && values.indexOf(m) > -1) {
-                                    frag.appendChild(textSpan(VALUE, m));
-                                }
-                                else {
-                                    frag.appendChild(d.createTextNode(m));
-                                }
-                            }
-                            else {
-                                frag.appendChild(d.createTextNode(m));
-                            }
-                        }
-                    }
-                }
-                array_out[_i] = frag;
+        while (last_index < line_in.length) {
+            exp = outside_brace ? exp_outside : exp_inside;
+            exp.lastIndex = last_index;
+            match = exp.exec(line_in);
+            if (match.index > last_index) {
+                frag_out.appendChild(d.createTextNode(line_in.slice(last_index, match.index)));
+            }
+            last_index = exp.lastIndex;
+            m = match[0];
+            first_char = m.charAt(0);
+            if (m == "/*") {
+                exp_end_comment.lastIndex = last_index;
+                match2 = exp_end_comment.exec(line_in);
+                last_index = exp_end_comment.lastIndex;
+                frag_out.appendChild(textSpan(COMMENT, m + match2[0]));
+            }
+            else if (first_char == "'" || first_char == "\"") {
+                frag_out.appendChild(textSpan(STRING, m));
             }
             else {
-                array_out[_i] = d.createTextNode("");
+                if (outside_brace) {
+                    if (m == "{") {
+                        outside_brace = false;
+                        before_colon = true
+                        frag_out.appendChild(d.createTextNode(m));
+                    } else if (first_char == ".") {
+                        frag_out.appendChild(textSpan(CLASS, m));
+                    }
+                    else if (first_char == "#") {
+                        frag_out.appendChild(textSpan(ID, m));
+                    }
+                    else if (first_char == ":" && pseudo_classes.indexOf(m.slice(1)) > -1) {
+                        //alert(m)
+                        frag_out.appendChild(textSpan(PSEUDO_CLASS, m));
+                    }
+                    else {
+                        frag_out.appendChild(d.createTextNode(m));
+                    }
+                }
+                else {
+                    if (m == "}") {
+                        outside_brace = true;
+                        frag_out.appendChild(d.createTextNode(m));
+                    }
+                    else if (m == ":") {
+                        before_colon = false;
+                        frag_out.appendChild(d.createTextNode(m));
+                    }
+                    else if (m == ";") {
+                        before_colon = true;
+                        frag_out.appendChild(d.createTextNode(m));
+                    }
+                    else if ('#.0123456789'.indexOf(first_char) > -1) {
+                        frag_out.appendChild(textSpan(VALUE, m))
+                    }
+                    else if (first_char >= "a" && first_char <= "z") {
+                        if (before_colon && keywords.indexOf(m) > -1) {
+                            frag_out.appendChild(textSpan(KEYWORD, m));
+                        }
+                        else if (!before_colon && values.indexOf(m) > -1) {
+                            frag_out.appendChild(textSpan(VALUE, m));
+                        }
+                        else {
+                            frag_out.appendChild(d.createTextNode(m));
+                        }
+                    }
+                    else {
+                        frag_out.appendChild(d.createTextNode(m));
+                    }
+                }
             }
         }
-        return array_out;
+        return frag_out;
     }
 
     //Symphony.Extensions.Workspacer.highlighters['css'] = {
-    window.Highlighters['css'] = {
+    CodeEditor.addHighlighter('css', {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
-    };
+    });
 })();

@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <extension id="workspacer" status="released" xmlns="http://getsymphony.com/schemas/extension/1.0">
     <name>Workspacer</name>
-    <description>For Symphony 2.5+. Files in the Workspace folder can be managed and edited.</description>
-    <repo type="github">https://github.com/Petertron/workspacer</repo>
+    <description>Files in the Workspace folder can be managed and edited. Page XSL templates can also be edited from the Pages page.</description>
+    <repo type="github">https://github.com/petertron/workspacer</repo>
     <types>
         <type>Workflow</type>
     </types>
     <authors>
         <author>
-            <name github="Petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
+            <name github="petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
             <email>petertron@mailservice.ms</email>
-            <website>http://www.peter-s.tk</website>
+            <!--<website>http://www.peter-s.tk</website>-->
         </author>
     </authors>
     <releases>
+        <release version="0.5.0" date="2017-10-23" min="2.5.0" max="3.0.0">
+            - Improved file manager with split-view mode.
+            - File editor now uses a modal box.
+        </release>
         <release version="0.4.0" date="2016-06-27" min="2.5.0" max="3.0.0">
             - Iframe now uses 'srcdoc' attribute.
             - URL bugs fixed.

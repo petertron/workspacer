@@ -1,256 +1,170 @@
-(function($) {
+/*global jQuery, Symphony, window, document, alert */
+/*jslint browser: true, devel: true, plusplus: true */
 
-    var xsrf_token;
+(function ($) {
+    "use strict";
 
-    var $contents,
-        templated_areas;
-
-    var buttons = {
-        'directories': {},
-        'files': {},
-        'uploads': {}
-    }
-    var	$create_upload,
-        $add_files_true_button;
-
-    File.prototype.request = null;
-    File.prototype.status = "Inactive";
-    File.prototype.transferred = 0;
-    File.prototype.start = function(){
-        var self = this;
-        self.status = 'Queued';
-        var fd = new FormData();
-        fd.append('uploaded_file', this);
-        fd.append("ajax", "1");
-        fd.append("xsrf", xsrf_token);
-        this.request = $.ajax({
-            'contentType': false,
-            //'contentType': 'multipart/form-data',
-            'type': 'POST',
-            'url': document.URL,
-            'data': fd,
-            'processData': false,
-            'dataType': 'json',
-            'xhr': function() {
-                var xhr = $.ajaxSettings.xhr();
-                if (xhr.upload) {
-                    $(xhr.upload).on('progress', function(event) {
-                        self.transferred = event.loaded;
-                        self.status = event.loaded + " bytes transferred";
-                        applyTemplates(upload_data);
-                    });
-                }
-                return xhr;
-            },
-            'error': function(xhr, msg) {
-                alert (msg);
-            },
-            'success': function(data) {
-                upload_data.deleteByName(self.name);
-                data['uploads'] = upload_data.uploads;
-                applyTemplates(data);
-                $('#files').html(data.html);
-                $(buttons.uploads.upload).attr('disabled', 'disabled');
-                $(buttons.uploads.cancel).attr('disabled', 'disabled');
+    // Global variables
+    Symphony.Extensions['Workspacer'] = {
+        ajax_url: Symphony.Context.get('symphony') + "/extension/workspacer/ajax/manage/",
+        elements: {},
+        view_mode: "0",
+        current_filename: null,
+        editor_settings: JSON.parse($('#editor-settings').text()),
+        getDirPaths: function () {
+            var WS = Symphony.Extensions.Workspacer;
+            var to_return = [WS.elements.dir_boxes[0].dir_path];
+            if (WS.elements.dir_boxes[1].active) {
+                to_return.push(WS.elements.dir_boxes[1].dir_path);
             }
-        });
-    }
-
-    var upload_queue_visible = false;
-
-    var upload_data = {
-        'uploads': [],
-        'add': function(files) {
-            for (var i in files) {
-                if (typeof(files[i]) == 'object' && !this.findByName(files[i].name)) {
-                    this.uploads.push(files[i]);
-                }
-            }
+            return to_return;
         },
-        'findByName': function(name) {
-            for (var i in this.uploads) {
-                if (this.uploads[i].name == name) return this.uploads[i];
-            }
-            return false;
+        filePathFromParts: function (dir_path, filename) {
+            return (dir_path ? dir_path + "/" : "") + filename;
         },
-        'deleteByName': function(name) {
-            for (var i in this.uploads){
-                if (this.uploads[i].name == name){
-                    this.uploads.splice(i, 1);
-                    break;
-                }
-            }
+        serverPost: function (data, func_done, func_error) {
+            var WS = Symphony.Extensions.Workspacer;
+            data.xsrf = Symphony.Utilities.getXSRF();
+            data.body_id = WS.body_id;
+            data.dir_paths = WS.getDirPaths();
+            $.ajax({
+                method: 'POST',
+                url: WS.ajax_url,
+                data: data,
+                dataType: 'json'
+            })
+                .done(function (data) {
+                    if (data.alert_msg) {
+                        $(WS.elements.notifier).trigger('attach.notify', [data.alert_msg, data.alert_type]);
+                    }
+                    if (data.directories) {
+                        WS.directories = data.directories;
+                    }
+                    if (data.files) {
+                        for (var i in data.files) {
+                            WS.elements.dir_boxes[i].files = data.files[i];
+                        }
+                    }
+                    if (func_done) {
+                        func_done(data);
+                    }
+                })
+                .fail(function (jqXHR, textStatus) {
+                    alert(textStatus);
+                }); 
         }
-    }
+    };
 
-    function applyTemplates(data)
-    {
-        $(templated_areas).each(function() {
-            if (data[$(this).data('data')]) {
-                $(this).empty().append($('#' + $(this).attr('data-tmpl')).tmpl(data));
-            }
+    $(document).ready(function () {
+        $(Symphony.Elements.wrapper).find('.split-view').hide();
+        var WS = Symphony.Extensions.Workspacer;
+        WS.elements = Symphony.Elements;
+        WS.body_id = $(WS.elements.body).attr('id');
+        WS.elements.notifier = $(Symphony.Elements.header).find('div.notifier');
+        WS.elements.form = $(WS.elements.contents).find('form');
+        WS.elements.with_selected = $('#with-selected');
+
+        WS.directories = JSON.parse($('#directories').text())
+
+        WS.elements.dir_boxes = document.getElementsByTagName('dir-box');
+        $(WS.elements.dir_boxes).on("openFile", function (event, dir_path, filename) {
+            WS.editor_container.open(true);
+            WS.editor_container.dir_path = dir_path;
+            WS.editor_container.edit(filename);
         });
-    }
+        WS.elements.dir_boxes[0].files = JSON.parse($('#files').text());
 
-    $(document).ready(function() {
-        xsrf_token = $('input[name="xsrf"]').val();
-
-        templated_areas = $('[data-tmpl|="tmpl"]');
-        $contents = $('#contents:first');
-
-        var button_tags = $('button[type="button"]');
-        $(button_tags).each(function() {
-            var name_parts = this.name.split(".");
-            try {
-                buttons[name_parts[1]][name_parts[0]] = this;
-            }
-            catch (error) {}
-        });
-
-        $add_files_true_button = $('input[name="add-files-true-button"]:first');
-        $create_upload = $('#create-upload');
-
-        $('button[name="show.create_upload"]').click(function(event){
-            //if(!upload_queue_visible){
-            if(($create_upload).css('display') == 'none'){
-                $create_upload.slideDown(280);
-                upload_queue_visible = true;
-                applyTemplates(upload_data);
-                $(event.target).text('Hide Create/Upload');
-                $add_files_true_button.parent()
-                    .delay(20)
-                    .width(buttons.uploads.add_files.clientWidth + 3)
-                    .height(buttons.uploads.add_files.clientHeight + 3);
-            }
-            else {
-                $create_upload.slideUp(280);
-                upload_queue_visible = false;
-                $(event.target).text('Show Create/Upload');
-            }
-        });
-
-        $('textarea[name="directory_names"]')
-            .on('keyup', function(event) {
-                $(this)
-                    .parent()
-                    .find('button')
-                    .attr('disabled', this.value ? false : 'disabled');
-            });
-
-        $add_files_true_button.change(function(event) {
-            $(buttons.uploads.upload).attr('disabled', false);
-            var files = event.target.files;
-            upload_data.add(files);
-            applyTemplates(upload_data);
-            $(buttons.uploads.upload).attr('disabled', false);
-        });
-
-        $contents.click(function(event){
-            var target = event.target;
-            if (!(target.tagName == 'BUTTON' && target.type == 'button')) return;
-            var which_button = target.name.split(".");
-            var command = which_button[0],
-                namespace = which_button[1];
-            if (namespace == 'directories') {
-                switch(command) {
-                    case 'create':
-                        var parts = ($('textarea[name="directory_names"]').val()).split("\n");
-                        var names = [];
-                        for(var i in parts) {
-                            var name = parts[i].trim();
-                            if(name != '') names.push(name);
-                        }
-                        $.ajax({
-                            'type': 'POST',
-                            'data': {
-                                'ajax': 'index',
-                                'xsrf': xsrf_token,
-                                'action': 'create-dir',
-                                'fields': {'names': names}
-                            },
-                            'dataType': 'json',
-                            'error': function(xhr, msg){
-                                alert(msg);
-                            },
-                            'success': function(data){
-                                $('#files').html(data.html);
-                                applyTemplates(data);
-                                $('textarea[name="directory_names"]')
-                                    .val('')
-                                    .trigger('keyup');
-                            }
-                        });
-                        break;
-                    case 'clear':
-                        $('textarea[name="directory_names"]')
-                            .val('')
-                            .trigger('keyup')
-                            .focus();
-                        break;
-                }
-            }
-            else if (namespace == 'uploads') {
-                var local_buttons = buttons.uploads;
-                switch(command) {
-                    case 'upload':
-                        for(var i in upload_data.uploads){
-                            upload_data.uploads[i].start();
-                        }
-                        $(buttons.uploads.cancel).attr('disabled', false);
-                        break;
-                    case 'cancel':
-                        for(i in upload_data.uploads){
-                            try{
-                                upload_data.uploads[i].request.abort();
-                            }
-                            catch(error){}
-                        }
-                        upload_data.uploads = [];
-                        applyTemplates(upload_data);
-                        $(buttons.uploads.upload).attr('disabled', 'disabled');
-                        $(buttons.uploads.cancel).attr('disabled', 'disabled');
-                        break;
-                }
+        $('ul.actions').on('click', 'button', function(event) {
+            switch (event.target.name) {
+                case 'split-view':
+                    $('#directories-wrapper').addClass("two columns");
+                    WS.elements.dir_boxes[1].dir_path = WS.elements.dir_boxes[0].dir_path;
+                    WS.elements.dir_boxes[1].files = WS.elements.dir_boxes[0].files.slice(0);
+                    WS.elements.dir_boxes[1].active = true;
+                    $(Symphony.Elements.wrapper).find('.default-view').hide();
+                    $(Symphony.Elements.wrapper).find('.split-view').show();
+                    break;
+                case 'close-left':
+                    $('#directories-wrapper').removeClass("two columns");
+                    WS.elements.dir_boxes[0].dir_path = WS.elements.dir_boxes[1].dir_path;
+                    WS.elements.dir_boxes[0].files = WS.elements.dir_boxes[1].files.slice(0);
+                    WS.elements.dir_boxes[1].active = false;
+                    $(Symphony.Elements.wrapper).find('.split-view').hide();
+                    $(Symphony.Elements.wrapper).find('.default-view').show();
+                    break;
+                case 'close-right':
+                    $('#directories-wrapper').removeClass("two columns");
+                    WS.elements.dir_boxes[1].active = false;
+                    $(Symphony.Elements.wrapper).find('.split-view').hide();
+                    $(Symphony.Elements.wrapper).find('.default-view').show();
+                    break;
             }
         });
 
-        $('#contents form')
-            .on('submit', function(event) {
-                var self = this;
-                var selected = $(self).find('option:selected')[0];
-                if (selected.getAttribute('value') == '') {
-                    event.preventDefault();
-                    return;
-                }
-                if (selected.getAttribute('value') == 'delete') {
-                    event.preventDefault();
-                    // Remove any selected files in upload queue
-                    var checked = $('#create-upload tbody input[type="checkbox"]:checked');
-                    $(checked).each(function(i) {
-                        if ((upload_data.findByName(this.name)).status == 'Inactive') {
-                            upload_data.deleteByName(this.name);
-                        }
-                    });
-                    applyTemplates(upload_data);
-                    // Remove selected directories or files
-                    $.ajax({
-                        'type': 'POST',
-                        'url': document.URL,
-                        'data': $(self).serialize() + '&ajax=index',
-                        'dataType': 'json',
-                        'error': function(xhr, msg) {
-                            alert(msg);
-                        },
-                        'success': function(data) {
-                            $('#files').html(data.html);
-                            $('#with-selected').prop('disabled', true).prop('selectedIndex', 0);
-                            $('.actions fieldset.apply').addClass('inactive');
-                            applyTemplates(data);
-                        }
-                    });
-                }
-            });
+        disableWithSelected();
+
+        WS.editor_container = $('editor-box')[0];
+
+        $(window).keydown(function (event) {
+            if (event.which == 27) {
+                WS.editor_container.open(false);
+            }
+        });
+
+        $(WS.elements.form).submit(formSubmitHandler);
     });
 
-})(window.jQuery);
-//})(jQuery.noConflict());
+    function formSubmitHandler(event)
+    {
+        var WS = Symphony.Extensions.Workspacer;
+        var with_selected = $(WS.elements.with_selected).val();
+        if (with_selected == "download") {
+            return;
+        }
+        event.preventDefault();
+        //alert($(WS.elements.form).serialize());
+        $.ajax({
+            method: 'POST',
+            url: WS.ajax_url,
+            data: $(WS.elements.form).serialize(),
+            dataType: 'json'
+        })
+            .done(function (data) {
+                if (data.alert_msg) {
+                    var msg = data.alert_msg + ' <a class="ignore">' + Symphony.Language.get('Clear?') + '</a>';
+                    $(WS.elements.notifier).trigger('attach.notify', [msg, data.alert_type]);
+                    if (data.alert_type == "error") {
+                        $(window).scrollTop(0);
+                    }
+                }
+                if (data.directories) {
+                    WS.directories = data.directories;
+                }
+                if (data.files) {
+                    if (data.files[0]) {
+                        WS.elements.dir_boxes[0].files = data.files[0];
+
+                    }
+                    if (data.files[1]) {
+                        WS.elements.dir_boxes[1].files = data.files[1];
+                    }
+                }
+            })
+            .fail(function (jqXHR, textStatus) {
+                alert(textStatus);
+                //func_error()
+            });
+    }
+
+    function disableWithSelected() {
+        $(Symphony.Extensions.Workspacer.elements.with_selected).prop('disabled', true).prop('selectedIndex', 0);
+        $('.actions fieldset.apply').addClass('inactive');
+    }
+})(jQuery.noConflict());
+
+        //WS.move_across = document.querySelector('#with-selected option[value="move"]');
+        //WS.copy_across = document.querySelector('#with-selected option[value="copy"]');
+        //WS.move_across.hidden = true;
+        //WS.move_across.disabled = true;
+        //WS.copy_across.hidden = true;
+        //WS.copy_across.disabled = true;

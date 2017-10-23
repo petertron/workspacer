@@ -1,165 +1,174 @@
-#breadcrumbs h2 small{
-    font-size: 100%;
-    color: #900A04;
+#mask {
+    position: fixed;
+    z-index: 1000000;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: black;
+    opacity: 0.8;
+    display: none;
 }
 
-.code {
-    white-space: pre;
+#editor-container {
+    box-sizing: border-box;
+    position: fixed;
+    z-index: 1000001;
+    top: 1em;
+    right: 1em;
+    bottom: 1em;
+    left: 1em;
+    border: 1px solid rgba(0, 0, 0, .25);
+    background-color: white;
+    padding: .85rem;
+    overflow: hidden;
+    display: none;
 }
 
-#filename {
-    width: 160px;
+#editor-container.focus {
+    border-color: rgba(0, 0, 0, .40);
+    /*border: 1px solid rgba(0, 0, 0, .40);*/
 }
 
-body {
-    overflow: auto;
-}
-
-#editor {
+#editor-container header {
     position: relative;
     box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    border: 1px solid rgba(0, 0, 0, 0.25);
-    margin: 2px 0 0 0;
-    outline: none;
-    padding: 0;
-    width: 100%;
+    height: 2.6rem;
+    display: block;
 }
 
-#editor.focus {
-    border-color: rgba(0, 0, 0, 0.4);
-    -webkit-box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+#editor-container header p {
+    float: left;
 }
 
-#editor-main {
+#editor-container header button {
+    float: right;
+}
+
+#editor-container footer {
+    clear: both;
     position: relative;
-    left: 34px;
+    box-sizing: border-box;
+    height: 2.6rem;
+    padding-top: .85rem;
+}
+/*
+#editor-container footer button[name="delete"] {
+    float: left;
+    margin-left: 0;
+}
+*/
+#editor-container footer button[name="save-as"] {
+    float: left;
+    margin-left: 0;
+}
+#editor-container footer button[name="save"],
+#editor-container footer button[name="create"] {
+    float: right;
+}
+#editor-container.edit footer button[name="create"] {
+    float: left;
+}
+#editor-container.new footer button.edit {
+    display: none;
+}
+#editor-container.edit footer button.new {
+    display: none;
+}
+
+div.ps-code-editor {
+    clear: both;
+    box-sizing: border-box;
+    position: relative;
+    height: calc(100% - 6rem);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, .25);
+    display: block;
+}
+
+div.ps-code-editor pre {
+    box-sizing: border-box;
     margin: 0;
-    box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    height: 100%;
-    width: calc(100% - 34px);
+    outline: none;
+    white-space: pre;
+    -moz-tab-size: 4;
+    -webkit-tab-size: 4;
 }
 
-#editor-line-numbers {
+.ps-code-editor pre.line-numbers {
     position: absolute;
-    z-index: 9;
     top: 0;
     left: 0;
-    margin: 0;
-    width: 34px;
-    height: 100%;
-    padding: 2px 3px;
-
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-
-    border-right: 1px solid #C0C0C0;
-    background-color: #E0E0E0;
-    white-space: pre;
+    width: 38px;
+    height: 100000px;
+    border-right: 1px solid #909090;
+    padding: .125rem;
     text-align: right;
-    color: #585858;
+    background-color: #E8E8E8;
+    color: #707070;
     overflow: hidden;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-	user-select: none;
-    cursor: default;
+    /*pointer-events: none;*/
+    user-select: none;
 }
-
-#editor-menu {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    min-width: 140px;
-    border: 1px solid gray;
-    outline: none;
-    background-color: white;
-    display: none;
-}
-
-#editor-menu ul {
-    margin: 0;
-    padding: 2px 0;
-}
-
-#editor-menu li {
-    line-height: 140%;
-    padding: 2px 3px;
-    font-size: 1.2em;
-    color: gray;
-    cursor: default;
-}
-
-#editor-menu li.active {
+.ps-code-editor pre.edit-area {
+    position: absolute;
+    top: 0;
+    left: 38px;
+    right: 0;
+    height: 100%;
+    padding: .125rem;
+    background-color: #FFFFFF;
+    overflow: scroll;
+    word-wrap: pre-wrap;
+    /*tab-size: 4;*/
     color: black;
+    caret-color: black;
+}
+.ps-code-editor menu {
+    position: absolute;
+    z-index: 10;
+    top: 2px;
+    left: 2px;
+    width: 160px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #B0B0B0;
+    background-color: white;
+    font: menu;
+    cursor: default;
+    outline: none;
+    display: none; /*block;
+    visibility: hidden;*/
 }
 
-#editor-menu li.active:hover {
-    background-color: gray;
+#menu hr {
+    margin: 3px;
+    border: none;
+    height: 1px;
+    background-color: #D0D0D0;
+}
+
+#menu button {
+    width: 100%;
+    height: auto;
+    border: none;
+    padding: .15em;
+    line-height: 130%;
+    background-color: white;
+    color: #282828;
+    text-align: left;
+}
+
+#menu button:focus {
+    background-color: #3070F0;
     color: white;
-    cursor: pointer;
 }
 
-/*input[type="text"] {
-    margin-top: 2px;
-}*/
-
-#saving-popup {
-    position: fixed;
-    z-index: 9000;
-    top: 50%;
-    left: 50%;
-    height: 27px;
-    width: 76px;
-    margin: -15px 0 0 -39px;
-    border: 1px solid #707070;
-    border-radius: 3px;
-    background-color: #bfdc96;
-    display: none;
+#menu button:disabled {
+    background-color: white;
+    color: #909090;
 }
 
-#saving-popup p {
-    font-size: 15px;
-    font-weight: bold;
-    line-height: 15px;
-    margin-top: 6px;
-    color: rgba(0, 0, 0, 0.75);
-    text-align: center;
-}
-
-div.actions {
-    bottom: 10px;
-}
-
-
-div.actions.new input.button.edit, div.actions.new input.button.save-as, div.actions.new button.delete {
-    display: none;
-}
-
-div.actions.edit input.button.new {
-    display: none;
-}
-
-input.button.save-as {
-    float: left;
-    vertical-align: top;
-}
-
-input.button.new, input.button.edit {
-    float: right;
-    vertical-align: top;
-}
-
-button.delete {
-    float: left;
-    margin-top: 2px;
-    margin-left: 0;
-    vertical-align: top;
+button::-moz-focus-inner {
+    border: 0;
 }
