@@ -2,6 +2,10 @@
 
 Workspacer allows files in the Workspace folder to be managed and edited. It also restores the ability, pre Symphony 2.4, to edit Page XSL templates from the Pages page.
 
+## Requirements
+
+Symphony CMS version 2.5 or higher, PHP 5.4 or higher.
+
 ## Installation
 
 The folder needs to be named "workspacer". Install in the usual way for a Symphony extension.
