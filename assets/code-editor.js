@@ -38,7 +38,6 @@ var CodeEditor = $hx_exports["CodeEditor"] = function(settings) {
 	this.undo_stack = new Stack();
 	this.timeout = new Timeout();
 	this.menu = window.document.createElement("menu");
-	this.text_holder = window.document.createElement("span");
 	this.edit_area = window.document.createElement("pre");
 	this.line_numbers = window.document.createElement("pre");
 	this.editor = window.document.createElement("div");
@@ -59,8 +58,6 @@ var CodeEditor = $hx_exports["CodeEditor"] = function(settings) {
 	this.edit_area.onscroll = function(event1) {
 		_gthis.line_numbers.style.top = -_gthis.edit_area.scrollTop + "px";
 	};
-	this.edit_area.appendChild(this.text_holder);
-	this.edit_area.appendChild(window.document.createElement("br"));
 	this.edit_area.addEventListener("mousedown",$bind(this,this.edit_area_onmousedown));
 	this.edit_area.addEventListener("keydown",$bind(this,this.edit_area_onkeydown));
 	this.edit_area.addEventListener("keypress",$bind(this,this.edit_area_onkeypress));
@@ -300,11 +297,11 @@ CodeEditor.prototype = {
 		this.edit_area.focus();
 	}
 	,getText: function() {
-		return this.text_holder.textContent;
+		return this.edit_area.textContent;
 	}
 	,setText: function(text) {
 		if(text == null || text.length == 0) {
-			this.text_holder.innerHTML = "";
+			this.edit_area.innerHTML = "";
 		} else {
 			this.renderText(text);
 		}
@@ -315,7 +312,7 @@ CodeEditor.prototype = {
 		}
 		var line_num_string = "1\n";
 		if(text == null) {
-			this.text_holder.innerHTML = "";
+			this.edit_area.innerHTML = "";
 		} else {
 			var line_num = 2;
 			var index = null;
@@ -331,14 +328,15 @@ CodeEditor.prototype = {
 			}
 			if(this.highlighter != null) {
 				var new_content = this.highlighter.highlight(text);
-				this.text_holder.innerHTML = "";
+				this.edit_area.innerHTML = "";
 				if(new_content != null) {
-					this.text_holder.appendChild(new_content);
+					this.edit_area.appendChild(new_content);
 				}
 			} else {
-				this.text_holder.textContent = text;
+				this.edit_area.textContent = text;
 			}
 		}
+		this.edit_area.appendChild(window.document.createElement("br"));
 		this.line_numbers.textContent = line_num_string;
 	}
 	,setEditorRender: function(selection) {
@@ -379,8 +377,8 @@ CodeEditor.prototype = {
 			}
 		}
 		if(!found) {
-			node = last_node;
-			offset = node.nodeValue.length;
+			node = this.edit_area;
+			offset = this.edit_area.childNodes.length - 1;
 		}
 		return { node : node, offset : offset};
 	}
@@ -474,7 +472,7 @@ CodeEditor.prototype = {
 	}
 	,selectAll: function() {
 		var sel = window.getSelection();
-		sel.selectAllChildren(this.text_holder);
+		sel.selectAllChildren(this.edit_area);
 	}
 	,getCharPositionsFromRange: function(range) {
 		var range_before = this.createRange(this.edit_area,0,range.startContainer,range.startOffset);
@@ -815,8 +813,7 @@ var Insert = function(editor,new_text,title) {
 	this.new_text = new_text;
 	this.position = this.selection[this.selection.length - 1].start;
 	current_range.deleteContents();
-	var sc = current_range.startContainer;
-	current_range.startContainer.insertData(current_range.startOffset,this.new_text);
+	current_range.insertNode(window.document.createTextNode(new_text));
 	editor.setEditorRender([{ start : this.position + this.new_text.length, end : null}]);
 };
 Insert.__name__ = ["Insert"];

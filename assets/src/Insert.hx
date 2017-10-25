@@ -20,8 +20,9 @@ class Insert extends TextAction
         this.new_text = new_text;
         this.position = this.selection[this.selection.length - 1].start;
         current_range.deleteContents();
-        var sc: Dynamic = current_range.startContainer;
-        untyped current_range.startContainer.insertData(current_range.startOffset, this.new_text);
+        current_range.insertNode(Browser.document.createTextNode(new_text));
+        //var sc: Dynamic = current_range.startContainer;
+        //untyped current_range.startContainer.insertData(current_range.startOffset, this.new_text);
         editor.setEditorRender([{start: this.position + this.new_text.length, end: null}]);
     }
 

@@ -29,7 +29,7 @@ class CodeEditor
     public var editor = Browser.document.createDivElement();
     var line_numbers = Browser.document.createPreElement();
     public var edit_area = Browser.document.createPreElement();
-    public var text_holder = Browser.document.createSpanElement();
+    //public var edit_area = Browser.document.createSpanElement();
     var menu = Browser.document.createMenuElement();
 
     public var timeout = new Timeout();
@@ -78,9 +78,8 @@ class CodeEditor
         edit_area.onscroll = function(event) {
             line_numbers.style.top = -edit_area.scrollTop + "px";
         };
-        edit_area.appendChild(text_holder);
+        //edit_area.appendChild(edit_area);
         //edit_area.appendChild(Browser.document.createTextNode("\n"));
-        edit_area.appendChild(Browser.document.createBRElement());
 
         edit_area.addEventListener('mousedown', edit_area_onmousedown);
         edit_area.addEventListener('keydown', edit_area_onkeydown);
@@ -263,6 +262,8 @@ class CodeEditor
         if (key >= 33 && key <= 40) {
             event.stopPropagation();
             timeout.clear();
+            //var s = Browser.window.getSelection().getRangeAt(0);
+            //Browser.alert(s.startContainer.childNodes.length + " ... " + s.startOffset);
         }
     }
 
@@ -417,13 +418,13 @@ class CodeEditor
 
     public function getText(): String
     {
-        untyped return text_holder.textContent;
+        untyped return edit_area.textContent;
     }
 
     public function setText(text: String): Void
     {
         if (text == null || text.length == 0) {
-            text_holder.innerHTML = "";
+            edit_area.innerHTML = "";
         } else {
             renderText(text);
         }
@@ -440,7 +441,7 @@ class CodeEditor
         var line_num_string: String = "1\n";
         if (text == null) {
             //var node = Browser.document.createTextNode("");
-            text_holder.innerHTML = "";
+            edit_area.innerHTML = "";
             //edit_area.appendChild(node);
         } else {
             var line_num: Int = 2,
@@ -453,14 +454,15 @@ class CodeEditor
             }
             if (highlighter != null) {
                 var new_content = highlighter.highlight(text);
-                text_holder.innerHTML = "";
+                edit_area.innerHTML = "";
                 if (new_content != null) {
-                    text_holder.appendChild(new_content);
+                    edit_area.appendChild(new_content);
                 }
             } else {
-                text_holder.textContent = text;
+                edit_area.textContent = text;
             }
         }
+        edit_area.appendChild(Browser.document.createBRElement());
         line_numbers.textContent = line_num_string;
         //getTextNodes();
         //getLineBeginnings();
@@ -521,8 +523,10 @@ class CodeEditor
             /*node = Browser.document.createTextNode('');
             edit_area.appendChild(node);
             offset = 0;*/
-            node = last_node;
-            offset = node.nodeValue.length;
+            //node = last_node;
+            //offset = node.nodeValue.length;
+            node = edit_area;
+            offset = edit_area.childNodes.length - 1;
         }
         //if (!found) alert('Not found: ' + pos);
         return {node: node, offset: offset};
@@ -642,7 +646,7 @@ class CodeEditor
     function selectAll()
     {
         var sel = Browser.window.getSelection();
-        sel.selectAllChildren(text_holder);
+        sel.selectAllChildren(edit_area);
     }
 
     public function getCharPositionsFromRange(range: Range)
