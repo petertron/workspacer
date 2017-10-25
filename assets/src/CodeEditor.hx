@@ -29,6 +29,7 @@ class CodeEditor
     public var editor = Browser.document.createDivElement();
     var line_numbers = Browser.document.createPreElement();
     public var edit_area = Browser.document.createPreElement();
+    public var text_holder = Browser.document.createSpanElement();
     var menu = Browser.document.createMenuElement();
 
     public var timeout = new Timeout();
@@ -43,8 +44,6 @@ class CodeEditor
 
     public var line_beginnings = [];
     var menu_items_enabled: Array<Dynamic>;
-
-    public var range_before_range: Range;
 
     private var default_settings = {
         font_family: "8.4pt Monaco",
@@ -75,9 +74,13 @@ class CodeEditor
         });
 
         edit_area.className = "edit-area";
+        edit_area.setAttribute("contenteditable", "true");
         edit_area.onscroll = function(event) {
             line_numbers.style.top = -edit_area.scrollTop + "px";
         };
+        edit_area.appendChild(text_holder);
+        //edit_area.appendChild(Browser.document.createTextNode("\n"));
+        edit_area.appendChild(Browser.document.createBRElement());
 
         edit_area.addEventListener('mousedown', edit_area_onmousedown);
         edit_area.addEventListener('keydown', edit_area_onkeydown);
@@ -92,13 +95,12 @@ class CodeEditor
         untyped edit_area.style.MozTabSize = settings.indentation_width;
         untyped edit_area.style.WebkitTabSize = settings.indentation_width;
         untyped edit_area.style.MsTabSize = settings.indentation_width;
-        edit_area.contentEditable = "true";
 
-        menu.addEventListener('mousedown', menu_onmousedown);
-        menu.addEventListener('keydown', menu_onkeydown);
+        //menu.addEventListener('mousedown', menu_onmousedown);
+        //menu.addEventListener('keydown', menu_onkeydown);
 
         editor.setAttribute('class', "ps-code-editor");
-        editor.setAttribute('tabindex', "0");
+        //editor.setAttribute('tabindex', "0");
         editor.setAttribute('spellcheck', "false");
         editor.appendChild(highlighter_styles);
         editor.appendChild(line_numbers);
@@ -158,7 +160,7 @@ class CodeEditor
             if (event.key == "s") {
                 event.preventDefault();
                 event.stopPropagation();
-                editor.dispatchEvent(new CustomEvent('save', {detail: {text: edit_area.textContent}}));
+                editor.dispatchEvent(new CustomEvent('save', {detail: {text: getText()}}));
             } else if (event.key == "y") {
                 event.preventDefault();
                 redo();
@@ -259,6 +261,7 @@ class CodeEditor
     {
         var key = event.keyCode;
         if (key >= 33 && key <= 40) {
+            event.stopPropagation();
             timeout.clear();
         }
     }
@@ -366,18 +369,6 @@ class CodeEditor
         //event.stopPropagation();
     }
 
-    public function getValue(): String
-    {
-        return edit_area.textContent;
-    }
-
-    public function setValue(text: String): String
-    {
-        edit_area.textContent = text;
-        renderText();
-        return text;
-    }
-
     /* Functions */
 
     public function createElementWithClass(type: String, class_name: String): Element
@@ -426,13 +417,16 @@ class CodeEditor
 
     public function getText(): String
     {
-        return edit_area.textContent;
+        untyped return text_holder.textContent;
     }
 
     public function setText(text: String): Void
     {
-        edit_area.innerHTML = "";
-        renderText(text);
+        if (text == null || text.length == 0) {
+            text_holder.innerHTML = "";
+        } else {
+            renderText(text);
+        }
     }
 
     /*
@@ -441,13 +435,13 @@ class CodeEditor
     function renderText(?text: String)
     {
         if (text == null) {
-            text = edit_area.textContent;
+            text = getText();
         }
         var line_num_string: String = "1\n";
         if (text == null) {
-            var node = Browser.document.createTextNode("");
-            edit_area.innerHTML = "";
-            edit_area.appendChild(node);
+            //var node = Browser.document.createTextNode("");
+            text_holder.innerHTML = "";
+            //edit_area.appendChild(node);
         } else {
             var line_num: Int = 2,
                 index: Int = null,
@@ -459,16 +453,15 @@ class CodeEditor
             }
             if (highlighter != null) {
                 var new_content = highlighter.highlight(text);
-                edit_area.innerHTML = "";
+                text_holder.innerHTML = "";
                 if (new_content != null) {
-                    edit_area.appendChild(new_content);
+                    text_holder.appendChild(new_content);
                 }
             } else {
-                edit_area.textContent = text;
+                text_holder.textContent = text;
             }
         }
         line_numbers.textContent = line_num_string;
-        edit_area.appendChild(Browser.document.createTextNode(""));
         //getTextNodes();
         //getLineBeginnings();
     }
@@ -649,7 +642,7 @@ class CodeEditor
     function selectAll()
     {
         var sel = Browser.window.getSelection();
-        sel.selectAllChildren(edit_area);
+        sel.selectAllChildren(text_holder);
     }
 
     public function getCharPositionsFromRange(range: Range)

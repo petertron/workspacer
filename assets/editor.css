@@ -91,8 +91,6 @@ div.ps-code-editor pre {
     margin: 0;
     outline: none;
     white-space: pre;
-    -moz-tab-size: 4;
-    -webkit-tab-size: 4;
 }
 
 .ps-code-editor pre.line-numbers {
@@ -110,6 +108,7 @@ div.ps-code-editor pre {
     /*pointer-events: none;*/
     user-select: none;
 }
+
 .ps-code-editor pre.edit-area {
     position: absolute;
     top: 0;
@@ -124,6 +123,7 @@ div.ps-code-editor pre {
     color: black;
     caret-color: black;
 }
+
 .ps-code-editor menu {
     position: absolute;
     z-index: 10;
