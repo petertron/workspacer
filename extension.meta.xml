@@ -14,6 +14,9 @@
         </author>
     </authors>
     <releases>
+        <release version="0.5.1" date="2017-10-25" min="2.5.0" max="3.0.0">
+            - Fix editor caret bug.
+        </release>
         <release version="0.5.0" date="2017-10-23" min="2.5.0" max="3.0.0">
             - Improved file manager with split-view mode.
             - File editor now uses a modal box.
