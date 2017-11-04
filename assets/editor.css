@@ -165,7 +165,6 @@ div.ps-code-editor {
 .ps-code-editor menu button:focus {
     background-color: #888;
     color: white;
-    border: none;
     outline: none;
 }
 
@@ -177,37 +176,4 @@ div.ps-code-editor {
 .ps-code-editor menu button:disabled {
     background-color: white;
     color: #909090;
-}
-
-/*#editor-menu {
-    position: absolute;
-    z-index: 10000009;
-    top: 2px;
-    left: 2px;
-    width: 160px;
-    margin: 0;
-    padding: 0;
-    border: 1px solid #B0B0B0;
-    background-color: white;
-    font: menu;
-    cursor: default;
-    outline: none;
-    display: block;
-    visibility: hidden;
-}
-
-#editor-menu hr {
-    margin: 3px;
-    border: none;
-    height: 1px;
-    background-color: #D0D0D0;
-}
-
-#editor-menu button:focus {
-    background-color: #3070F0;
-    color: white;
-}
-*/
-button::-moz-focus-inner {
-    border: 0;
 }
