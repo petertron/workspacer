@@ -4,7 +4,12 @@ class Stack
 
     public function new() {}
 
-    public function hasItems(): Bool
+    /*
+     * Has items.
+     */
+    public var hasItems(get, null): Bool;
+
+    function get_hasItems(): Bool
     {
         return this.stack.length > 0;
     }

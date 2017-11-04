@@ -2,8 +2,8 @@ using Type;
 
 class TextAction
 {
+    public var title: String;
     var editor: CodeEditor;
-    var title: String;
 
     public function new(editor, title)
     {

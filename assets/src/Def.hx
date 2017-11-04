@@ -6,7 +6,6 @@ class Def
     public static var EOL: String = "\n";
     public static var TAB: String = "    ";
     //@:const var TAB = "    ";
-
 }
 
 typedef DocPoint = {

@@ -6,6 +6,9 @@ import haxe.ds.StringMap;
 import Def;
 import Stack;
 import Timeout;
+import ContextMenu;
+
+import Reflect;
 
 typedef Settings = {
     var font_family: String;
@@ -29,8 +32,7 @@ class CodeEditor
     public var editor = Browser.document.createDivElement();
     var line_numbers = Browser.document.createPreElement();
     public var edit_area = Browser.document.createPreElement();
-    //public var edit_area = Browser.document.createSpanElement();
-    var menu = Browser.document.createMenuElement();
+    var menu: ContextMenu;
 
     public var timeout = new Timeout();
     public var text_nodes: Array<Dynamic>;
@@ -45,15 +47,13 @@ class CodeEditor
     public var line_beginnings = [];
     var menu_items_enabled: Array<Dynamic>;
 
-    private var default_settings = {
+    private var settings = {
         font_family: "8.4pt Monaco",
         font_size: "8.4pt",
         line_height: "138%",
         indentation_width: 4,
         indentation_method: 'spaces'
     }
-
-    private var settings: Settings;
 
     var regexp_ins_tab = ~/\n(?!\n)/g;
 
@@ -63,22 +63,29 @@ class CodeEditor
 
     public function new(settings: Settings)
     {
-        this.settings = settings;
+        var value: Dynamic;
+        for (name in Reflect.fields(this.settings)) {
+            if (Reflect.hasField(settings, name)) {
+                value = Reflect.field(settings, name);
+                if (value != null) {
+                    Reflect.setField(this.settings, name, value);
+                }
+            }
+        }
         line_numbers.className = "line-numbers";
         line_numbers.style.fontFamily = this.settings.font_family + ", monospace";
         line_numbers.style.fontSize = this.settings.font_size;
         line_numbers.style.lineHeight = this.settings.line_height;
-        line_numbers.addEventListener('mousedown', function(event) {
+        line_numbers.addEventListener('mousedown', function (event) {
             event.preventDefault();
             edit_area.focus();
         });
 
         edit_area.className = "edit-area";
         edit_area.setAttribute("contenteditable", "true");
-        edit_area.onscroll = function(event) {
+        edit_area.onscroll = function (event) {
             line_numbers.style.top = -edit_area.scrollTop + "px";
         };
-        //edit_area.appendChild(edit_area);
         //edit_area.appendChild(Browser.document.createTextNode("\n"));
 
         edit_area.addEventListener('mousedown', edit_area_onmousedown);
@@ -99,46 +106,113 @@ class CodeEditor
         //menu.addEventListener('keydown', menu_onkeydown);
 
         editor.setAttribute('class', "ps-code-editor");
-        //editor.setAttribute('tabindex', "0");
+        editor.setAttribute('tabindex', "0");
         editor.setAttribute('spellcheck', "false");
         editor.appendChild(highlighter_styles);
         editor.appendChild(line_numbers);
         editor.appendChild(edit_area);
+        this.menu = new ContextMenu(this);
+        this.menu.addItem("undo", "Undo");
+        this.menu.addItem("redo", "Redo");
+        this.menu.addItem("cut", "Cut");
+        this.menu.addItem("copy", "Copy");
+        //this.menu.addItem("paste", "Paste");
+        this.menu.addItem("delete", "Delete");
+        this.menu.addItem("selectAll", "Select all");
+        editor.appendChild(menu._ELEM_);
+        menu._ELEM_.addEventListener('menu_action', editor_onmenuaction);
+        //Browser.document.body.appendChild(menu._ELEM_);
+        editor.addEventListener('keydown', editor_onkeydown);
+        editor.addEventListener('contextmenu', editor_oncontextmenu);
+    }
 
-        editor.oncontextmenu = function(event) {
-            /*event.preventDefault();
-            if (menu.style.visibility == "visible") {
-                if (event.button == 2) {
-                    menu.style.visibility = "hidden";
-                }
+    // Event handlers.
+
+    function editor_onkeydown(event): Void
+    {
+        if (event.keyCode == 27 && menu.visible) {
+            event.stopPropagation();
+            menu.visible = false;
+        }
+    }
+
+    function editor_oncontextmenu(event): Void
+    {
+        event.preventDefault();
+        if (menu.visible) {
+            if (event.button == 2) {
+                menu.visible = false;
+            }
+        } else {
+            // Set enabled items.
+            var items_enabled: Array<String> = [];
+            if (undo_stack.hasItems) {
+                menu.setItemLabel("undo", 'Undo ${undo_stack.getLastItem().title}');
+                items_enabled.push("undo");
             } else {
-                var menu_top: Int = 0, menu_left = 0;
-                if (event.buttons != 0) {
-                    if (event.clientY + menu.clientHeight > Browser.window.innerHeight) {
-                        menu_top = event.clientY - menu.clientHeight - 2;
-                    } else {
-                        menu_top = event.clientY + 2;
-                    }
-                    if (event.clientX + menu.clientWidth > Browser.window.innerWidth) {
-                        menu_left = event.clientX - menu.clientWidth - 2;
-                    } else {
-                        menu_left = event.clientX + 2;
-                    }
+                menu.setItemLabel("undo", 'Undo');
+            }
+            if (redo_stack.hasItems) {
+                menu.setItemLabel("redo", 'Redo ${redo_stack.getLastItem().title}');
+                items_enabled.push("redo");
+            } else {
+                menu.setItemLabel("redo", 'Redo');
+            }
+            var selection = Browser.window.getSelection();
+            if (!selection.isCollapsed) {
+                items_enabled.push("cut");
+                items_enabled.push("copy");
+                items_enabled.push("delete");
+            }
+            items_enabled.push("selectAll");
+            menu.setEnabledItems(items_enabled);
+
+            if (event.buttons != 0) {
+                if (event.clientY + menu.height > Browser.window.innerHeight) {
+                    menu.top = event.clientY - menu.height - 2;
+                } else {
+                    menu.top = event.clientY + 2;
                 }
-                menu.style.top = menu_top + "px";
-                menu.style.left = menu_left + "px";
-                menu.style.visibility = "visible";
-            }*/
+                if (event.clientX + menu.width > Browser.window.innerWidth) {
+                    menu.left = event.clientX - menu.width - 2;
+                } else {
+                    menu.left = event.clientX + 2;
+                }
+            }
+            menu.visible = true;
+        }
+    }
+
+    function editor_onmenuaction(event)
+    {
+        switch (event.detail.action) {
+        case "undo":
+            edit_area.focus();
+            Browser.window.setTimeout(undo, 0);
+        case "redo":
+            Browser.window.setTimeout(redo, 0);
+        case "cut":
+            Browser.document.execCommand('cut');
+        case "copy":
+            Browser.document.execCommand('copy');
+        case "paste":
+            edit_area.focus();
+            Browser.document.execCommand('paste');
+        case "delete":
+            Browser.window.setTimeout(deleteSelection, 0);
+        case "selectAll":
+            //edit_area.focus();
+            Browser.window.setTimeout(selectAll, 0);
         }
     }
 
     function edit_area_onmousedown(event: MouseEvent)
     {
-        if (menu.style.visibility == "visible") {
+        if (menu._ELEM_.style.visibility == "visible") {
             event.preventDefault();
             if (event.buttons == 1) {
                 event.stopPropagation();
-                menu.style.visibility = "hidden";
+                menu._ELEM_.style.visibility = "hidden";
             }
             edit_area.focus();
         }
@@ -239,6 +313,9 @@ class CodeEditor
             } else if (key == "." || event.key == ">") {
                 event.preventDefault();
                 //Indent.create(this);
+            } else if (key.toLowerCase() == "a") {
+                event.preventDefault();
+                selectAll();
             }
             return;
         }
@@ -372,6 +449,11 @@ class CodeEditor
 
     /* Functions */
 
+    public function getRect(): DOMRect
+    {
+        return editor.getBoundingClientRect();
+    }
+
     public function createElementWithClass(type: String, class_name: String): Element
     {
         var element = Browser.document.createElement(type);
@@ -433,7 +515,7 @@ class CodeEditor
     /*
      * Fill editor with highlighted text.
      */
-    function renderText(?text: String)
+    function renderText(?text: String): Void
     {
         if (text == null) {
             text = getText();
@@ -468,7 +550,7 @@ class CodeEditor
         //getLineBeginnings();
     }
 
-    public function setEditorRender(selection: Array<Dynamic>)
+    public function setEditorRender(selection: Array<Dynamic>): Void
     {
         Browser.window.setTimeout(editorRender, 0, selection);
     }
@@ -476,7 +558,7 @@ class CodeEditor
     /*
      * Write updated content to editor.
      */
-    public function editorRender(selection: Dynamic)
+    public function editorRender(selection: Dynamic): Void
     {
         renderText();
         setSelection(selection);
@@ -589,7 +671,7 @@ class CodeEditor
         return {text_nodes: text_nodes, line_beginnings: line_beginnings};
     }
 
-    function getTextNodes()
+    function getTextNodes(): Void
     {
         var iterator = Browser.document.createNodeIterator(edit_area, NodeFilter.SHOW_TEXT, null), //, false)
             text_nodes = [],
@@ -600,7 +682,7 @@ class CodeEditor
         }
     }
 
-    public function replaceText(position: Int, length: Int, new_text: String)
+    public function replaceText(position: Int, length: Int, new_text: String): Void
     {
         var where_start = findNodeByPos(position);
         var where_end = length > 0 ? findNodeByPos(position + length) : where_start;
@@ -614,9 +696,9 @@ class CodeEditor
     /*
      * Undo last action
      */
-    function undo()
+    public function undo(): Void
     {
-        if (undo_stack.hasItems()) {
+        if (undo_stack.hasItems) {
             var last_item = undo_stack.pop();
             last_item.undo();
             redo_stack.push(last_item);
@@ -627,29 +709,29 @@ class CodeEditor
     /*
      * Redo last undo
      */
-    function redo()
+    public function redo(): Void
     {
-        if (redo_stack.hasItems()) {
+        if (redo_stack.hasItems) {
             var last_item = redo_stack.pop();
             last_item.redo();
             undo_stack.push(last_item);
         }
     }
 
-    public function undoStackAdd(item: Dynamic)
+    public function undoStackAdd(item: Dynamic): Void
     {
         undo_stack.push(item);
         redo_stack.clear();
     }
 
 
-    function selectAll()
+    /*function selectAll(): Void
     {
         var sel = Browser.window.getSelection();
         sel.selectAllChildren(edit_area);
-    }
+    }*/
 
-    public function getCharPositionsFromRange(range: Range)
+    public function getCharPositionsFromRange(range: Range): {start: Int, end: Int}
     {
         var range_before = createRange(edit_area, 0, range.startContainer, range.startOffset);
         var start_pos = range_before.toString().length;
@@ -662,7 +744,7 @@ class CodeEditor
         return range_before.toString().length;
     }
 
-    public function setCaretPos(pos: Int)
+    public function setCaretPos(pos: Int): Void
     {
         var where = findNodeByPos(pos);
         var sel = Browser.window.getSelection();
@@ -670,7 +752,7 @@ class CodeEditor
         sel.addRange(createRange(where.node, where.offset, where.node, where.offset));
     }
 
-    public function setSelection(spans: Array<Dynamic>)
+    public function setSelection(spans: Array<Dynamic>): Void
     {
         var sel = Browser.window.getSelection();
         sel.removeAllRanges();
@@ -713,8 +795,8 @@ class CodeEditor
     {
         getLineBeginnings();
         var sel = Browser.window.getSelection();
-        var r0: Dynamic = sel.getRangeAt(sel.rangeCount - 1);
-        var sel_start_node: Dynamic = r0.startContainer;
+        var r0: Range = sel.getRangeAt(sel.rangeCount - 1);
+        var sel_start_node: Node = r0.startContainer;
         var sel_start_offset: Int = r0.startOffset;
         var sel_end_node: Dynamic = r0.endContainer,
             sel_end_offset: Int = r0.endOffset;
@@ -730,13 +812,13 @@ class CodeEditor
                 var line_start = line_beginnings[i];
                 if (r0.comparePoint(line_start.node, line_start.offset) == 0) {
                     if (line_start.node.nodeValue.charAt(line_start.offset + 1) != Def.EOL) {
-                        line_start.node.insertData(line_start.offset + 1, Def.TAB);
+                        untyped line_start.node.insertData(line_start.offset + 1, Def.TAB);
                     }
                 }
             }
         }
         //range.comparePoint(node, offset);
-        var sli = first_node_val.slice(0, sel_start_offset);
+        var sli = first_node_val.substring(0, sel_start_offset);
         var pos = sli.lastIndexOf(Def.EOL);
 
         if (pos == -1) {
@@ -752,7 +834,7 @@ class CodeEditor
             } while (current_text_node_num > 0);
         } else {
             if (first_node_val.charAt(pos + 1) != Def.EOL) {
-                sel_start_node.insertData(pos + 1, Def.TAB);
+                untyped sel_start_node.insertData(pos + 1, Def.TAB);
             }
         }
     }
@@ -762,152 +844,37 @@ class CodeEditor
         return text_val.replace(regexp_ins_tab, Def.EOL + Def.TAB);
     }
 
+    function selectAll(): Void
+    {
+        var selection = Browser.window.getSelection();
+        var range = Browser.document.createRange();
+        range.setStart(edit_area, 0);
+        range.setEnd(edit_area, edit_area.childNodes.length - 1);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        edit_area.focus();
+    }
+
+    function deleteSelection(): Void
+    {
+        Delete.create(this);
+    }
 }
 
 /*
-document.onfocus = function() {
+document.onfocus = function () {
     Browser.document.querySelector('html').className = 'focused';
     edit_area.focus();
 };
 
-document.onblur = function() {
+document.onblur = function () {
     Browser.document.querySelector('html').className = null;
     menu.visible = false;
 };
-
-
-
-Object.defineProperty(edit_area, 'html', {
-    set: function(value) {
-        this.innerHTML = value;
-        renderText();
-    }
-});
 */
 
-/*
-var menu_items = menu.getElementsByTagName('button');
-for (let i = 0; i < menu_items.length; i++) {
-    var menu_item = menu_items[i];
-    menu_item.onmousemove = function(event) {
-        if (!this.disabled) {
-            this.focus();
-        }
-    }
-    menu_item.onmouseout = function(event) {
-        menu.focus();
-    }
-    var handler = null;
-    switch (menu_item.name) {
-        case "undo":
-            handler = function() {
-                edit_area.focus();
-                setTimeout(undo, 0);
-            }
-            break;
-        case "redo":
-            handler = function() {
-                setTimeout(redo, 0);
-            }
-            break;
-        case "cut":
-            handler = function() {
-                Browser.document.execCommand('cut');
-            }
-            break;
-        case "copy":
-            handler = function() {
-                Browser.document.execCommand('copy');
-            }
-            break;
-        case "paste":
-            handler = function() {
-                edit_area.focus();
-                return Browser.document.execCommand('paste');
-            }
-            break;
-        case "delete":
-            handler = function() {
-                setTimeout(Delete.create(), 0);
-            }
-            break;
-        case "selectAll":
-            handler = function() {
-                edit_area.focus();
-                Browser.document.execCommand("selectAll");
-            }
-            break;
-    }
-    menu_item.onmousedown = handler;
-    menu_item.onkeydown = function(event) {
-        if (event.keyCode == 13) {
-            this.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
-        }
-    };
-}
 
-Object.defineProperty(menu, 'visible', {
-    get: function() {
-        return (this.style.visibility == "visible");
-    },
-    set: function(value) {
-        if (value === true) {
-            if (this.style.visibility == "hidden") {
-                this.style.visibility = "visible";
-                this.focus();
-                var sel = Browser.window.getSelection();
-                menu_items_enabled = [];
-                var menu_item;
-                for (let i = 0; i < menu_items.length; i++) {
-                    var menu_item: Dynamic = menu_items[i];
-                    var item_enabled = false;
-                    switch (menu_item.name) {
-                        case "undo":
-                            menu_item.textContent = "Undo";
-                            if (undo_stack.hasItems()) {
-                                menu_item.textContent += " " + undo_stack.getLastItem().title;
-                                item_enabled = true;
-                            }
-                            break;
-                        case "redo":
-                            menu_item.textContent = "Redo";
-                            if (redo_stack.hasItems()) {
-                                menu_item.textContent += " " + redo_stack.getLastItem().title;
-                                item_enabled = true;
-                            }
-                            break;
-                        case "cut":
-                            item_enabled = Browser.document.queryCommandSupported("cut") && !sel.isCollapsed;
-                            break;
-                        case "copy":
-                            item_enabled = Browser.document.queryCommandSupported("copy") && !sel.isCollapsed;
-                            break;
-                        case "paste":
-                            item_enabled = true;
-                            //item_enabled = Browser.document.queryCommandSupported("paste");
-                            break;
-                        case "delete":
-                            item_enabled = !sel.isCollapsed;
-                            break;
-                        case "selectAll":
-                            item_enabled = true;
-                            break
-                    }
-                    if (item_enabled) {
-                        menu_items_enabled.push(menu_item);
-                        menu_item.disabled = false;
-                    } else {
-                        menu_item.disabled = true;
-                    }
-                }
-            }
-        } else {
-            this.style.visibility = "hidden";
-            edit_area.focus();
-        }
-    }
-});
-*/
+
 
 
 /*

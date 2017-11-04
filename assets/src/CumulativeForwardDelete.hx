@@ -34,7 +34,7 @@ class CumulativeForwardDelete extends TextAction
             return false;
         }
         var instance: Dynamic = null;
-        if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems()) {
+        if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems) {
             var last_item = editor.undo_stack.getLastItem();
             if (last_item.getName() == "CumulativeForwardDelete") {
                 instance = last_item;

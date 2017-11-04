@@ -84,9 +84,10 @@ div.ps-code-editor {
     overflow: hidden;
     border: 1px solid rgba(0, 0, 0, .25);
     display: block;
+    outline: none;
 }
 
-div.ps-code-editor pre {
+.ps-code-editor pre {
     box-sizing: border-box;
     margin: 0;
     outline: none;
@@ -126,7 +127,61 @@ div.ps-code-editor pre {
 
 .ps-code-editor menu {
     position: absolute;
-    z-index: 10;
+    z-index: 10000009;
+    top: 10px;
+    left: 10px;
+    width: 160px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid #B0B0B0;
+    background-color: white;
+    /*font: menu;*/
+    cursor: default;
+    outline: none;
+    display: block;
+    visibility: hidden;
+}
+
+.ps-code-editor menu hr {
+    margin: 3px;
+    border: none;
+    height: 1px;
+    background-color: #D0D0D0;
+}
+
+.ps-code-editor menu button {
+    margin: 0;
+    width: 100%;
+    height: auto;
+    border: none;
+    padding: .15em;
+    line-height: 130%;
+    background-color: white;
+    color: #282828;
+    text-align: left;
+    cursor: default;
+}
+    
+.ps-code-editor menu button:focus {
+    background-color: #888;
+    color: white;
+    border: none;
+    outline: none;
+}
+
+.ps-code-editor menu button:active {
+    background-color: #888;
+    color: white;
+}
+
+.ps-code-editor menu button:disabled {
+    background-color: white;
+    color: #909090;
+}
+
+/*#editor-menu {
+    position: absolute;
+    z-index: 10000009;
     top: 2px;
     left: 2px;
     width: 160px;
@@ -137,38 +192,22 @@ div.ps-code-editor pre {
     font: menu;
     cursor: default;
     outline: none;
-    display: none; /*block;
-    visibility: hidden;*/
+    display: block;
+    visibility: hidden;
 }
 
-#menu hr {
+#editor-menu hr {
     margin: 3px;
     border: none;
     height: 1px;
     background-color: #D0D0D0;
 }
 
-#menu button {
-    width: 100%;
-    height: auto;
-    border: none;
-    padding: .15em;
-    line-height: 130%;
-    background-color: white;
-    color: #282828;
-    text-align: left;
-}
-
-#menu button:focus {
+#editor-menu button:focus {
     background-color: #3070F0;
     color: white;
 }
-
-#menu button:disabled {
-    background-color: white;
-    color: #909090;
-}
-
+*/
 button::-moz-focus-inner {
     border: 0;
 }

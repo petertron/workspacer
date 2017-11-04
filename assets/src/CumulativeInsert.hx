@@ -20,7 +20,7 @@ class CumulativeInsert extends TextAction
     {
         var instance: CumulativeInsert = null;
         //alert(timeout.hasExpired() + " ... " + undo_stack.hasItems());
-        if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems()) {
+        if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems) {
             var last_item: TextAction = editor.undo_stack.getLastItem();
             /*if (cast(last_item, TextAction).getName() == "CumulativeInsert") {
                 instance = cast(last_item, CumulativeInsert);
