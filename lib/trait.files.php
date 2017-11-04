@@ -79,7 +79,6 @@ trait Files
             $output[] = array('path' => trim($dir_path, '/'));
         }
         return $output;
-        //return array_map(function($value) {return trim($value, '/');}, $dir_list);
     }
     
     function getNumFilesInDirectory($file_path)
