@@ -1,5 +1,7 @@
+package ws.editorpart;
+
 import js.Browser;
-import Def;
+import ws.Def;
 
 using Type;
 

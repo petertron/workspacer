@@ -1,2 +1,4 @@
--js ../code-editor.js
--main CodeEditor
+-js ../workspacer.js
+-lib jQueryExtern
+-lib tamina
+-main Workspacer

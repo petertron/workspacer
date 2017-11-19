@@ -1,3 +1,5 @@
+package ws.editorpart;
+
 import js.html.Node;
 
 class Def

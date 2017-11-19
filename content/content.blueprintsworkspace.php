@@ -21,13 +21,15 @@ class contentBlueprintsWorkspace extends AdministrationPage
     {
         $this->addStylesheetToHead(WS\ASSETS_URL . '/workspace.css');
         $this->addStylesheetToHead(WS\ASSETS_URL . '/editor.css');
-        $this->addScriptToHead(WS\ASSETS_URL . '/jsrender.min.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/x-tag+polyfills.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/code-editor.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/highlighters.js.php');
-        $this->addScriptToHead(WS\ASSETS_URL . '/workspace.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/dir-box.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/editor-box.js');
+        $this->addScriptToHead(WS\ASSETS_URL . '/CustomElements.min.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/webcomponents-lite.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/jsrender.min.js');
+        $this->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/code-editor.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/highlighters.js.php');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/workspace.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/dir-box.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/editor-box.js');
         $this->Head->appendChild(
             new XMLElement(
                 'script', json_encode($this->settings),
@@ -69,26 +71,26 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 array(
                     'class' => 'button split-view',
                     'name' => 'close-right',
-                    'title' => __('Clode right directory'),
+                    'title' => __('Close right directory'),
                     'style' => 'display: none'
                 )
             )
         );
 
         $div = new XMLElement('div', null, array('id' => 'directories-wrapper'));
-        $div->appendChild(
+        /*$div->appendChild(
             new XMLElement(
-                'dir-box',
+                'html-view-directorybox',
                 null,
-                array('class' => 'column', 'data-dir-num' => '0', 'active' => 'true')
+                array('id' => '_dir_box_0', 'class' => 'column', 'data-dir-num' => '0', 'active' => 'true')
             )
         );
         $div->appendChild(
             new XMLElement(
-                'dir-box',
+                'html-view-directorybox',
                 null,
-                array('class' => 'column', 'data-dir-num' => '1', 'active' => 'false'))
-        );
+                array('id' => '_dir_box_1', 'class' => 'column', 'data-dir-num' => '1', 'active' => 'false'))
+        );*/
         $this->Form->appendChild($div);
 
         $version = new XMLElement('p', 'Symphony ' . Symphony::Configuration()->get('version', 'symphony'), array('id' => 'version'));
@@ -112,7 +114,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
 
         // Editor box
         $this->Wrapper->appendChild(new XMLElement('div', null, array('id' => 'mask')));
-        $editor_container = new XMLElement('editor-box', null, array('id' => 'editor-container'));
+        /*$editor_container = new XMLElement('editor-box', null, array('id' => 'editor-container'));
         $top_panel = new XMLELement('header', null, array('class' => 'top-panel'));
         $top_panel->appendChild(new XMLElement('p'));
         $top_panel->appendChild(new XMLElement(
@@ -124,7 +126,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
 
         $actions = new XMLElement('footer');
         $editor_container->appendChild($actions);
-        /*
+
         $actions->appendChild(
             new XMLELement(
                 'button',
@@ -162,7 +164,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 array('name' => 'save', 'type' => 'button', 'class' => 'button edit', 'id' => 'save-changes')//, 'accesskey' => 's')
             )
         );
-*/
+
         $template = new XMLElement(
             'template',
             null,
@@ -216,16 +218,16 @@ class contentBlueprintsWorkspace extends AdministrationPage
         $editor_container->appendChild($template);
 
         $this->Contents->appendChild($editor_container);
-
-        ob_start();
-        /*require WS\EXTENSION . '/templates/actions.php';
+*/
+        /*ob_start();
+        require WS\EXTENSION . '/templates/actions.php';
         $this->Body->appendChild(
             new XMLElement(
                 'script', ob_get_contents(), array('type' => 'x-jsrender', 'id' => 'actions')
             )
         );
         ob_clean();*/
-        require EXTENSIONS . '/workspacer/templates/template-select.php';
+        /*require EXTENSIONS . '/workspacer/templates/template-select.php';
         $this->Body->appendChild(
             new XMLElement(
                 'script', ob_get_contents(), array('type' => 'x-jsrender', 'id' => 'template_select')
@@ -239,7 +241,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
             )
         );
         ob_end_clean();
-
+*/
         $this->Body->appendChild(
             new XMLElement('script', json_encode($this->getRecursiveDirList()), array('id' => 'directories'))
         );
@@ -248,6 +250,8 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 'script', json_encode($this->getDirectoryEntries()), array('id' => 'files')
             )
         );
+        $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/workspacer.js']));
+        $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/highlighters/highlight-xsl.js']));
     }
 
     public function __actionIndex()

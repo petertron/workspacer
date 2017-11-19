@@ -1,3 +1,5 @@
+package ws.editorpart;
+
 class Timeout
 {
     static var period: Float = 30000;

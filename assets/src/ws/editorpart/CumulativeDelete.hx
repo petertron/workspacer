@@ -1,52 +1,50 @@
+package ws.editorpart;
+
 import js.Browser;
-import Def;
+import ws.Def;
 
 using Type;
 
-class CumulativeForwardDelete extends TextAction
+class CumulativeDelete extends TextAction
 {
-    public var position: Int;
-    public var removed_text: String = "";
+//    var title: String;
+    var position: Int;
+    var removed_text: String = "";
 
     public function new(editor: CodeEditor, ?title: String)
     {
         super(editor, (title != null) ? title : "delete");
-        /*let current_range = getCurrentSelectionRange();
-        this.position = getCharPosFromRangeStart(current_range);
-        this.removed_text = current_range.toString();*/
     }
 
     public static function create(editor: CodeEditor, ?title: String): Bool
     {
         var sel = Browser.window.getSelection();
-        if (!sel.isCollapsed) {
+        if (sel.isCollapsed == false) {
             return false;
         }
-        var current_node = sel.anchorNode;
-        //alert(text_nodes.indexOf(current_node));
         var current_range = editor.getCurrentSelectionRange();
         var range_before_selection = Browser.document.createRange();
         range_before_selection.setStart(editor.edit_area, 0);
         range_before_selection.setEnd(current_range.startContainer, current_range.startOffset);
         var text_before_caret = range_before_selection.toString();
         var pos = text_before_caret.length;
-        if (pos == editor.edit_area.textContent.length) {
+        if (pos == 0) {
             return false;
         }
         var instance: Dynamic = null;
         if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems) {
             var last_item = editor.undo_stack.getLastItem();
-            if (last_item.getName() == "CumulativeForwardDelete") {
+            if (last_item.getName() == "CumulativeDelete") {
                 instance = last_item;
             }
         }
         if (!instance) {
-            instance = new CumulativeForwardDelete(editor, title);
-            instance.position = pos;
+            instance = new CumulativeDelete(editor, title);
             editor.undoStackAdd(instance);
         }
-        instance.removed_text += sel.anchorNode.nodeValue.substr(sel.anchorOffset, 1);
-        Browser.document.execCommand("forwardDelete");
+        instance.position = pos - 1;
+        instance.removed_text = text_before_caret.substr(-1) + instance.removed_text;
+        Browser.document.execCommand('delete');
         editor.setEditorRender([{start: instance.position, end: null}]);
         return true;
     }
@@ -54,7 +52,7 @@ class CumulativeForwardDelete extends TextAction
     public override function undo()
     {
         editor.replaceText(this.position, 0, this.removed_text);
-        editor.setEditorRender([{start: this.position, end: null}]);
+        editor.setEditorRender([{start: this.position + this.removed_text.length, end: null}]);
     }
 
     public override function redo()

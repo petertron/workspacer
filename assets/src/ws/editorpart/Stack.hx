@@ -1,8 +1,12 @@
+package ws.editorpart;
+
 class Stack
 {
     var stack: Array<Dynamic> = [];
 
     public function new() {}
+
+    // Accessors
 
     /*
      * Has items.

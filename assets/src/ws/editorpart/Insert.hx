@@ -1,7 +1,9 @@
+package ws.editorpart;
+
 import js.Browser;
 import js.html.*;
 
-import Def;
+import ws.Def;
 
 class Insert extends TextAction
 {

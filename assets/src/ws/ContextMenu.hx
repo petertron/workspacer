@@ -1,19 +1,24 @@
+package ws;
+
 import js.Lib;
 import js.Browser;
 import js.html.*;
 
-import CodeEditor;
-import Def;
+import ws.CodeEditor;
+import ws.Def;
 
-class ContextMenu
+import haxe.Template;
+import org.tamina.html.component.HTMLComponent;
+
+@:expose
+@view('ws/ContextMenu.html')
+class ContextMenu extends HTMLComponent
 {
-    public var _ELEM_ = Browser.document.createMenuElement();
-
     var editor: CodeEditor;
 
-    var menu_items: Array<ButtonElement> = [];
+    var menu_items: Array<ButtonElement>;
     //var menu_items_enabled: Array<ButtonElement> = [];
-    var menu_items_enabled: Array<Element> = [];
+    var menu_items_enabled: Array<Element>;
 
     static var KEY = {
         UP_ARROW: 38,
@@ -25,22 +30,22 @@ class ContextMenu
     /*
      * Visibility.
      */
-    public var visible(get, set): Bool;
+    public var open(get, set): Bool;
     
-    function get_visible(): Bool
+    function get_open(): Bool
     {
-        return (_ELEM_.style.visibility == "visible") ? true : false;
+        return this.visible;
     }
 
-    function set_visible(value: Bool): Bool
+    function set_open(isTrue: Bool): Bool
     {
-        if (value) {
-            _ELEM_.style.visibility = "visible";
-            _ELEM_.focus();
+        if (isTrue) {
+            this.visible = true;
+            this.focus();
         } else {
-            _ELEM_.style.visibility = "hidden";
+            this.visible = false;
         }
-        return value;
+        return isTrue;
     }
 
     // Rectange
@@ -49,7 +54,7 @@ class ContextMenu
 
     function get_rect(): DOMRect
     {
-        return _ELEM_.getBoundingClientRect();
+        return this.getBoundingClientRect();
     }
 
     /*
@@ -59,7 +64,7 @@ class ContextMenu
 
     function get_width(): Float
     {
-        return _ELEM_.clientWidth;
+        return this.clientWidth;
     }
 
     /*
@@ -69,7 +74,7 @@ class ContextMenu
 
     function get_height(): Float
     {
-        return _ELEM_.clientHeight;
+        return this.clientHeight;
     }
 
     /*
@@ -79,13 +84,14 @@ class ContextMenu
 
     function get_top(): Float
     {
-        return _ELEM_.getBoundingClientRect().top;
+        return this.getBoundingClientRect().top;
     }
 
     function set_top(value: Float): Float
     {
-        var rect = editor.getRect();
-        _ELEM_.style.top = Std.string(value - rect.top) + "px";
+        //var rect = editor.getRect();
+        //this.style.top = Std.string(value - rect.top) + "px";
+        this.style.top = Std.string(value) + "px";
         return value;
     }
 
@@ -96,36 +102,41 @@ class ContextMenu
 
     function get_left(): Float
     {
-        return _ELEM_.getBoundingClientRect().left;
+        return this.getBoundingClientRect().left;
     }
 
     function set_left(value: Float): Float
     {
-        var rect = editor.getRect();
-        _ELEM_.style.left = Std.string(value - rect.left) + "px";
+        this.style.left = Std.string(value) + "px";
+        //this.style.left = Std.string(value - rect.left) + "px";
         return value;
     }
-
-    // Methods
 
     /*
      * New.
      */
-    public function new(editor: CodeEditor)
+    public function new()
     {
-        this.editor = editor;
-        //_ELEM_.setAttribute('id', "editor-menu");
-        _ELEM_.setAttribute('tabindex', "0");
-        //_ELEM_.onfocus = function () {Browser.alert("focus");}
-        _ELEM_.onmousedown = function () {
-            this.visible = false;
+        super();
+    }
+
+    // Lifecycle
+
+    override public function createdCallback()
+    {
+        this.setAttribute('tabindex', "0");
+        menu_items = [];
+        menu_items_enabled = [];
+        //this.onfocus = function () {Browser.alert("focus");}
+        this.onmousedown = function () {
+            this.open = false;
         }
-        _ELEM_.onkeydown = function (event: KeyboardEvent) {
+        this.onkeydown = function (event: KeyboardEvent) {
             var key: Int = event.keyCode;
             if (menu_items_enabled.length == 0 || (key != KEY.UP_ARROW && key != KEY.DOWN_ARROW)) {
                 return;
             }
-            var current_button = _ELEM_.querySelector('button:focus');
+            var current_button = this.querySelector('button:focus');
             if (current_button == null) {
                 if (key == KEY.DOWN_ARROW) {
                     menu_items_enabled[0].focus();
@@ -144,12 +155,16 @@ class ContextMenu
         }
     }
 
+    // Methods
+
+    /*
+     * Add menu item
+     */
     public function addItem(name: String, label: String): Void
     {
         var button: ButtonElement = Browser.document.createButtonElement();
         button.name = name;
         button.textContent = label;
-        //button.onmousemove = function (event: MouseEvent) {
         button.onmousemove = function (event: MouseEvent) {
             var button = cast(event.target, ButtonElement);
             if (!button.disabled) {
@@ -158,35 +173,34 @@ class ContextMenu
         }
         button.onmouseout = function (event: MouseEvent) {
             var button = cast(event.target, ButtonElement);
-            //button.blur();
-            _ELEM_.focus();
+            this.focus();
         }
-        button.onmousedown = function (event) {
+        button.onmousedown = function (event: MouseEvent) {
             var button = cast(event.target, ButtonElement);
             if (button.disabled) {
                 event.stopPropagation();
             } else {
-                button.parentElement.dispatchEvent(new CustomEvent('menu_action', {bubbles: true, detail: {action: button.name}}));
+                this.dispatchEvent(new CustomEvent('menu_action', {bubbles: true, detail: {action: button.name}}));
                 //this.visible = false;
             }
         }
-        button.onkeydown = function (event) {
+        button.onkeydown = function (event: KeyboardEvent) {
             if (event.keyCode == 13) {
                 event.target.dispatchEvent(new MouseEvent('mousedown', {bubbles: true}));
             }
         };
-        _ELEM_.appendChild(button);
+        this.appendChild(button);
         menu_items.push(button);
     }
 
     public function setItemLabel(name: String, label: String): Void
     {
-        _ELEM_.querySelector('button[name="$name"]').textContent = label;
+        this.querySelector('button[name="$name"]').textContent = label;
     }
 
     public function setEnabledItems(enabled_items: Array<String>): Void
     {
-        //var menu_items = _ELEM_.getElementsByTagName('button');
+        //var menu_items = this.getElementsByTagName('button');
         menu_items_enabled = [];
         for (button in menu_items) {
             if (enabled_items.indexOf(button.name) != -1) {

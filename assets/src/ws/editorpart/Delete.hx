@@ -1,3 +1,5 @@
+package ws.editorpart;
+
 import js.Browser;
 import js.html.*;
 

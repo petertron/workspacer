@@ -463,7 +463,7 @@
         }
         return frag_out;
     }
-    CodeEditor.addHighlighter('xsl', {
+    Workspacer.addHighlighter('xsl', {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter

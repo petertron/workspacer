@@ -1,3 +1,5 @@
+package ws.editorpart;
+
 using Type;
 
 class TextAction

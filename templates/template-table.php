@@ -22,4 +22,3 @@
     {{else}}<tr><td class="inactive" colspan="4">None found.</td></tr>
     {{/if}}
 </tbody>
-

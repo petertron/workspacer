@@ -10,7 +10,7 @@
     display: none;
 }
 
-#editor-container {
+ws-editorframe {
     box-sizing: border-box;
     position: fixed;
     z-index: 1000001;
@@ -25,58 +25,72 @@
     display: none;
 }
 
-#editor-container.focus {
+ws-editorframe.focus {
     border-color: rgba(0, 0, 0, .40);
     /*border: 1px solid rgba(0, 0, 0, .40);*/
 }
 
-#editor-container header {
+ws-editorframe header {
     position: relative;
     box-sizing: border-box;
     height: 2.6rem;
     display: block;
 }
 
-#editor-container header p {
+ws-editorframe header p {
     float: left;
 }
 
-#editor-container header button {
+ws-editorframe header button {
     float: right;
 }
 
-#editor-container footer {
+ws-editorframe footer {
     clear: both;
     position: relative;
     box-sizing: border-box;
     height: 2.6rem;
     padding-top: .85rem;
+    display: none;
 }
+
+ws-editorframe.new footer.new {
+    display: block;
+}
+
+ws-editorframe.edit footer.edit {
+    display: block;
+}
+
+ws-editorframe.edit-xsl footer.edit-xsl {
+    display: block;
+}
+
 /*
-#editor-container footer button[name="delete"] {
+ws-editorframe footer button[name="delete"] {
     float: left;
     margin-left: 0;
 }
 */
-#editor-container footer button[name="save-as"] {
+ws-editorframe footer button[name="save-as"] {
     float: left;
     margin-left: 0;
 }
-#editor-container footer button[name="save"],
-#editor-container footer button[name="create"] {
+ws-editorframe footer button[name="save"],
+ws-editorframe footer button[name="create"] {
     float: right;
 }
-#editor-container.edit footer button[name="create"] {
+ws-editorframe.edit footer button[name="create"] {
     float: left;
 }
-#editor-container.new footer button.edit {
+ws-editorframe.new footer button.edit {
     display: none;
 }
-#editor-container.edit footer button.new {
+ws-editorframe.edit footer button.new {
     display: none;
 }
 
-div.ps-code-editor {
+ws-codeeditor {
     clear: both;
     box-sizing: border-box;
     position: relative;
@@ -87,14 +101,14 @@ div.ps-code-editor {
     outline: none;
 }
 
-.ps-code-editor pre {
+ws-codeeditor pre {
     box-sizing: border-box;
     margin: 0;
     outline: none;
     white-space: pre;
 }
 
-.ps-code-editor pre.line-numbers {
+ws-codeeditor pre.line-numbers {
     position: absolute;
     top: 0;
     left: 0;
@@ -110,7 +124,7 @@ div.ps-code-editor {
     user-select: none;
 }
 
-.ps-code-editor pre.edit-area {
+ws-codeeditor pre.edit-area {
     position: absolute;
     top: 0;
     left: 38px;
@@ -125,55 +139,53 @@ div.ps-code-editor {
     caret-color: black;
 }
 
-.ps-code-editor menu {
-    position: absolute;
+ws-contextmenu {
+    position: fixed;
     z-index: 10000009;
     top: 10px;
     left: 10px;
     width: 160px;
     margin: 0;
-    padding: 0;
+    padding: 0.1em;
     border: 1px solid #B0B0B0;
     background-color: white;
-    /*font: menu;*/
     cursor: default;
     outline: none;
+    -moz-appearance: none;
     display: block;
-    visibility: hidden;
 }
 
-.ps-code-editor menu hr {
+ws-contextmenu hr {
     margin: 3px;
     border: none;
     height: 1px;
     background-color: #D0D0D0;
 }
 
-.ps-code-editor menu button {
+ws-contextmenu button {
     margin: 0;
     width: 100%;
     height: auto;
     border: none;
+    border-radius: 0;
     padding: .15em;
     line-height: 130%;
+    background: none;
     background-color: white;
     color: #282828;
     text-align: left;
     cursor: default;
 }
-    
-.ps-code-editor menu button:focus {
+
+ws-contextmenu button:focus {
+    background: none;
     background-color: #888;
     color: white;
     outline: none;
+    display: block;
 }
 
-.ps-code-editor menu button:active {
-    background-color: #888;
-    color: white;
-}
-
-.ps-code-editor menu button:disabled {
+ws-contextmenu button:disabled {
     background-color: white;
     color: #909090;
 }

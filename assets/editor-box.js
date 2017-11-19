@@ -8,10 +8,12 @@ xtag.register('editor-box', {
         created: function () {
             var super_this = this;
             this.code_editor = new CodeEditor(Symphony.Extensions.Workspacer.editor_settings);
-            jQuery(this.code_editor.editor).on('save', function (event) {
+            alert(this.code_editor);
+            //this.code_editor = HTMLComponent.createInstance(CodeEditor);
+            jQuery(this.code_editor).on('save', function (event) {
                 jQuery(super_this).find('button[accesskey="s"]').trigger('click');
             });
-            jQuery(this.code_editor.editor).insertAfter(jQuery(this).find('header'));
+            jQuery(this.code_editor).insertAfter(jQuery(this).find('header'));
         }
     },
     methods: {
@@ -113,7 +115,7 @@ xtag.register('editor-box', {
             case 'save':
                 file_path = WS.filePathFromParts(super_this.dir_path, WS.current_filename);
                 super_this.headerText("Saving " + file_path);
-                //this.code_editor.editor.putFocus();
+                //this.code_editor.putFocus();
                 WS.serverPost(
                     {
                         action: "save",

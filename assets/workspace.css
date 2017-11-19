@@ -84,22 +84,8 @@ a.link {
     font-style: italic;
 }
 
-dir-box .add-box {
+ws-directorybox .add-box {
     display: none;
-}
-
-menu {
-    box-sizing: border-box;
-    position: absolute;
-    z-index: 10;
-    /*right: 1.8rem;
-    top: 3.4rem;*/
-    width: 10.4em;
-    padding: 1px;
-    border: 1px solid #D0D0D0;
-    background-color: white;
-    font-size: 1em;
-    display: table-row;
 }
 
 .dir-controls {
@@ -124,22 +110,6 @@ menu {
     clear: right;
 }
 
-menu button {
-    width: 100%;
-    margin: .4rem 0 0 0;
-    border: none;
-    border-radius: 0;
-    background: none;
-    font-size: 1.05em;
-    text-align: left;
-}
-
-menu button:hover {
-    -moz-appearance: none;
-    background: none;
-    background-color: #888;
-    color: white;
-}
 div#aftb {
 	position: absolute;
 	z-index: 0;
@@ -154,4 +124,8 @@ div#aftb input {
 	border: 0;
 	font-size: 1000px;
 	cursor: pointer;
+}
+
+select option {
+	font: 127.28%/1.35 'Lucida Grande', Leelawadee, Tahoma, Verdana, sans-serif !important;
 }

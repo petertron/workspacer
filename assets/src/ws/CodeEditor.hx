@@ -1,14 +1,19 @@
+package ws;
+
 import js.Lib;
 import js.Browser;
 import js.html.*;
 import haxe.ds.StringMap;
-
-import Def;
-import Stack;
-import Timeout;
-import ContextMenu;
-
 import Reflect;
+
+import org.tamina.html.component.HTMLApplication;
+import org.tamina.html.component.HTMLComponent;
+
+import Workspacer;
+import ws.Def;
+import ws.ContextMenu;
+import ws.editorpart.*;
+
 
 typedef Settings = {
     var font_family: String;
@@ -23,31 +28,31 @@ typedef Highlighter = {
     function highlight(text: String): DocumentFragment;
 }
 
-@:expose
-class CodeEditor
+//@:expose
+@view('ws/CodeEditor.html')
+class CodeEditor extends HTMLComponent
 {
     @:const var x_margin: Int = 3;
     @:const var y_margin: Int = 2;
 
-    public var editor = Browser.document.createDivElement();
-    var line_numbers = Browser.document.createPreElement();
-    public var edit_area = Browser.document.createPreElement();
+    var line_numbers: PreElement;
+    public var edit_area: PreElement;
     var menu: ContextMenu;
 
-    public var timeout = new Timeout();
+    public var timeout: Timeout;
     public var text_nodes: Array<Dynamic>;
 
-    public var undo_stack = new Stack();
-    public var redo_stack = new Stack();
+    public var undo_stack: Stack;
+    public var redo_stack: Stack;
 
-    static var highlighters = new StringMap();
+    static var highlighters: StringMap<Any>;
     var highlighter: Highlighter = null;
-    public static var highlighter_styles = Browser.document.createStyleElement();
+    public static var highlighter_styles: StyleElement;
 
-    public var line_beginnings = [];
+    public var line_beginnings: Array<Any> = [];
     var menu_items_enabled: Array<Dynamic>;
 
-    private var settings = {
+    public var settings = {
         font_family: "8.4pt Monaco",
         font_size: "8.4pt",
         line_height: "138%",
@@ -59,9 +64,12 @@ class CodeEditor
 
     var filename: String;
 
-    static function main() {}
-
     public function new(settings: Settings)
+    {
+        super();
+    }
+
+    /*public function addSettings(settings: Settings)
     {
         var value: Dynamic;
         for (name in Reflect.fields(this.settings)) {
@@ -72,16 +80,24 @@ class CodeEditor
                 }
             }
         }
-        line_numbers.className = "line-numbers";
-        line_numbers.style.fontFamily = this.settings.font_family + ", monospace";
-        line_numbers.style.fontSize = this.settings.font_size;
-        line_numbers.style.lineHeight = this.settings.line_height;
-        line_numbers.addEventListener('mousedown', function (event) {
+    }*/
+
+    // Lifecycle
+
+    override public function createdCallback(): Void
+    {
+        this.innerHTML = getContent();
+        highlighter_styles = cast(this.querySelector('style'));
+        line_numbers = cast(this.querySelector('pre.line-numbers'));
+        edit_area = cast(this.querySelector('pre.edit-area'));
+        //menu = cast(this.querySelector('ws-contextmenu'));
+
+        //line_numbers.style.fontFamily = settings.font_family + ", monospace";
+        line_numbers.addEventListener('mousedown', function (event: MouseEvent) {
             event.preventDefault();
             edit_area.focus();
         });
 
-        edit_area.className = "edit-area";
         edit_area.setAttribute("contenteditable", "true");
         edit_area.onscroll = function (event) {
             line_numbers.style.top = -edit_area.scrollTop + "px";
@@ -94,36 +110,55 @@ class CodeEditor
         edit_area.addEventListener('keyup', edit_area_onkeyup);
         edit_area.addEventListener('cut', edit_area_oncut);
         edit_area.addEventListener('paste', edit_area_onpaste);
-        edit_area.style.fontFamily = this.settings.font_family + ", monospace";
-        edit_area.style.fontSize = this.settings.font_size;
-        edit_area.style.lineHeight = this.settings.line_height;
-        untyped edit_area.style.tabSize = settings.indentation_width;
-        untyped edit_area.style.MozTabSize = settings.indentation_width;
-        untyped edit_area.style.WebkitTabSize = settings.indentation_width;
-        untyped edit_area.style.MsTabSize = settings.indentation_width;
-
+        //edit_area.style.fontFamily = this.settings.font_family + ", monospace";
         //menu.addEventListener('mousedown', menu_onmousedown);
         //menu.addEventListener('keydown', menu_onkeydown);
 
-        editor.setAttribute('class', "ps-code-editor");
-        editor.setAttribute('tabindex', "0");
-        editor.setAttribute('spellcheck', "false");
-        editor.appendChild(highlighter_styles);
-        editor.appendChild(line_numbers);
-        editor.appendChild(edit_area);
-        this.menu = new ContextMenu(this);
-        this.menu.addItem("undo", "Undo");
-        this.menu.addItem("redo", "Redo");
-        this.menu.addItem("cut", "Cut");
-        this.menu.addItem("copy", "Copy");
-        //this.menu.addItem("paste", "Paste");
-        this.menu.addItem("delete", "Delete");
-        this.menu.addItem("selectAll", "Select all");
-        editor.appendChild(menu._ELEM_);
-        menu._ELEM_.addEventListener('menu_action', editor_onmenuaction);
-        //Browser.document.body.appendChild(menu._ELEM_);
-        editor.addEventListener('keydown', editor_onkeydown);
-        editor.addEventListener('contextmenu', editor_oncontextmenu);
+        this.setAttribute('class', "ps-code-editor");
+        this.setAttribute('tabindex', "0");
+        this.setAttribute('spellcheck', "false");
+
+        menu = HTMLApplication.createInstance(ContextMenu);
+        menu.addItem("undo", "Undo");
+        menu.addItem("redo", "Redo");
+        menu.addItem("cut", "Cut");
+        menu.addItem("copy", "Copy");
+        //menu.addItem("paste", "Paste");
+        menu.addItem("delete", "Delete");
+        menu.addItem("selectAll", "Select all");
+        menu.addEventListener('menu_action', editor_onmenuaction);
+        menu.top = 10;
+        menu.left = 10;
+        menu.visible = false;
+        this.appendChild(menu);
+
+        this.addEventListener('keydown', editor_onkeydown);
+        this.addEventListener('contextmenu', editor_oncontextmenu);
+        
+        undo_stack = new Stack();
+        redo_stack = new Stack();
+        timeout = new Timeout();
+        highlighters = new StringMap();
+    }
+
+    override public function attributeChangedCallback(name: String, old_value: String, new_value: String)
+    {
+        switch (name) {
+            case "font_family":
+                line_numbers.style.fontFamily = new_value;
+                edit_area.style.fontFamily = new_value;
+            case "font_size":
+                line_numbers.style.fontSize = new_value;
+                edit_area.style.fontSize = new_value;
+            case "line_height":
+                line_numbers.style.lineHeight = new_value;
+                edit_area.style.lineHeight = new_value;
+            case "indentation_width":
+                edit_area.style.tabSize = new_value;
+                untyped edit_area.style.MSTabSize = new_value;
+                untyped edit_area.style.MozTabSize = new_value;
+                untyped edit_area.style.WebkitTabSize = new_value;
+        }
     }
 
     // Event handlers.
@@ -139,9 +174,9 @@ class CodeEditor
     function editor_oncontextmenu(event): Void
     {
         event.preventDefault();
-        if (menu.visible) {
+        if (menu.open) {
             if (event.button == 2) {
-                menu.visible = false;
+                menu.open = false;
             }
         } else {
             // Set enabled items.
@@ -179,11 +214,11 @@ class CodeEditor
                     menu.left = event.clientX + 2;
                 }
             }
-            menu.visible = true;
+            menu.open = true;
         }
     }
 
-    function editor_onmenuaction(event)
+    function editor_onmenuaction(event: CustomEvent)
     {
         switch (event.detail.action) {
         case "undo":
@@ -208,11 +243,11 @@ class CodeEditor
 
     function edit_area_onmousedown(event: MouseEvent)
     {
-        if (menu._ELEM_.style.visibility == "visible") {
+        if (menu.visible) {
             event.preventDefault();
             if (event.buttons == 1) {
                 event.stopPropagation();
-                menu._ELEM_.style.visibility = "hidden";
+                menu.visible = false;
             }
             edit_area.focus();
         }
@@ -233,7 +268,7 @@ class CodeEditor
             if (event.key == "s") {
                 event.preventDefault();
                 event.stopPropagation();
-                editor.dispatchEvent(new CustomEvent('save', {detail: {text: getText()}}));
+                this.dispatchEvent(new CustomEvent('save', {detail: {text: getText()}}));
             } else if (event.key == "y") {
                 event.preventDefault();
                 redo();
@@ -400,7 +435,8 @@ class CodeEditor
 */
     function menu_onmousedown(event: MouseEvent): Void
     {
-        cast(event.target, Element).style.visibility = "hidden";
+        //cast(event.target, Element).style.visibility = "hidden";
+        menu.open = false;
         edit_area.focus();
     }
 
@@ -410,7 +446,8 @@ class CodeEditor
         var key_code = event.keyCode;
         if (key_code == 27) {
             edit_area.focus();
-            cast(event.target, Element).style.visibility = "hidden";
+            //cast(event.target, Element).style.visibility = "hidden";
+            menu.open = false;
             return;
         }
         if (key_code != 38 && key_code != 40) {
@@ -442,7 +479,7 @@ class CodeEditor
 
     function menu_onfocusout(event)
     {
-        event.target.style.visibility = "hidden";
+        menu.open = false;
         event.preventDefault();
         //event.stopPropagation();
     }
@@ -451,7 +488,7 @@ class CodeEditor
 
     public function getRect(): DOMRect
     {
-        return editor.getBoundingClientRect();
+        return this.getBoundingClientRect();
     }
 
     public function createElementWithClass(type: String, class_name: String): Element
@@ -472,7 +509,7 @@ class CodeEditor
         return (sel.rangeCount > 0) ? sel.getRangeAt(sel.rangeCount - 1) : null;
     }
 
-    public static function addHighlighter(abbrev: String, highlighter: Highlighter): Void
+    public function addHighlighter(abbrev: String, highlighter: Highlighter): Void
     {
         highlighters.set(abbrev, highlighter);
     }
@@ -485,8 +522,8 @@ class CodeEditor
             var dot_pos: Int = filename.lastIndexOf(".");
             if (dot_pos != -1) {
                 var ext: String = filename.substr(dot_pos + 1);
-                if (highlighters.get(ext) != null){
-                    highlighter = highlighters.get(ext);
+                if (Workspacer.highlighters.get(ext) != null) {
+                    highlighter = Workspacer.highlighters.get(ext);
                     highlighter_styles.textContent = highlighter.stylesheet;
                 }
             }
@@ -556,7 +593,7 @@ class CodeEditor
     }
 
     /*
-     * Write updated content to editor.
+     * Write updated content to this.
      */
     public function editorRender(selection: Dynamic): Void
     {
@@ -790,7 +827,7 @@ class CodeEditor
         var start: Int = range_before.toString().length;
         return {start: start, end: start + range.toString().length};
     };
-
+/*
     function indentBlock()
     {
         getLineBeginnings();
@@ -838,7 +875,7 @@ class CodeEditor
             }
         }
     }
-
+*/
     function indent(text_val)
     {
         return text_val.replace(regexp_ins_tab, Def.EOL + Def.TAB);
