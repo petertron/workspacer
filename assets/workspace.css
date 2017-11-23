@@ -72,6 +72,10 @@ textarea[name='directory_names'] {
 	position: relative;
 }
 
+.ws-progress {
+    cursor: progress;
+}
+
 #wrapper[data-dir-num="0"] .for-dir-1 {
     display: none;
 }

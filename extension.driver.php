@@ -111,12 +111,9 @@ Class Extension_Workspacer extends Extension
         if ($driver == "blueprintspages") {
             $o_page->addStylesheetToHead(WS\ASSETS_URL . '/workspace.css');
             $o_page->addStylesheetToHead(WS\ASSETS_URL . '/editor.css');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/x-tag+polyfills.js');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/code-editor.js');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/xsl-editor.js');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/editor-box.js');
+            $o_page->addScriptToHead(WS\ASSETS_URL . '/CustomElements.min.js');
+            //$o_page->addScriptToHead(WS\ASSETS_URL . '/workspacer.js');
             $o_page->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/highlighters/highlight-xsl.js');
             $context = $callback['context'];
             $action = $context[0];
             if ($action == 'edit') {
@@ -169,27 +166,23 @@ Class Extension_Workspacer extends Extension
                     array('type' => 'application/json', 'id' => 'editor-settings')
                 )
             );
-            $o_page->Body->appendChild(new XMLElement('div', null, array('id' => 'mask')));
-            $editor_container = new XMLElement('editor-box', null, array('id' => 'editor-container'));
-            $top_panel = new XMLELement('header', null, array('class' => 'top-panel'));
-            $top_panel->appendChild(new XMLElement('p'));
-            $top_panel->appendChild(new XMLElement(
-                'button',
-                __('Close'),
-                array('name' => 'close', 'type' => 'button')
-            ));
-            $editor_container->appendChild($top_panel);
-
-            $bottom_panel = new XMLElement('footer');
-            $bottom_panel->appendChild(
-                new XMLElement(
-                    'button',
-                    __('Save Changes'),
-                    array('name' => 'save', 'type' => 'button', 'class' => 'button edit', 'accesskey' => 's')
+            $o_page->Contents->appendChild(new XMLElement('div', null, array('id' => 'mask')));
+            $o_page->Contents->appendChild(new XMLElement(
+                'script',
+                null,
+                array(
+                    'type' => 'text/javascript',
+                    'src' => WS\ASSETS_URL . '/workspacer.js',
                 )
-            );
-            $editor_container->appendChild($bottom_panel);
-            $o_page->Body->appendChild($editor_container);
+            ));
+            $o_page->Contents->appendChild(new XMLElement(
+                'script',
+                null,
+                array(
+                    'type' => 'text/javascript',
+                    'src' => WS\ASSETS_URL . '/highlighters/highlight-xsl.js',
+                )
+            ));
         }
     }
 

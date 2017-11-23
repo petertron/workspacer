@@ -159,7 +159,6 @@ class DirectoryBox extends HTMLComponent
     override public function createdCallback(): Void
     {
         super.createdCallback();
-        new JQuery(this).addClass("ws-progress");
         directories = [];
         dir_path = "";
         this.className = "column";

@@ -1,15 +1,7 @@
 <header class="top-panel">
     <p></p>
-    <button name="close" type="button">Close</button>
+    <button name="close" type="button">{{b_close}}</button>
 </header>
-<footer class="new"><button type="button" class="button new" name="create">Create File</button></footer>
-<footer class="edit"><button type="button" name="create" class="button edit" style="margin-left: 0"
->Save as</button><button type="button" class="button" name="save" style="float: right">Save Changes</button></footer>
-<footer class="edit-xsl"><button type="button" class="button" name="create">Save Changes</button></footer>
-<template id="editor-container-footer-0">
-    <button name="create" type="button" class="button new" id="create-file" accesskey="s">Create File</button>
-</template>
-<template id="editor-container-footer-1">
-    <button name="create" type="button" class="button edit" style="margin-left: 0">Save As</button>
-    <button name="save" type="button" class="button edit" accesskey="s" id="save-changes">Save Changes</button>
-</template>
+<footer class="new"><button type="button" class="button new" name="create" accesskey="s">{{b_create_file}}</button></footer>
+<footer class="edit"><button type="button" name="create" class="button edit" style="margin-left: 0" accesskey="s">{{b_save_as}}</button><button type="button" class="button" name="save" style="float: right">{{b_save_changes}}</button></footer>
+<footer class="edit-xsl"><button type="button" class="button" name="create" accesskey="s">{{b_save_changes}}</button></footer>

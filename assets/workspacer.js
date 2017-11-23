@@ -315,7 +315,6 @@ org_tamina_html_component_HTMLApplication.prototype = {
 };
 var Workspacer = $hx_exports["Workspacer"] = function() {
 	this.directories = [];
-	this.dir_boxes = [];
 	org_tamina_html_component_HTMLApplication.call(this);
 	Workspacer.highlighters = new haxe_ds_StringMap();
 };
@@ -328,7 +327,6 @@ Workspacer.main = function() {
 	$(window.document).ready(($_=Workspacer._instance,$bind($_,$_.onPageLoad)));
 };
 Workspacer.onReady = function(event) {
-	Workspacer._instance.loadComponents();
 	Workspacer._instance.setup();
 };
 Workspacer.filePathFromParts = function(dir_path,filename) {
@@ -350,71 +348,80 @@ Workspacer.addHighlighter = function(abbrev,highlighter) {
 };
 Workspacer.__super__ = org_tamina_html_component_HTMLApplication;
 Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototype,{
-	setup: function() {
-		this.directories = JSON.parse($("#directories").text());
-		var wrapper = window.document.getElementById("directories-wrapper");
-		this.dir_boxes[0] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
-		this.dir_boxes[0].className = "column";
-		this.dir_boxes[0].directories = this.directories;
-		this.dir_boxes[0].set_files(JSON.parse($("#files").text()));
-		wrapper.appendChild(this.dir_boxes[0]);
-		this.dir_boxes[1] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
-		this.dir_boxes[1].className = "column";
-		this.dir_boxes[1].directories = this.directories;
-		this.dir_boxes[1].set_visible(false);
-		wrapper.appendChild(this.dir_boxes[1]);
+	get_progress_mode: function() {
+		return window.document.body.style.cursor == "progress";
+	}
+	,set_progress_mode: function(isTrue) {
+		if(isTrue) {
+			window.document.body.style.cursor = "progress";
+		} else {
+			window.document.body.style.cursor = null;
+		}
+		return isTrue;
+	}
+	,setup: function() {
+		if(window.document.body.id == "blueprints-workspace") {
+			var json = JSON.parse($("#workspacer-json").text());
+			org_tamina_i18n_LocalizationManager.get_instance().setTranslations(json.translations);
+			this.main_box = org_tamina_html_component_HTMLApplication.createInstance(ws_MainBox);
+			$("form").prepend(this.main_box);
+			this.main_box.setData(json);
+		}
 		this.editor_frame = org_tamina_html_component_HTMLApplication.createInstance(ws_EditorFrame);
 		this.editor_frame.set_visible(false);
 		$("#contents").append(this.editor_frame);
 	}
 	,onPageLoad: function() {
 		var _gthis = this;
+		$("ul.actions").on("click","button",$bind(this,this.onTopAction));
 		this.elements = Symphony.Elements;
-		$(this.elements.wrapper).find(".split-view").hide();
 		this.elements.body_id = $(this.elements.body).attr("id");
-		this.elements.notifier = $(this.elements.header).find("div.notifier");
-		this.elements.form = $(this.elements.contents).find("form");
-		this.elements.with_selected = $("#with-selected");
-		$(this.dir_boxes).on("openFile",null,function(event,dir_path,filename) {
-			_gthis.editor_frame.set_open(true);
-			_gthis.editor_frame.dir_path = dir_path;
-			_gthis.editor_frame.edit(filename);
-		});
-		$("ul.actions").on("click","button",function(event1) {
-			var target = js_Boot.__cast(event1.target , HTMLButtonElement);
-			var _g = target.name;
-			switch(_g) {
-			case "close-left":
-				$("#directories-wrapper").removeClass("two columns");
-				_gthis.dir_boxes[0].set_dir_path(_gthis.dir_boxes[1].get_dir_path());
-				_gthis.dir_boxes[0].set_files(_gthis.dir_boxes[1].get_files().slice(0));
-				_gthis.dir_boxes[1].set_visible(false);
-				$(_gthis.elements.wrapper).find(".split-view").hide();
-				$(_gthis.elements.wrapper).find(".default-view").show();
-				break;
-			case "close-right":
-				$("#directories-wrapper").removeClass("two columns");
-				_gthis.dir_boxes[1].set_visible(false);
-				$(_gthis.elements.wrapper).find(".split-view").hide();
-				$(_gthis.elements.wrapper).find(".default-view").show();
-				break;
-			case "split-view":
-				$("#directories-wrapper").addClass("two columns");
-				_gthis.dir_boxes[1].set_dir_path(_gthis.dir_boxes[0].get_dir_path());
-				_gthis.dir_boxes[1].set_files(_gthis.dir_boxes[0].get_files().slice(0));
-				_gthis.dir_boxes[1].set_visible(true);
-				$(_gthis.elements.wrapper).find(".default-view").hide();
-				$(_gthis.elements.wrapper).find(".split-view").show();
-				break;
-			}
-		});
-		this.disableWithSelected();
+		if(this.elements.body_id == "blueprints-workspace") {
+			$(this.elements.wrapper).find(".split-view").hide();
+			this.elements.notifier = $(this.elements.header).find("div.notifier");
+			this.elements.form = $(this.elements.contents).find("form");
+			this.elements.with_selected = $("#with-selected");
+			$(this.main_box).on("openFile",null,function(event,dir_path,filename) {
+				_gthis.editor_frame.set_open(true);
+				_gthis.editor_frame.dir_path = dir_path;
+				_gthis.editor_frame.edit(filename);
+			});
+			$(this.elements.form).submit($bind(this,this.formSubmitHandler));
+			this.disableWithSelected();
+		} else if(this.elements.body_id == "blueprints-pages") {
+			$("#wrapper").on("click","a.file",function(event1) {
+				var target = js_Boot.__cast(event1.target , HTMLAnchorElement);
+				_gthis.editor_frame.set_open(true);
+				_gthis.editor_frame.dir_path = "pages";
+				_gthis.editor_frame.edit(target.dataset.href);
+			});
+		}
 		$(window).keydown(function(event2) {
 			if(event2.which == 27) {
 				_gthis.editor_frame.set_open(false);
 			}
 		});
-		$(this.elements.form).submit($bind(this,this.formSubmitHandler));
+	}
+	,onTopAction: function(event) {
+		var target = js_Boot.__cast(event.target , HTMLButtonElement);
+		var _g = target.name;
+		switch(_g) {
+		case "close-left":
+			this.main_box.cmd("close-left");
+			$(this.elements.wrapper).find(".split-view").hide();
+			$(this.elements.wrapper).find(".default-view").show();
+			break;
+		case "close-right":
+			this.main_box.cmd("close-right");
+			$(this.elements.wrapper).find(".split-view").hide();
+			$(this.elements.wrapper).find(".default-view").show();
+			break;
+		case "split-view":
+			this.main_box.cmd("split-view");
+			$(this.elements.wrapper).find(".default-view").hide();
+			$(this.elements.wrapper).find(".split-view").show();
+			break;
+		}
 	}
 	,formSubmitHandler: function(event) {
 		var _gthis = this;
@@ -431,17 +438,7 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 					$(window).scrollTop(0);
 				}
 			}
-			if(data.directories != null) {
-				_gthis.directories = data.directories;
-			}
-			if(data.files != null) {
-				if(data.files[0] != null) {
-					_gthis.dir_boxes[0].set_files(data.files[0]);
-				}
-				if(data.files[1] != null) {
-					_gthis.dir_boxes[1].set_files(data.files[1]);
-				}
-			}
+			_gthis.main_box.setData(data);
 		}).fail(function(jqXHR,textStatus) {
 			js_Browser.alert(textStatus);
 		});
@@ -453,36 +450,32 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 	,serverPost: function(data,func_done,func_error) {
 		var _gthis = this;
 		data.xsrf = Symphony.Utilities.getXSRF();
-		data.dir_paths = this.getDirPaths();
-		$.ajax({ method : "POST", url : Workspacer.ajax_url, data : data, dataType : "json"}).done(function(data1) {
+		data.body_id = this.elements.body_id;
+		if(this.elements.body_id == "blueprints-workspace") {
+			data.dir_paths = this.getDirPaths();
+		}
+		this.set_progress_mode(true);
+		$.ajax({ method : "POST", url : Workspacer.ajax_url, data : data, dataType : "json", timeout : 10000}).done(function(data1) {
 			if(data1.alert_msg != null) {
 				$(_gthis.elements.notifier).trigger("attach.notify",[data1.alert_msg,data1.alert_type]);
 			}
-			if(data1.directories != null) {
-				_gthis.directories = data1.directories;
-			}
-			if(data1.files != null) {
-				_gthis.dir_boxes[0].set_files(data1.files[0]);
-				if(data1.files[1] != null) {
-					_gthis.dir_boxes[1].set_files(data1.files[1]);
-				}
+			if(_gthis.elements.body_id == "blueprints-workspace") {
+				_gthis.main_box.setData(data1);
 			}
 			if(func_done != null) {
 				func_done(data1);
 			}
-		}).fail(function(jqXHR,textStatus) {
-			js_Browser.alert(textStatus);
+		}).fail(function(jqXHR,textStatus,errorThrown) {
+			js_Browser.alert(errorThrown);
+		}).always(function() {
+			_gthis.set_progress_mode(false);
 		});
 	}
 	,getDirPaths: function() {
-		var to_return = [this.dir_boxes[0].get_dir_path()];
-		if(this.dir_boxes[1].get_visible()) {
-			to_return.push(this.dir_boxes[1].get_dir_path());
-		}
-		js_Browser.alert(to_return[0] + " : " + to_return[1]);
-		return to_return;
+		return this.main_box.getDirPaths();
 	}
 	,__class__: Workspacer
+	,__properties__: {set_progress_mode:"set_progress_mode",get_progress_mode:"get_progress_mode"}
 });
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
@@ -1383,7 +1376,7 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 	}
 	,translateContent: function(source) {
 		var content = source;
-		var stringToTranslate = new RegExp("\\{\\{(?!\\}\\})(.+)\\}\\}","gim");
+		var stringToTranslate = new RegExp("\\{\\{([^\\}]+)\\}\\}","gim");
 		var results = [];
 		var result = [];
 		var i = 0;
@@ -2088,6 +2081,7 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 	}
 	,setText: function(text) {
 		if(text == null || text.length == 0) {
+			this.line_numbers.innerHTML = "1<br>";
 			this.edit_area.innerHTML = "";
 		} else {
 			this.renderText(text);
@@ -2326,6 +2320,11 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 	,deleteSelection: function() {
 		ws_editorpart_Delete.create(this);
 	}
+	,reset: function() {
+		this.undo_stack.clear();
+		this.redo_stack.clear();
+		this.setText(null);
+	}
 	,getView: function() {
 		return "<style class=\"highlighter-styles\"></style>\n<pre class=\"line-numbers\"></pre>\n<pre class=\"edit-area\"></pre>\n\n";
 	}
@@ -2461,8 +2460,7 @@ ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 var ws_Def = function() { };
 $hxClasses["ws.Def"] = ws_Def;
 ws_Def.__name__ = ["ws","Def"];
-var ws_DirectoryBox = $hx_exports["ws"]["DirectoryBox"] = function() {
-	this.directories = [];
+var ws_DirectoryBox = function() {
 	org_tamina_html_component_HTMLComponent.call(this);
 };
 $hxClasses["ws.DirectoryBox"] = ws_DirectoryBox;
@@ -2480,32 +2478,32 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 	}
 	,set_files: function(files) {
 		haxe_Template.globals.current_dir = this.get_dir_path();
-		this.directories_template = new haxe_Template("::foreach directories::\n<option value=\"::path::\"::if (path==current_dir):: selected::end::>::if (title)::::title::::else::::path::::end::</option>\n::end::");
-		var h = this.directories_template.execute({ dir_num : this.dataset.dirNum, directories : this.directories},this);
-		this.querySelector("select").innerHTML = h;
-		this.files_template = new haxe_Template("<thead>\n    <tr>\n        <th scope=\"col\">Name</th>\n        <th scope=\"col\">Description</th>\n        <th scope=\"col\">Size</th>\n        <th scope=\"col\">Last Modified</th>\n    </tr>\n</thead>\n<tbody>\n    ::if files.length::\n    ::foreach files::<tr>\n        <td>\n            <a class=\"::class::\" title=\"::title::\" data-href=\"::href::\" tabindex=\"0\">::name::</a>\n            <label class=\"accessible\" for=\"::href::\">Select File &apos;::name::&apos;</label>\n            <input name=\"sets[::set_num::][items][::name::]\" value=\"yes\" type=\"checkbox\" id=\"::href::\"/>\n        </td>\n        <td>::description::</td>\n        <td>::size::</td>\n        <td>::mtime::</td>\n    </tr>::end::\n    ::else::<tr><td class=\"inactive\" colspan=\"4\">None found.</td></tr>\n    ::end::\n</tbody>");
+		this.directories_template = new haxe_Template("<select name=\"sets[::set_num::][dir_path]\">\n::foreach directories::\n<option value=\"::path::\"::if (path==current_dir):: selected::end::>\n::if (title)::::title::::else::::path::::end::</option>\n::end::\n</select>");
+		var h = this.directories_template.execute({ set_num : this.getAttribute("dir-num"), directories : this.directories},this);
+		this.querySelector("div").innerHTML = h;
+		this.files_template = new haxe_Template("::if files.length::\n::foreach files::<tr>\n    <td>\n        <a class=\"::class::\" title=\"::title::\" data-href=\"::href::\" tabindex=\"0\">::name::</a>\n        <label class=\"accessible\" for=\"::href::\">Select File &apos;::name::&apos;</label>\n        <input name=\"sets[::set_num::][items][::name::]\" value=\"yes\" type=\"checkbox\" id=\"::href::\"/>\n    </td>\n    <td>::description::</td>\n    <td>::size::</td>\n    <td>::mtime::</td>\n</tr>::end::\n::else::<tr><td class=\"inactive\" colspan=\"4\">None found.</td></tr>\n::end::");
 		this._files = files;
 		this.deselect();
-		haxe_Template.globals.set_num = this.dataset.dirNum;
-		var h1 = this.files_template.execute({ set_num : this.dataset.dirNum, files : files},this);
-		this.querySelector("table").innerHTML = h1;
+		haxe_Template.globals.set_num = this.getAttribute("dir-num");
+		var h1 = this.files_template.execute({ files : files},this);
+		this.querySelector("tbody").innerHTML = h1;
 		return this._files;
 	}
 	,createdCallback: function() {
+		org_tamina_html_component_HTMLComponent.prototype.createdCallback.call(this);
+		$(this).addClass("ws-progress");
+		this.directories = [];
 		this.set_dir_path("");
-		this.innerHTML = this.getView();
+		this.className = "column";
 	}
 	,attachedCallback: function() {
-		this._directory_list = js_Boot.__cast(this.querySelector("select") , HTMLSelectElement);
-		this._file_list = js_Boot.__cast(this.querySelector("table") , HTMLTableElement);
+		org_tamina_html_component_HTMLComponent.prototype.attachedCallback.call(this);
 		$(this).on("click","button",$bind(this,this.onButtonClick));
 		$(this).on("change","select",$bind(this,this.onSelectChange));
 		$(this).on("click","a.dir",$bind(this,this.onDirectoryAnchorClick));
 		$(this).on("keypress","a.dir",$bind(this,this.onDirectoryAnchorKeyPress));
 		$(this).on("click","a.file",$bind(this,this.onFileAnchorClick));
 		$(this).on("keypress","a.file",$bind(this,this.onFileAnchorKeyPress));
-	}
-	,render: function() {
 	}
 	,hideAddBox: function() {
 		$(this).find("div.add-box").hide();
@@ -2580,7 +2578,7 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 		}
 	}
 	,getView: function() {
-		return "<fieldset class=\"dir-controls\">\n    <select data-id=\"_directory_list\" name=\"sets[::set_num::][dir_path]\"></select>\n    <button type=\"button\" name=\"new\" class=\"button add\">+</button>\n</fieldset>\n<div class=\"dir-controls add-box\">\n<button class=\"button\" type=\"button\" name=\"new_file\">New file</button>\n<button class=\"button\" type=\"button\" name=\"new_dirs\">{{New directories}}</button>\n</div>\n<div class=\"dir-controls add-dirs-box\" style=\"display: none\">\n<label>New Directories<i>Put each name on a separate line</i><textarea name=\"dir_names\"></textarea></label> <button class=\"button\" type=\"button\" name=\"create_dirs\">Create</button>\n<button class=\"button\" type=\"button\" name=\"cancel_dirs\">Cancel</button>\n</div><table data-id=\"_file_list\" class=\"selectable\" data-interactive=\"interactive\"></table>\n";
+		return "<fieldset class=\"dir-controls\">\n    <div data-id=\"_directory_list\"></div>\n    <button type=\"button\" name=\"new\" class=\"button add\">+</button>\n</fieldset>\n<div class=\"dir-controls add-box\">\n<button class=\"button\" type=\"button\" name=\"new_file\">{{b_new_file}}</button>\n<button class=\"button\" type=\"button\" name=\"new_dirs\">{{b_new_directories}}</button>\n</div>\n<div class=\"dir-controls add-dirs-box\" style=\"display: none\">\n<label>{{l_new_directories}}<i>{{i_new_directories}}</i><textarea name=\"dir_names\"></textarea></label> <button class=\"button\" type=\"button\" name=\"create_dirs\">{{b_create}}</button>\n<button class=\"button\" type=\"button\" name=\"cancel_dirs\">Cancel</button>\n</div>\n<table data-id=\"_file_list\" class=\"selectable\" data-interactive=\"interactive\">\n<thead><th>{{h_name}}</th><th>{{h_description}}</th><th>{{h_size}}</th><th>{{h_last_modified}}</th></thead>\n<tbody></tbody>\n</table>\n";
 	}
 	,__class__: ws_DirectoryBox
 	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_files:"set_files",get_files:"get_files",set_dir_path:"set_dir_path",get_dir_path:"get_dir_path"})
@@ -2618,6 +2616,7 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 			window.getSelection().removeAllRanges();
 			this.set_visible(true);
 			$("#mask").show();
+			this.code_editor.reset();
 		} else {
 			this.set_visible(false);
 			$("#mask").hide();
@@ -2625,7 +2624,7 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		return isTrue;
 	}
 	,set_headerText: function(text) {
-		$(this).find("header p").text(text);
+		$(this).find("header p").text(this.translateContent(text));
 		return text;
 	}
 	,getFilePath: function(filename) {
@@ -2635,25 +2634,25 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		var _gthis = this;
 		if(filename != null) {
 			this.potential_filename = filename;
-			this.set_headerText("Loading " + this.getFilePath(filename));
+			this.set_headerText("{{t_loading}} " + this.getFilePath(filename));
 			this.className = "edit";
 			this.code_editor.setText("");
 			$.ajax({ method : "GET", url : Workspacer.ajax_url, data : { action : "load", file_path : this.getFilePath(filename)}, dataType : "json"}).done(function(data) {
 				_gthis.current_filename = _gthis.potential_filename;
 				_gthis.code_editor.setFilename(_gthis.current_filename);
 				_gthis.code_editor.setText(data.text);
-				var tmp = "Editing " + _gthis.getFilePath(_gthis.current_filename);
+				var tmp = "{{t_editing}} " + _gthis.getFilePath(_gthis.current_filename);
 				_gthis.set_headerText(tmp);
 			}).fail(function(jqXHR,textStatus) {
-				var tmp1 = "Failed to load " + _gthis.getFilePath(_gthis.potential_filename);
+				var tmp1 = "{{t_failed_to_load}} " + _gthis.getFilePath(_gthis.potential_filename);
 				_gthis.set_headerText(tmp1);
 				window.console.log(textStatus);
 			});
 		} else {
-			this.set_headerText("New file");
+			this.set_headerText("{{t_new_file}}");
 			this.className = "new";
+			this.code_editor.reset();
 			this.code_editor.setFilename(null);
-			this.code_editor.setText("");
 		}
 	}
 	,onButtonClick: function(event) {
@@ -2666,39 +2665,112 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 			this.set_open(false);
 			break;
 		case "create":
-			var potential_filename = window.prompt("File name");
+			var potential_filename = window.prompt(this.getTranslation("t_file_name"));
 			if(potential_filename != null) {
 				file_path = Workspacer.filePathFromParts(this.dir_path,potential_filename);
-				this.set_headerText("Creating file " + file_path);
+				this.set_headerText("{{t_creating_file}} " + file_path);
 				Workspacer.S_serverPost({ action : "create", file_path : file_path, text : this.code_editor.getText()},function(data) {
 					if(data.alert_msg == null) {
 						_gthis.current_filename = potential_filename;
 					}
 					_gthis.className = "edit";
-					var tmp = "Editing " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
+					var tmp = "{{t_editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
 					_gthis.set_headerText(tmp);
 					_gthis.code_editor.setFilename(_gthis.current_filename);
 				},function() {
-					_gthis.set_headerText(_gthis.current_filename.length > 0 ? _gthis.current_filename : "New file");
+					_gthis.set_headerText(_gthis.current_filename.length > 0 ? _gthis.current_filename : "{{t_new_file}}");
 				});
 			}
 			break;
 		case "save":
 			file_path = Workspacer.filePathFromParts(this.dir_path,this.current_filename);
-			this.set_headerText("Saving " + file_path);
+			this.set_headerText("{{t_saving}} " + file_path);
 			Workspacer.S_serverPost({ action : "save", file_path : file_path, filename : this.current_filename, text : this.code_editor.getText()},function(data1) {
-				var tmp1 = "Editing " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
+				var tmp1 = "{{t_editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
 				_gthis.set_headerText(tmp1);
 				_gthis.code_editor.setFilename(_gthis.current_filename);
 			});
 			break;
 		}
 	}
+	,getTranslation: function(key) {
+		return org_tamina_i18n_LocalizationManager.get_instance().getString(key);
+	}
 	,getView: function() {
-		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">Close</button>\n</header>\n<footer class=\"new\"><button type=\"button\" class=\"button new\" name=\"create\">Create File</button></footer>\n<footer class=\"edit\"><button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\"\n>Save as</button><button type=\"button\" class=\"button\" name=\"save\" style=\"float: right\">Save Changes</button></footer>\n<footer class=\"edit-xsl\"><button type=\"button\" class=\"button\" name=\"create\">Save Changes</button></footer>\n<template id=\"editor-container-footer-0\">\n    <button name=\"create\" type=\"button\" class=\"button new\" id=\"create-file\" accesskey=\"s\">Create File</button>\n</template>\n<template id=\"editor-container-footer-1\">\n    <button name=\"create\" type=\"button\" class=\"button edit\" style=\"margin-left: 0\">Save As</button>\n    <button name=\"save\" type=\"button\" class=\"button edit\" accesskey=\"s\" id=\"save-changes\">Save Changes</button>\n</template>\n";
+		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">{{b_close}}</button>\n</header>\n<footer class=\"new\"><button type=\"button\" class=\"button new\" name=\"create\" accesskey=\"s\">{{b_create_file}}</button></footer>\n<footer class=\"edit\"><button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\" accesskey=\"s\">{{b_save_as}}</button><button type=\"button\" class=\"button\" name=\"save\" style=\"float: right\">{{b_save_changes}}</button></footer>\n<footer class=\"edit-xsl\"><button type=\"button\" class=\"button\" name=\"create\" accesskey=\"s\">{{b_save_changes}}</button></footer>\n";
 	}
 	,__class__: ws_EditorFrame
 	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_headerText:"set_headerText",set_open:"set_open"})
+});
+var ws_MainBox = function() {
+	this.dir_boxes = [];
+	org_tamina_html_component_HTMLComponent.call(this);
+};
+$hxClasses["ws.MainBox"] = ws_MainBox;
+ws_MainBox.__name__ = ["ws","MainBox"];
+ws_MainBox.__super__ = org_tamina_html_component_HTMLComponent;
+ws_MainBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+	createdCallback: function() {
+		org_tamina_html_component_HTMLComponent.prototype.createdCallback.call(this);
+		this.dir_boxes = [];
+		this.dir_boxes[0] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
+		this.dir_boxes[0].setAttribute("dir-num","0");
+		this.appendChild(this.dir_boxes[0]);
+		this.dir_boxes[1] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
+		this.dir_boxes[1].setAttribute("dir-num","1");
+		this.dir_boxes[1].set_visible(false);
+		this.appendChild(this.dir_boxes[1]);
+	}
+	,attachedCallback: function() {
+		var _gthis = this;
+		$(this.dir_boxes).on("openFile",null,function(event,dir_path,filename) {
+			$(_gthis).trigger("openFile",[dir_path,filename]);
+		});
+	}
+	,cmd: function(command) {
+		switch(command) {
+		case "close-left":
+			this.className = null;
+			this.dir_boxes[0].set_dir_path(this.dir_boxes[1].get_dir_path());
+			this.dir_boxes[0].set_files(this.dir_boxes[1].get_files().slice(0));
+			this.dir_boxes[1].set_visible(false);
+			break;
+		case "close-right":
+			this.className = null;
+			this.dir_boxes[1].set_visible(false);
+			break;
+		case "split-view":
+			this.className = "two columns";
+			this.dir_boxes[1].set_dir_path(this.dir_boxes[0].get_dir_path());
+			this.dir_boxes[1].set_files(this.dir_boxes[0].get_files().slice(0));
+			this.dir_boxes[1].set_visible(true);
+			break;
+		}
+	}
+	,getDirPaths: function() {
+		var to_return = [this.dir_boxes[0].get_dir_path()];
+		if(this.dir_boxes[1].get_visible()) {
+			to_return.push(this.dir_boxes[1].get_dir_path());
+		}
+		return to_return;
+	}
+	,setData: function(data) {
+		if(data.directories != null) {
+			this.directories = data.directories;
+			this.dir_boxes[0].directories = this.directories;
+			this.dir_boxes[1].directories = this.directories;
+		}
+		if(data.files != null) {
+			this.dir_boxes[0].set_files(data.files[0]);
+			if(data.files[1] != null) {
+				this.dir_boxes[1].set_files(data.files[1]);
+			}
+		}
+	}
+	,getView: function() {
+		return "";
+	}
+	,__class__: ws_MainBox
 });
 var ws_editorpart_TextAction = function(editor,title) {
 	this.editor = editor;
@@ -3078,6 +3150,22 @@ ws_EditorFrame.__registered = (function($this) {
 			_this.setReserved(key,"ws.EditorFrame");
 		} else {
 			_this.h[key] = "ws.EditorFrame";
+		}
+	}
+	$r = true;
+	return $r;
+}(this));
+ws_MainBox.__meta__ = { obj : { view : ["ws/MainBox.html"]}};
+ws_MainBox.__registered = (function($this) {
+	var $r;
+	{
+		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var key = "ws-mainbox".toLowerCase();
+		var _this = this1;
+		if(__map_reserved[key] != null) {
+			_this.setReserved(key,"ws.MainBox");
+		} else {
+			_this.h[key] = "ws.MainBox";
 		}
 	}
 	$r = true;

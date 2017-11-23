@@ -189,10 +189,12 @@ class contentExtensionWorkspacerAjax
 
     function outputFileLists2()
     {
-        if (is_array($_POST['dir_paths']) && !empty($_POST['dir_paths'])) {
-            $this->_output['files'] = array();
-            foreach ($_POST['dir_paths'] as $index => $dir_path) {
-                $this->_output['files'][$index] = $this->getDirectoryEntries($dir_path);
+        if ($_POST['body_id'] == 'blueprints-workspace') {
+            if (is_array($_POST['dir_paths']) && !empty($_POST['dir_paths'])) {
+                $this->_output['files'] = array();
+                foreach ($_POST['dir_paths'] as $index => $dir_path) {
+                    $this->_output['files'][$index] = $this->getDirectoryEntries($dir_path);
+                }
             }
         }
     }

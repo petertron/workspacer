@@ -6,6 +6,9 @@ import js.jquery.*;
 import haxe.Json;
 import haxe.ds.StringMap;
 import org.tamina.html.component.HTMLApplication;
+import org.tamina.i18n.LocalizationManager;
+import org.tamina.i18n.ITranslation;
+import ws.MainBox;
 import ws.DirectoryBox;
 import ws.EditorFrame;
 
@@ -28,10 +31,34 @@ class Workspacer extends HTMLApplication
 
     public static var ajax_url: String = untyped Symphony.Context.get('symphony') + "/extension/workspacer/ajax/manage/";
     var elements: Dynamic;
-    private var dir_boxes: Array<DirectoryBox> = [];
+    public var main_box: MainBox;
     public var editor_frame: EditorFrame;
     public var directories: Array<Any> = [];
     public static var highlighters: StringMap<Highlighter>;
+
+    // Accessors
+
+    /*
+     * Progress mode determines whether progress cursor is shown
+     */
+    public var progress_mode(get, set): Bool;
+
+    function get_progress_mode(): Bool
+    {
+        return Browser.document.body.style.cursor == "progress";
+    }
+
+    function set_progress_mode(isTrue: Bool): Bool
+    {
+        if (isTrue) {
+            Browser.document.body.style.cursor = "progress";
+        } else {
+            Browser.document.body.style.cursor = null;
+        }
+        return isTrue;
+    }
+
+    // New method
 
     public function new()
     {
@@ -49,25 +76,19 @@ class Workspacer extends HTMLApplication
 
     public static function onReady(event)
     {
-        _instance.loadComponents();
+        //_instance.loadComponents();
         _instance.setup();
     }
 
     function setup(): Void
     {
-        directories = Json.parse(new JQuery('#directories').text());
-        var wrapper = Browser.document.getElementById('directories-wrapper');
-        dir_boxes[0] = HTMLApplication.createInstance(DirectoryBox);
-        dir_boxes[0].className = "column";
-        dir_boxes[0].directories = directories;
-        dir_boxes[0].files = Json.parse(new JQuery('#files').text());
-        wrapper.appendChild(dir_boxes[0]);
-        dir_boxes[1] = HTMLApplication.createInstance(DirectoryBox);
-        dir_boxes[1].className = "column";
-        dir_boxes[1].directories = directories;
-        dir_boxes[1].visible = false;
-        wrapper.appendChild(dir_boxes[1]);
-
+        if (Browser.document.body.id == "blueprints-workspace") {
+            var json = Json.parse(new JQuery('#workspacer-json').text());
+            LocalizationManager.instance.setTranslations(json.translations);
+            main_box = HTMLApplication.createInstance(MainBox);
+            new JQuery('form').prepend(main_box);
+            main_box.setData(json);
+        }
         editor_frame = HTMLApplication.createInstance(EditorFrame);
         editor_frame.visible = false;
         new JQuery('#contents').append(editor_frame);
@@ -75,30 +96,34 @@ class Workspacer extends HTMLApplication
 
     function onPageLoad()
     {
-        elements = untyped Symphony.Elements;
-        new JQuery(elements.wrapper).find('.split-view').hide();
-        elements.body_id = new JQuery(elements.body).attr('id');
-        elements.notifier = new JQuery(elements.header).find('div.notifier');
-        elements.form = new JQuery(elements.contents).find('form');
-        elements.with_selected = new JQuery('#with-selected');
-
-        new JQuery(dir_boxes).on("openFile", function (event: Event, dir_path: String, filename: String) {
-            editor_frame.open = true;
-            editor_frame.dir_path = dir_path;
-            editor_frame.edit(filename);
-        });
-
         new JQuery('ul.actions').on('click', 'button', onTopAction);
-        new JQuery(elements.form).submit(formSubmitHandler);
-
-        //disableWithSelected();
-
+        elements = untyped Symphony.Elements;
+        elements.body_id = new JQuery(elements.body).attr('id');
+        if (elements.body_id == "blueprints-workspace") {
+            new JQuery(elements.wrapper).find('.split-view').hide();
+            elements.notifier = new JQuery(elements.header).find('div.notifier');
+            elements.form = new JQuery(elements.contents).find('form');
+            elements.with_selected = new JQuery('#with-selected');
+            new JQuery(main_box).on('openFile', function (event: Event, dir_path: String, filename: String) {
+                editor_frame.open = true;
+                editor_frame.dir_path = dir_path;
+                editor_frame.edit(filename);
+            });
+            new JQuery(elements.form).submit(formSubmitHandler);
+            disableWithSelected();
+        } else if (elements.body_id == "blueprints-pages") {
+            new JQuery('#wrapper').on('click', 'a.file', function (event: Event) {
+                var target = cast(event.target, AnchorElement);
+                editor_frame.open = true;
+                editor_frame.dir_path = "pages";
+                editor_frame.edit(target.dataset.href);
+            });
+        }
         new JQuery(Browser.window).keydown(function (event: Event) {
             if (event.which == 27) {
                 editor_frame.open = false;
             }
         });
-
     }
 
     // Event handlers
@@ -108,67 +133,48 @@ class Workspacer extends HTMLApplication
         var target = cast(event.target, ButtonElement);
         switch (target.name) {
             case 'split-view':
-                new JQuery('#directories-wrapper').addClass("two columns");
-                dir_boxes[1].dir_path = dir_boxes[0].dir_path;
-                dir_boxes[1].files = dir_boxes[0].files.slice(0);
-                dir_boxes[1].visible = true;
+                main_box.cmd("split-view");
                 new JQuery(elements.wrapper).find('.default-view').hide();
                 new JQuery(elements.wrapper).find('.split-view').show();
             case 'close-left':
-                new JQuery('#directories-wrapper').removeClass("two columns");
-                dir_boxes[0].dir_path = dir_boxes[1].dir_path;
-                dir_boxes[0].files = dir_boxes[1].files.slice(0);
-                dir_boxes[1].visible = false;
+                main_box.cmd("close-left");
                 new JQuery(elements.wrapper).find('.split-view').hide();
                 new JQuery(elements.wrapper).find('.default-view').show();
             case 'close-right':
-                new JQuery('#directories-wrapper').removeClass("two columns");
-                dir_boxes[1].visible = false;
+                main_box.cmd("close-right");
                 new JQuery(elements.wrapper).find('.split-view').hide();
                 new JQuery(elements.wrapper).find('.default-view').show();
 
         }
     }
 
-    function formSubmitHandler(event: Event)
+    function formSubmitHandler(event: Event): Void
     {
         var with_selected = new JQuery(elements.with_selected).val();
         if (with_selected == "download") {
             return;
         }
         event.preventDefault();
-        //alert(new JQuery(elements.form).serialize());
         JQuery.ajax({
             method: 'POST',
             url: ajax_url,
             data: new JQuery(elements.form).serialize(),
             dataType: 'json'
         })
-            .done(function (data) {
-                if (data.alert_msg) {
-                    var msg = untyped data.alert_msg + ' <a class="ignore">' + Symphony.Language.get('Clear?') + '</a>';
-                    new JQuery(elements.notifier).trigger('attach.notify', [msg, data.alert_type]);
-                    if (data.alert_type == "error") {
-                        new JQuery(Browser.window).scrollTop(0);
-                    }
+        .done(function (data) {
+            if (data.alert_msg) {
+                var msg = untyped data.alert_msg + ' <a class="ignore">' + Symphony.Language.get('Clear?') + '</a>';
+                new JQuery(elements.notifier).trigger('attach.notify', [msg, data.alert_type]);
+                if (data.alert_type == "error") {
+                    new JQuery(Browser.window).scrollTop(0);
                 }
-                if (data.directories != null) {
-                    directories = data.directories;
-                }
-                if (data.files != null) {
-                    if (data.files[0] != null) {
-                        dir_boxes[0].files = data.files[0];
-
-                    }
-                    if (data.files[1] != null) {
-                        dir_boxes[1].files = data.files[1];
-                    }
-                }
-            })
-            .fail(function (jqXHR, textStatus) {
-                Browser.alert(textStatus);
-                //func_error()
-            });
+            }
+            main_box.setData(data);
+        })
+        .fail(function (jqXHR, textStatus: String) {
+            Browser.alert(textStatus);
+            //func_error()
+        });
     }
 
     function disableWithSelected() {
@@ -186,36 +192,37 @@ class Workspacer extends HTMLApplication
         _instance.serverPost(data, func_done, func_error);
     }
 
-    function serverPost(data: Dynamic, func_done: Dynamic, ?func_error: Dynamic): Void
+    function serverPost(data: Dynamic, ?func_done: Dynamic, ?func_error: Dynamic): Void
     {
         data.xsrf = untyped Symphony.Utilities.getXSRF();
-        //data.body_id = WS.body_id;
-        data.dir_paths = getDirPaths();
+        data.body_id = elements.body_id;
+        if (elements.body_id == 'blueprints-workspace') {
+            data.dir_paths = getDirPaths();
+        }
+        progress_mode = true;
         JQuery.ajax({
             method: 'POST',
             url: ajax_url,
             data: data,
-            dataType: 'json'
+            dataType: 'json',
+            timeout: 10000
         })
         .done(function (data: ServerReturn) {
             if (data.alert_msg != null) {
                 new JQuery(elements.notifier).trigger('attach.notify', [data.alert_msg, data.alert_type]);
             }
-            if (data.directories != null) {
-                directories = data.directories;
-            }
-            if (data.files != null) {
-                dir_boxes[0].files = data.files[0];
-                if (data.files[1] != null) {
-                    dir_boxes[1].files = data.files[1];
-                }
+            if (elements.body_id == 'blueprints-workspace') {
+                main_box.setData(data);
             }
             if (func_done != null) {
                 func_done(data);
             }
         })
-        .fail(function (jqXHR, textStatus) {
-            Browser.alert(textStatus);
+        .fail(function (jqXHR: JqXHR, textStatus: String, errorThrown: String) {
+            Browser.alert(errorThrown);
+        })
+        .always(function () {
+            progress_mode = false;
         });
     }
 
@@ -226,12 +233,7 @@ class Workspacer extends HTMLApplication
 
     public function getDirPaths(): Array<String>
     {
-        var to_return: Array<String> = [dir_boxes[0].dir_path];
-        if (dir_boxes[1].visible) {
-            to_return.push(dir_boxes[1].dir_path);
-        }
-        Browser.alert(to_return[0] + " : " + to_return[1]);
-        return to_return;
+        return main_box.getDirPaths();
     }
 
     public static function addHighlighter(abbrev: String, highlighter: Highlighter): Void

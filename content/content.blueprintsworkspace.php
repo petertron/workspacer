@@ -25,11 +25,8 @@ class contentBlueprintsWorkspace extends AdministrationPage
         //$this->addScriptToHead(WS\ASSETS_URL . '/webcomponents-lite.js');
         //$this->addScriptToHead(WS\ASSETS_URL . '/jsrender.min.js');
         $this->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/code-editor.js');
         //$this->addScriptToHead(WS\ASSETS_URL . '/highlighters.js.php');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/workspace.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/dir-box.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/editor-box.js');
+        //$this->addScriptToHead(WS\ASSETS_URL . '/workspacer.js');
         $this->Head->appendChild(
             new XMLElement(
                 'script', json_encode($this->settings),
@@ -77,22 +74,23 @@ class contentBlueprintsWorkspace extends AdministrationPage
             )
         );
 
-        $div = new XMLElement('div', null, array('id' => 'directories-wrapper'));
+        //$mb = new XMLELement('ws-mainbox');
+        //$this->Form->appendChild($mb);
         /*$div->appendChild(
             new XMLElement(
-                'html-view-directorybox',
+                'ws-directorybox',
                 null,
-                array('id' => '_dir_box_0', 'class' => 'column', 'data-dir-num' => '0', 'active' => 'true')
+                array('id' => '_dir_box_0', 'class' => 'column', 'dir-num' => '0')
             )
         );
         $div->appendChild(
             new XMLElement(
-                'html-view-directorybox',
+                'ws-directorybox',
                 null,
-                array('id' => '_dir_box_1', 'class' => 'column', 'data-dir-num' => '1', 'active' => 'false'))
-        );*/
+                array('id' => '_dir_box_1', 'class' => 'column', 'dir-num' => '1', 'visible' => ''))
+        );
         $this->Form->appendChild($div);
-
+*/
         $version = new XMLElement('p', 'Symphony ' . Symphony::Configuration()->get('version', 'symphony'), array('id' => 'version'));
         $this->Form->appendChild($version);
 
@@ -112,97 +110,10 @@ class contentBlueprintsWorkspace extends AdministrationPage
             )
         );
 
-        // Editor box
+        // Window mask
         $this->Wrapper->appendChild(new XMLElement('div', null, array('id' => 'mask')));
-        /*$editor_container = new XMLElement('editor-box', null, array('id' => 'editor-container'));
-        $top_panel = new XMLELement('header', null, array('class' => 'top-panel'));
-        $top_panel->appendChild(new XMLElement('p'));
-        $top_panel->appendChild(new XMLElement(
-            'button',
-            __('Close'),
-            array('name' => 'close', 'type' => 'button')
-        ));
-        $editor_container->appendChild($top_panel);
 
-        $actions = new XMLElement('footer');
-        $editor_container->appendChild($actions);
-
-        $actions->appendChild(
-            new XMLELement(
-                'button',
-                __('Delete'),
-                array(
-                    'name' => 'delete',
-                    'type' => 'button',
-                    'class' => 'confirm delete edit',
-                    'title' => 'Delete this file',
-                    'accesskey' => 'd',
-                    'data-message' => 'Are you sure you want to delete this file?'
-                )
-            )
-        );*/
-/*
-        $actions->appendChild(
-            new XMLElement(
-                'button',
-                __('Save As'),
-                array('name' => 'create', 'type' => 'button', 'class' => 'button edit', 'style' => 'margin-left: 0')
-            )
-        );
-        $actions->appendChild(
-            new XMLElement(
-                'button',
-                __('Create File'),
-                array('name' => 'create', 'type' => 'button', 'class' => 'button new', 'id' => 'create-file')//, 'accesskey' => 's')
-            )
-        );
-
-        $actions->appendChild(
-            new XMLElement(
-                'button',
-                __('Save Changes'),
-                array('name' => 'save', 'type' => 'button', 'class' => 'button edit', 'id' => 'save-changes')//, 'accesskey' => 's')
-            )
-        );
-
-        $template = new XMLElement(
-            'template',
-            null,
-            array('id' => 'editor-container-footer-0')
-        );
-        $template->appendChild(
-            new XMLElement(
-                'button',
-                __('Create File'),
-                array(
-                    'name' => 'create',
-                    'type' => 'button',
-                    'class' => 'button new',
-                    'id' => 'create-file',
-                    'accesskey' => 's'
-                )
-            )
-        );
-        $editor_container->appendChild($template);
-
-        $template = new XMLElement(
-            'template',
-            null,
-            array('id' => 'editor-container-footer-1')
-        );
-        $template->appendChild(
-            new XMLElement(
-                'button',
-                __('Save As'),
-                array(
-                    'name' => 'create',
-                    'type' => 'button',
-                    'class' => 'button edit',
-                    'style' => 'margin-left: 0'
-                )
-            )
-        );
-        $template->appendChild(
+/*        $template->appendChild(
             new XMLElement(
                 'button',
                 __('Save Changes'),
@@ -219,35 +130,37 @@ class contentBlueprintsWorkspace extends AdministrationPage
 
         $this->Contents->appendChild($editor_container);
 */
-        /*ob_start();
-        require WS\EXTENSION . '/templates/actions.php';
         $this->Body->appendChild(
             new XMLElement(
-                'script', ob_get_contents(), array('type' => 'x-jsrender', 'id' => 'actions')
-            )
-        );
-        ob_clean();*/
-        /*require EXTENSIONS . '/workspacer/templates/template-select.php';
-        $this->Body->appendChild(
-            new XMLElement(
-                'script', ob_get_contents(), array('type' => 'x-jsrender', 'id' => 'template_select')
-            )
-        );
-        ob_clean();
-        require EXTENSIONS . '/workspacer/templates/template-table.php';
-        $this->Body->appendChild(
-            new XMLElement(
-                'script', ob_get_contents(), array('type' => 'x-jsrender', 'id' => 'template_table')
-            )
-        );
-        ob_end_clean();
-*/
-        $this->Body->appendChild(
-            new XMLElement('script', json_encode($this->getRecursiveDirList()), array('id' => 'directories'))
-        );
-        $this->Body->appendChild(
-            new XMLElement(
-                'script', json_encode($this->getDirectoryEntries()), array('id' => 'files')
+                'script',
+                json_encode(array(
+                    'directories' => $this->getRecursiveDirList(),
+                    'files' => array(0 => $this->getDirectoryEntries()),
+                    'translations' => array(
+                        array('fieldName' => 'h_name', 'value' => __('Name')),
+                        array('fieldName' => 'h_description', 'value' => __('Description')),
+                        array('fieldName' => 'h_size', 'value' => __('Size')),
+                        array('fieldName' => 'h_last_modified', 'value' => __('Last Modified')),
+                        array('fieldName' => 'b_new_file', 'value' => __('New file')),
+                        array('fieldName' => 'b_new_directories', 'value' => __('New directories')),
+                        array('fieldName' => 'b_create', 'value' => __('Create')),                        
+                        array('fieldName' => 'b_cancel', 'value' => __('Cancel')),                        
+                        array('fieldName' => 'l_new_directories', 'value' => __('New directories')),
+                        array('fieldName' => 'i_new_directories', 'value' => __('Put each name on a separate line')),
+                        array('fieldName' => 'b_close', 'value' => __('Close')),
+                        array('fieldName' => 'b_create_file', 'value' => __('Create file')),
+                        array('fieldName' => 'b_save_changes', 'value' => __('Save Changes')),
+                        array('fieldName' => 'b_save_as', 'value' => __('Save As')),
+                        array('fieldName' => 't_new_file', 'value' => __('New file')),
+                        array('fieldName' => 't_loading', 'value' => __('Loading')),
+                        array('fieldName' => 't_failed_to_load', 'value' => __('Failed to load')),
+                        array('fieldName' => 't_creating_file', 'value' => __('Creating file')),
+                        array('fieldName' => 't_editing', 'value' => __('Editing')),
+                        array('fieldName' => 't_saving', 'value' => __('Saving')),
+                        array('fieldName' => 't_file_name', 'value' => __('File name')),
+                    )
+                )),
+                array('type' => 'application/json', 'id' => 'workspacer-json')
             )
         );
         $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/workspacer.js']));

@@ -543,7 +543,8 @@ class CodeEditor extends HTMLComponent
     public function setText(text: String): Void
     {
         if (text == null || text.length == 0) {
-            edit_area.innerHTML = "";
+            line_numbers.innerHTML = '1<br>';
+            edit_area.innerHTML = '';
         } else {
             renderText(text);
         }
@@ -895,6 +896,13 @@ class CodeEditor extends HTMLComponent
     function deleteSelection(): Void
     {
         Delete.create(this);
+    }
+
+    public function reset(): Void
+    {
+        undo_stack.clear();
+        redo_stack.clear();
+        setText(null);
     }
 }
 
