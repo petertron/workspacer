@@ -26,6 +26,11 @@ Workspacer will not work fully on Internet Explorer version 9 or lower.
 
 ## Changes
 
+### Version 0.6.0
+
+* Added editor context menu.
+* Added language translation to editor.
+
 ### Version 0.5.1
 
 Bug-fix.

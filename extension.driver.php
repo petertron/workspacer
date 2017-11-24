@@ -114,6 +114,39 @@ Class Extension_Workspacer extends Extension
             $o_page->addScriptToHead(WS\ASSETS_URL . '/CustomElements.min.js');
             //$o_page->addScriptToHead(WS\ASSETS_URL . '/workspacer.js');
             $o_page->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
+
+            $o_page->Body->appendChild(
+                new XMLElement(
+                    'script',
+                    json_encode(array(
+                        'translations' => array(
+                            array('fieldName' => 'b_close', 'value' => __('Close')),
+                            array('fieldName' => 'b_create_file', 'value' => __('Create file')),
+                            array('fieldName' => 'b_save_changes', 'value' => __('Save Changes')),
+                            array('fieldName' => 'b_save_as', 'value' => __('Save As')),
+                            array('fieldName' => 't_new_file', 'value' => __('New file')),
+                            array('fieldName' => 't_loading', 'value' => __('Loading')),
+                            array('fieldName' => 't_failed_to_load', 'value' => __('Failed to load')),
+                            array('fieldName' => 't_creating_file', 'value' => __('Creating file')),
+                            array('fieldName' => 't_editing', 'value' => __('Editing')),
+                            array('fieldName' => 't_saving', 'value' => __('Saving')),
+                            array('fieldName' => 't_file_name', 'value' => __('File name')),
+                            array('fieldName' => 'm_undo', 'value' => __('Undo')),
+                            array('fieldName' => 'm_redo', 'value' => __('Redo')),
+                            array('fieldName' => 'm_cut', 'value' => __('Cut')),
+                            array('fieldName' => 'm_copy', 'value' => __('Copy')),
+                            array('fieldName' => 'm_delete', 'value' => __('Delete')),
+                            array('fieldName' => 'm_select_all', 'value' => __('Select all')),
+                            array('fieldName' => 'ta_insert', 'value' => __('insert')),
+                            array('fieldName' => 'ta_delete', 'value' => __('delete')),
+                            array('fieldName' => 'ta_cut', 'value' => __('cut')),
+                            array('fieldName' => 'ta_paste', 'value' => __('paste')),
+                        )
+                    )),
+                    array('type' => 'application/json', 'id' => 'workspacer-json')
+                )
+            );
+
             $context = $callback['context'];
             $action = $context[0];
             if ($action == 'edit') {

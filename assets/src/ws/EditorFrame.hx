@@ -6,6 +6,7 @@ import js.jquery.*;
 import js.Lib;
 import haxe.Template;
 import haxe.Json;
+import haxe.ds.StringMap;
 import org.tamina.html.component.HTMLApplication;
 import org.tamina.html.component.HTMLComponent;
 import org.tamina.i18n.LocalizationManager;
@@ -23,6 +24,8 @@ class EditorFrame extends HTMLComponent
     public var current_filename: String;
     private var potential_filename: String;
     public var code_editor: CodeEditor;
+    var button_set: String;
+    var button_sets: StringMap<String>;
 
     // Lifecycle
 
@@ -42,6 +45,10 @@ class EditorFrame extends HTMLComponent
         });
         new JQuery(code_editor).insertAfter(new JQuery(this).find('header'));
         new JQuery(this).on('click', 'button', onButtonClick);
+        button_sets = new StringMap<String>();
+        button_sets.set('new', translateContent('<button type="button" class="button new float-right" name="create" accesskey="s">{{b_create_file}}</button>'));
+        button_sets.set('edit', translateContent('<button type="button" name="create" class="button edit" style="margin-left: 0">{{b_save_as}}</button><button type="button" class="button float-right" name="save" style="float: right" accesskey="s">{{b_save_changes}}</button>'));
+        button_sets.set('edit-xsl', translateContent('<button type="button" class="button edit float-right" name="save" accesskey="s">{{b_save_changes}}</button>'));
     }
 
     // New instance
@@ -52,27 +59,6 @@ class EditorFrame extends HTMLComponent
     }
 
     // Accessors
-
-    /*
-     * Open/close
-     */
-    public var open(never, set): Bool;
-
-    function set_open(isTrue: Bool): Bool
-    {
-        if (isTrue) {
-            // Open editor.
-            Browser.window.getSelection().removeAllRanges();
-            this.visible = true;
-            new JQuery('#mask').show();
-            code_editor.reset();
-        } else {
-            // Close editor.
-            this.visible = false;
-            new JQuery('#mask').hide();
-        }
-        return isTrue;
-    }
 
     /*
      * Header text
@@ -86,6 +72,33 @@ class EditorFrame extends HTMLComponent
     }
 
     // Methods
+
+    /*
+     * Open
+     */
+    public function open(button_set: String): Void
+    {
+        Browser.window.getSelection().removeAllRanges();
+        setButtonSet(button_set);
+        code_editor.reset();
+        new JQuery('#mask').show();
+        this.visible = true;
+    }
+
+    /*
+     * Close
+     */
+    public function close(): Void
+    {
+        this.visible = false;
+        new JQuery('#mask').hide();
+    }
+
+    function setButtonSet(button_set: String): Void
+    {
+        this.button_set = button_set;
+        this.querySelector('footer').innerHTML = button_sets.get(button_set);
+    }
 
     function getFilePath(filename: String): String
     {
@@ -133,7 +146,7 @@ class EditorFrame extends HTMLComponent
         var file_path;
         switch (target.name) {
         case 'close':
-            this.open = false;
+            this.close();
 
         case 'create':
             var potential_filename: String = Browser.window.prompt(getTranslation('t_file_name'));
@@ -150,7 +163,8 @@ class EditorFrame extends HTMLComponent
                         if (data.alert_msg == null) {
                             current_filename = potential_filename;
                         }
-                        this.className = "edit";
+                        //this.className = "edit";
+                        setButtonSet('edit');
                         this.headerText = '{{t_editing}} ' + Workspacer.filePathFromParts(this.dir_path, current_filename);
                         this.code_editor.setFilename(current_filename);
                     },
@@ -177,7 +191,6 @@ class EditorFrame extends HTMLComponent
                     code_editor.setFilename(current_filename);
                 }
             );
-
         }
     }
 

@@ -74,17 +74,11 @@ class Workspacer extends HTMLApplication
         new JQuery(Browser.document).ready(_instance.onPageLoad);
     }
 
-    public static function onReady(event)
-    {
-        //_instance.loadComponents();
-        _instance.setup();
-    }
-
     function setup(): Void
     {
+        var json = Json.parse(new JQuery('#workspacer-json').text());
+        LocalizationManager.instance.setTranslations(json.translations);
         if (Browser.document.body.id == "blueprints-workspace") {
-            var json = Json.parse(new JQuery('#workspacer-json').text());
-            LocalizationManager.instance.setTranslations(json.translations);
             main_box = HTMLApplication.createInstance(MainBox);
             new JQuery('form').prepend(main_box);
             main_box.setData(json);
@@ -105,7 +99,7 @@ class Workspacer extends HTMLApplication
             elements.form = new JQuery(elements.contents).find('form');
             elements.with_selected = new JQuery('#with-selected');
             new JQuery(main_box).on('openFile', function (event: Event, dir_path: String, filename: String) {
-                editor_frame.open = true;
+                editor_frame.open(filename != null ? 'edit' : 'new');
                 editor_frame.dir_path = dir_path;
                 editor_frame.edit(filename);
             });
@@ -114,14 +108,14 @@ class Workspacer extends HTMLApplication
         } else if (elements.body_id == "blueprints-pages") {
             new JQuery('#wrapper').on('click', 'a.file', function (event: Event) {
                 var target = cast(event.target, AnchorElement);
-                editor_frame.open = true;
+                editor_frame.open('edit-xsl');
                 editor_frame.dir_path = "pages";
                 editor_frame.edit(target.dataset.href);
             });
         }
         new JQuery(Browser.window).keydown(function (event: Event) {
             if (event.which == 27) {
-                editor_frame.open = false;
+                editor_frame.close();
             }
         });
     }
@@ -187,7 +181,7 @@ class Workspacer extends HTMLApplication
         return (dir_path.length > 0 ? dir_path + "/" : "") + filename;
     }
 
-    public static function S_serverPost(data: Dynamic, func_done: Dynamic, ?func_error: Dynamic): Void
+    public static function S_serverPost(data: Dynamic, ?func_done: Dynamic, ?func_error: Dynamic): Void
     {
         _instance.serverPost(data, func_done, func_error);
     }

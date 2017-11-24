@@ -34,6 +34,8 @@ class CodeEditor extends HTMLComponent
 {
     @:const var x_margin: Int = 3;
     @:const var y_margin: Int = 2;
+    @:const var menu_home_top: Int = 16;
+    @:const var menu_home_left: Int = 16;
 
     var line_numbers: PreElement;
     public var edit_area: PreElement;
@@ -92,14 +94,13 @@ class CodeEditor extends HTMLComponent
         edit_area = cast(this.querySelector('pre.edit-area'));
         //menu = cast(this.querySelector('ws-contextmenu'));
 
-        //line_numbers.style.fontFamily = settings.font_family + ", monospace";
         line_numbers.addEventListener('mousedown', function (event: MouseEvent) {
             event.preventDefault();
             edit_area.focus();
         });
 
         edit_area.setAttribute("contenteditable", "true");
-        edit_area.onscroll = function (event) {
+        edit_area.onscroll = function (event: UIEvent) {
             line_numbers.style.top = -edit_area.scrollTop + "px";
         };
         //edit_area.appendChild(Browser.document.createTextNode("\n"));
@@ -110,22 +111,19 @@ class CodeEditor extends HTMLComponent
         edit_area.addEventListener('keyup', edit_area_onkeyup);
         edit_area.addEventListener('cut', edit_area_oncut);
         edit_area.addEventListener('paste', edit_area_onpaste);
-        //edit_area.style.fontFamily = this.settings.font_family + ", monospace";
-        //menu.addEventListener('mousedown', menu_onmousedown);
-        //menu.addEventListener('keydown', menu_onkeydown);
 
         this.setAttribute('class', "ps-code-editor");
         this.setAttribute('tabindex', "0");
         this.setAttribute('spellcheck', "false");
 
         menu = HTMLApplication.createInstance(ContextMenu);
-        menu.addItem("undo", "Undo");
-        menu.addItem("redo", "Redo");
-        menu.addItem("cut", "Cut");
-        menu.addItem("copy", "Copy");
+        menu.addItem('undo', '{{m_undo}}');
+        menu.addItem('redo', '{{m_redo}}');
+        menu.addItem('cut', '{{m_cut}}');
+        menu.addItem("copy", '{{m_copy}}');
         //menu.addItem("paste", "Paste");
-        menu.addItem("delete", "Delete");
-        menu.addItem("selectAll", "Select all");
+        menu.addItem('delete', '{{m_delete}}');
+        menu.addItem('selectAll', '{{m_select_all}}');
         menu.addEventListener('menu_action', editor_onmenuaction);
         menu.top = 10;
         menu.left = 10;
@@ -171,7 +169,7 @@ class CodeEditor extends HTMLComponent
         }
     }
 
-    function editor_oncontextmenu(event): Void
+    function editor_oncontextmenu(event: MouseEvent): Void
     {
         event.preventDefault();
         if (menu.open) {
@@ -182,16 +180,16 @@ class CodeEditor extends HTMLComponent
             // Set enabled items.
             var items_enabled: Array<String> = [];
             if (undo_stack.hasItems) {
-                menu.setItemLabel("undo", 'Undo ${undo_stack.getLastItem().title}');
+                menu.setItemLabel("undo", '{{m_undo}} ${undo_stack.getLastItem().title}');
                 items_enabled.push("undo");
             } else {
-                menu.setItemLabel("undo", 'Undo');
+                menu.setItemLabel("undo", '{{m_undo}}');
             }
             if (redo_stack.hasItems) {
-                menu.setItemLabel("redo", 'Redo ${redo_stack.getLastItem().title}');
+                menu.setItemLabel("redo", '{{m_redo}} ${redo_stack.getLastItem().title}');
                 items_enabled.push("redo");
             } else {
-                menu.setItemLabel("redo", 'Redo');
+                menu.setItemLabel("redo", '{{m_redo}}');
             }
             var selection = Browser.window.getSelection();
             if (!selection.isCollapsed) {
@@ -213,6 +211,9 @@ class CodeEditor extends HTMLComponent
                 } else {
                     menu.left = event.clientX + 2;
                 }
+            } else {
+                menu.top = menu_home_top;
+                menu.left = menu_home_left;
             }
             menu.open = true;
         }
@@ -368,7 +369,7 @@ class CodeEditor extends HTMLComponent
         event.preventDefault();
     }
 
-    function edit_area_onkeyup(event: KeyboardEvent)
+    function edit_area_onkeyup(event: KeyboardEvent): Void
     {
         var key = event.keyCode;
         if (key >= 33 && key <= 40) {
@@ -379,22 +380,22 @@ class CodeEditor extends HTMLComponent
         }
     }
 
-    function edit_area_oncut(event)
+    function edit_area_oncut(event: ClipboardEvent): Void
     {
         event.preventDefault();
         var sel = Browser.window.getSelection();
         if (!sel.isCollapsed) {
             Browser.document.execCommand("copy");
-            Delete.create(this, "cut");
+            Delete.create(this, "ta_cut");
         }
     };
 
-    function edit_area_onpaste(event)
+    function edit_area_onpaste(event: ClipboardEvent): Void
     {
         event.preventDefault();
         var new_text: String = event.clipboardData.getData('text');
         if (new_text.length > 0) {
-            Insert.create(this, new_text, "paste");
+            Insert.create(this, new_text, "ta_paste");
         }
     }
 /*
@@ -477,7 +478,7 @@ class CodeEditor extends HTMLComponent
         }
     }
 
-    function menu_onfocusout(event)
+    function menu_onfocusout(event: FocusEvent)
     {
         menu.open = false;
         event.preventDefault();

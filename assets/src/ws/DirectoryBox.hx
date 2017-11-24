@@ -197,7 +197,6 @@ class DirectoryBox extends HTMLComponent
         })
         .done(function (data) {
             if (data.directories) {
-                //Symphony.Extensions.Workspacer.directories = data.directories;
                 //directories = data.directories;
             }
             this.dir_path = dir_path;
@@ -241,11 +240,11 @@ class DirectoryBox extends HTMLComponent
             case "create_dirs":
                 new JQuery(this).find('.add-dirs-box').slideUp(120);
                 var v = new JQuery(this).find('textarea').val();
-                /*Symphony.Extensions.Workspacer.serverPost({
+                Workspacer.S_serverPost({
                     action: "create_dirs",
                     dir_path: this.dir_path,
                     items: v.split("\n")
-                });*/
+                });
             case "cancel_dirs":
                 new JQuery(this).find('.add-dirs-box').slideUp(120);
         }

@@ -14,7 +14,7 @@ class Insert extends TextAction
 
     public function new(editor: CodeEditor, new_text: String, ?title: String)
     {
-        super(editor, (title != null) ? title : "insert");
+        super(editor, (title != null) ? title : 'ta_insert');
 
         this.selection = editor.getSelectionPoints();
         var current_range = editor.getCurrentSelectionRange();

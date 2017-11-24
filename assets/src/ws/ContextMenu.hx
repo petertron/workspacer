@@ -164,7 +164,7 @@ class ContextMenu extends HTMLComponent
     {
         var button: ButtonElement = Browser.document.createButtonElement();
         button.name = name;
-        button.textContent = label;
+        button.textContent = translateContent(label);
         button.onmousemove = function (event: MouseEvent) {
             var button = cast(event.target, ButtonElement);
             if (!button.disabled) {
@@ -195,7 +195,7 @@ class ContextMenu extends HTMLComponent
 
     public function setItemLabel(name: String, label: String): Void
     {
-        this.querySelector('button[name="$name"]').textContent = label;
+        this.querySelector('button[name="$name"]').textContent = translateContent(label);
     }
 
     public function setEnabledItems(enabled_items: Array<String>): Void

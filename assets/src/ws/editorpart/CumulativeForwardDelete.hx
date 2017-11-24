@@ -12,7 +12,7 @@ class CumulativeForwardDelete extends TextAction
 
     public function new(editor: CodeEditor, ?title: String)
     {
-        super(editor, (title != null) ? title : "delete");
+        super(editor, (title != null) ? title : 'ta_delete');
         /*let current_range = getCurrentSelectionRange();
         this.position = getCharPosFromRangeStart(current_range);
         this.removed_text = current_range.toString();*/

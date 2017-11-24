@@ -51,43 +51,10 @@ ws-editorframe footer {
     box-sizing: border-box;
     height: 2.6rem;
     padding-top: .85rem;
-    display: none;
 }
 
-ws-editorframe.new footer.new {
-    display: block;
-}
-
-ws-editorframe.edit footer.edit {
-    display: block;
-}
-
-ws-editorframe.edit-xsl footer.edit-xsl {
-    display: block;
-}
-
-/*
-ws-editorframe footer button[name="delete"] {
-    float: left;
-    margin-left: 0;
-}
-*/
-ws-editorframe footer button[name="save-as"] {
-    float: left;
-    margin-left: 0;
-}
-ws-editorframe footer button[name="save"],
-ws-editorframe footer button[name="create"] {
+ws-editorframe button.float-right {
     float: right;
-}
-ws-editorframe.edit footer button[name="create"] {
-    float: left;
-}
-ws-editorframe.new footer button.edit {
-    display: none;
-}
-ws-editorframe.edit footer button.new {
-    display: none;
 }
 
 ws-codeeditor {
@@ -134,7 +101,7 @@ ws-codeeditor pre.edit-area {
     background-color: #FFFFFF;
     overflow: scroll;
     word-wrap: pre-wrap;
-    /*tab-size: 4;*/
+    tab-size: 4;
     color: black;
     caret-color: black;
 }

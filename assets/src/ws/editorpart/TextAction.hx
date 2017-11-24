@@ -1,5 +1,8 @@
 package ws.editorpart;
 
+import org.tamina.i18n.LocalizationManager;
+import org.tamina.i18n.ITranslation;
+
 using Type;
 
 class TextAction
@@ -10,12 +13,14 @@ class TextAction
     public function new(editor, title)
     {
         this.editor = editor;
-        this.title = title;
+        //this.title = title;
+        this.title = LocalizationManager.instance.getString(title);
     }
     
     public function getName(): String
     {
-        return Type.getClassName(Type.getClass(this));
+        var class_name = Type.getClassName(Type.getClass(this));
+        return class_name.substr(class_name.lastIndexOf(".") + 1);
     }
 
     public function test(class_name: String): Bool

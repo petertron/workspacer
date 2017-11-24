@@ -12,7 +12,7 @@ class CumulativeInsert extends TextAction
 
     public function new(editor: CodeEditor, char: String, ?title: String)
     {
-        super(editor, (title != null) ? title : "insert");
+        super(editor, (title != null) ? title : 'ta_insert');
 
         this.position = editor.getCharPosFromRangeStart(editor.getCurrentSelectionRange());
         this.new_text = "";
@@ -21,12 +21,14 @@ class CumulativeInsert extends TextAction
     public static function create(editor: CodeEditor, char: String, ?title: String): CumulativeInsert
     {
         var instance: CumulativeInsert = null;
+        //Browser.alert(editor.timeout.hasExpired());
         //alert(timeout.hasExpired() + " ... " + undo_stack.hasItems());
         if (!editor.timeout.hasExpired() && editor.undo_stack.hasItems) {
             var last_item: TextAction = editor.undo_stack.getLastItem();
             /*if (cast(last_item, TextAction).getName() == "CumulativeInsert") {
                 instance = cast(last_item, CumulativeInsert);
             }*/
+            //Browser.alert(last_item.getName());
             if (last_item.getName() == "CumulativeInsert") {
                 instance = cast(last_item, CumulativeInsert);
             }

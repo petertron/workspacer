@@ -10,7 +10,7 @@ class Delete extends TextAction
 
     public function new(editor: CodeEditor, ?title: String)
     {
-        super(editor, (title != null) ? title : "delete");
+        super(editor, (title != null) ? title : 'ta_delete');
 
         var sel = Browser.window.getSelection();
         var range_count: Int = sel.rangeCount;

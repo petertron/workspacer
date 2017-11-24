@@ -326,9 +326,6 @@ Workspacer.main = function() {
 	Workspacer._instance.setup();
 	$(window.document).ready(($_=Workspacer._instance,$bind($_,$_.onPageLoad)));
 };
-Workspacer.onReady = function(event) {
-	Workspacer._instance.setup();
-};
 Workspacer.filePathFromParts = function(dir_path,filename) {
 	return (dir_path.length > 0 ? dir_path + "/" : "") + filename;
 };
@@ -360,9 +357,9 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 		return isTrue;
 	}
 	,setup: function() {
+		var json = JSON.parse($("#workspacer-json").text());
+		org_tamina_i18n_LocalizationManager.get_instance().setTranslations(json.translations);
 		if(window.document.body.id == "blueprints-workspace") {
-			var json = JSON.parse($("#workspacer-json").text());
-			org_tamina_i18n_LocalizationManager.get_instance().setTranslations(json.translations);
 			this.main_box = org_tamina_html_component_HTMLApplication.createInstance(ws_MainBox);
 			$("form").prepend(this.main_box);
 			this.main_box.setData(json);
@@ -382,7 +379,7 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 			this.elements.form = $(this.elements.contents).find("form");
 			this.elements.with_selected = $("#with-selected");
 			$(this.main_box).on("openFile",null,function(event,dir_path,filename) {
-				_gthis.editor_frame.set_open(true);
+				_gthis.editor_frame.open(filename != null ? "edit" : "new");
 				_gthis.editor_frame.dir_path = dir_path;
 				_gthis.editor_frame.edit(filename);
 			});
@@ -391,14 +388,14 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 		} else if(this.elements.body_id == "blueprints-pages") {
 			$("#wrapper").on("click","a.file",function(event1) {
 				var target = js_Boot.__cast(event1.target , HTMLAnchorElement);
-				_gthis.editor_frame.set_open(true);
+				_gthis.editor_frame.open("edit-xsl");
 				_gthis.editor_frame.dir_path = "pages";
 				_gthis.editor_frame.edit(target.dataset.href);
 			});
 		}
 		$(window).keydown(function(event2) {
 			if(event2.which == 27) {
-				_gthis.editor_frame.set_open(false);
+				_gthis.editor_frame.close();
 			}
 		});
 	}
@@ -1707,6 +1704,8 @@ var ws_CodeEditor = function(settings) {
 	this.settings = { font_family : "8.4pt Monaco", font_size : "8.4pt", line_height : "138%", indentation_width : 4, indentation_method : "spaces"};
 	this.line_beginnings = [];
 	this.highlighter = null;
+	this.menu_home_left = 16;
+	this.menu_home_top = 16;
 	this.y_margin = 2;
 	this.x_margin = 3;
 	org_tamina_html_component_HTMLComponent.call(this);
@@ -1739,12 +1738,12 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 		this.setAttribute("tabindex","0");
 		this.setAttribute("spellcheck","false");
 		this.menu = org_tamina_html_component_HTMLApplication.createInstance(ws_ContextMenu);
-		this.menu.addItem("undo","Undo");
-		this.menu.addItem("redo","Redo");
-		this.menu.addItem("cut","Cut");
-		this.menu.addItem("copy","Copy");
-		this.menu.addItem("delete","Delete");
-		this.menu.addItem("selectAll","Select all");
+		this.menu.addItem("undo","{{m_undo}}");
+		this.menu.addItem("redo","{{m_redo}}");
+		this.menu.addItem("cut","{{m_cut}}");
+		this.menu.addItem("copy","{{m_copy}}");
+		this.menu.addItem("delete","{{m_delete}}");
+		this.menu.addItem("selectAll","{{m_select_all}}");
 		this.menu.addEventListener("menu_action",$bind(this,this.editor_onmenuaction));
 		this.menu.set_top(10);
 		this.menu.set_left(10);
@@ -1794,16 +1793,16 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 		} else {
 			var items_enabled = [];
 			if(this.undo_stack.get_hasItems()) {
-				this.menu.setItemLabel("undo","Undo " + this.undo_stack.getLastItem().title);
+				this.menu.setItemLabel("undo","{{m_undo}} " + this.undo_stack.getLastItem().title);
 				items_enabled.push("undo");
 			} else {
-				this.menu.setItemLabel("undo","Undo");
+				this.menu.setItemLabel("undo","{{m_undo}}");
 			}
 			if(this.redo_stack.get_hasItems()) {
-				this.menu.setItemLabel("redo","Redo " + this.redo_stack.getLastItem().title);
+				this.menu.setItemLabel("redo","{{m_redo}} " + this.redo_stack.getLastItem().title);
 				items_enabled.push("redo");
 			} else {
-				this.menu.setItemLabel("redo","Redo");
+				this.menu.setItemLabel("redo","{{m_redo}}");
 			}
 			var selection = window.getSelection();
 			if(!selection.isCollapsed) {
@@ -1824,6 +1823,9 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 				} else {
 					this.menu.set_left(event.clientX + 2);
 				}
+			} else {
+				this.menu.set_top(this.menu_home_top);
+				this.menu.set_left(this.menu_home_left);
 			}
 			this.menu.set_open(true);
 		}
@@ -1978,14 +1980,14 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 		var sel = window.getSelection();
 		if(!sel.isCollapsed) {
 			window.document.execCommand("copy");
-			ws_editorpart_Delete.create(this,"cut");
+			ws_editorpart_Delete.create(this,"ta_cut");
 		}
 	}
 	,edit_area_onpaste: function(event) {
 		event.preventDefault();
 		var new_text = event.clipboardData.getData("text");
 		if(new_text.length > 0) {
-			ws_editorpart_Insert.create(this,new_text,"paste");
+			ws_editorpart_Insert.create(this,new_text,"ta_paste");
 		}
 	}
 	,menu_onmousedown: function(event) {
@@ -2406,7 +2408,7 @@ ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		var _gthis = this;
 		var button = window.document.createElement("button");
 		button.name = name;
-		button.textContent = label;
+		button.textContent = this.translateContent(label);
 		button.onmousemove = function(event) {
 			var button1 = js_Boot.__cast(event.target , HTMLButtonElement);
 			if(!button1.disabled) {
@@ -2434,7 +2436,7 @@ ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		this.menu_items.push(button);
 	}
 	,setItemLabel: function(name,label) {
-		this.querySelector("button[name=\"" + name + "\"]").textContent = label;
+		this.querySelector("button[name=\"" + name + "\"]").textContent = this.translateContent(label);
 	}
 	,setEnabledItems: function(enabled_items) {
 		this.menu_items_enabled = [];
@@ -2538,6 +2540,7 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 		case "create_dirs":
 			$(this).find(".add-dirs-box").slideUp(120);
 			var v = $(this).find("textarea").val();
+			Workspacer.S_serverPost({ action : "create_dirs", dir_path : this.get_dir_path(), items : v.split("\n")});
 			break;
 		case "new":
 			$(this).find(".add-box").slideToggle(120);
@@ -2610,22 +2613,49 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		});
 		$(this.code_editor).insertAfter($(this).find("header"));
 		$(this).on("click","button",$bind(this,this.onButtonClick));
-	}
-	,set_open: function(isTrue) {
-		if(isTrue) {
-			window.getSelection().removeAllRanges();
-			this.set_visible(true);
-			$("#mask").show();
-			this.code_editor.reset();
+		this.button_sets = new haxe_ds_StringMap();
+		var _this = this.button_sets;
+		var value1 = this.translateContent("<button type=\"button\" class=\"button new float-right\" name=\"create\" accesskey=\"s\">{{b_create_file}}</button>");
+		if(__map_reserved["new"] != null) {
+			_this.setReserved("new",value1);
 		} else {
-			this.set_visible(false);
-			$("#mask").hide();
+			_this.h["new"] = value1;
 		}
-		return isTrue;
+		var _this1 = this.button_sets;
+		var value2 = this.translateContent("<button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\">{{b_save_as}}</button><button type=\"button\" class=\"button float-right\" name=\"save\" style=\"float: right\" accesskey=\"s\">{{b_save_changes}}</button>");
+		if(__map_reserved["edit"] != null) {
+			_this1.setReserved("edit",value2);
+		} else {
+			_this1.h["edit"] = value2;
+		}
+		var _this2 = this.button_sets;
+		var value3 = this.translateContent("<button type=\"button\" class=\"button edit float-right\" name=\"save\" accesskey=\"s\">{{b_save_changes}}</button>");
+		if(__map_reserved["edit-xsl"] != null) {
+			_this2.setReserved("edit-xsl",value3);
+		} else {
+			_this2.h["edit-xsl"] = value3;
+		}
 	}
 	,set_headerText: function(text) {
 		$(this).find("header p").text(this.translateContent(text));
 		return text;
+	}
+	,open: function(button_set) {
+		window.getSelection().removeAllRanges();
+		this.setButtonSet(button_set);
+		this.code_editor.reset();
+		$("#mask").show();
+		this.set_visible(true);
+	}
+	,close: function() {
+		this.set_visible(false);
+		$("#mask").hide();
+	}
+	,setButtonSet: function(button_set) {
+		this.button_set = button_set;
+		var _this = this.button_sets;
+		var tmp = __map_reserved[button_set] != null ? _this.getReserved(button_set) : _this.h[button_set];
+		this.querySelector("footer").innerHTML = tmp;
 	}
 	,getFilePath: function(filename) {
 		return (this.dir_path.length > 0 ? this.dir_path + "/" : "") + filename;
@@ -2662,7 +2692,7 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		var _g = target.name;
 		switch(_g) {
 		case "close":
-			this.set_open(false);
+			this.close();
 			break;
 		case "create":
 			var potential_filename = window.prompt(this.getTranslation("t_file_name"));
@@ -2673,7 +2703,7 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 					if(data.alert_msg == null) {
 						_gthis.current_filename = potential_filename;
 					}
-					_gthis.className = "edit";
+					_gthis.setButtonSet("edit");
 					var tmp = "{{t_editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
 					_gthis.set_headerText(tmp);
 					_gthis.code_editor.setFilename(_gthis.current_filename);
@@ -2697,10 +2727,10 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		return org_tamina_i18n_LocalizationManager.get_instance().getString(key);
 	}
 	,getView: function() {
-		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">{{b_close}}</button>\n</header>\n<footer class=\"new\"><button type=\"button\" class=\"button new\" name=\"create\" accesskey=\"s\">{{b_create_file}}</button></footer>\n<footer class=\"edit\"><button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\" accesskey=\"s\">{{b_save_as}}</button><button type=\"button\" class=\"button\" name=\"save\" style=\"float: right\">{{b_save_changes}}</button></footer>\n<footer class=\"edit-xsl\"><button type=\"button\" class=\"button\" name=\"create\" accesskey=\"s\">{{b_save_changes}}</button></footer>\n";
+		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">{{b_close}}</button>\n</header>\n<footer></footer>\n";
 	}
 	,__class__: ws_EditorFrame
-	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_headerText:"set_headerText",set_open:"set_open"})
+	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_headerText:"set_headerText"})
 });
 var ws_MainBox = function() {
 	this.dir_boxes = [];
@@ -2774,13 +2804,14 @@ ws_MainBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype
 });
 var ws_editorpart_TextAction = function(editor,title) {
 	this.editor = editor;
-	this.title = title;
+	this.title = org_tamina_i18n_LocalizationManager.get_instance().getString(title);
 };
 $hxClasses["ws.editorpart.TextAction"] = ws_editorpart_TextAction;
 ws_editorpart_TextAction.__name__ = ["ws","editorpart","TextAction"];
 ws_editorpart_TextAction.prototype = {
 	getName: function() {
-		return Type.getClassName(js_Boot.getClass(this));
+		var class_name = Type.getClassName(js_Boot.getClass(this));
+		return HxOverrides.substr(class_name,class_name.lastIndexOf(".") + 1,null);
 	}
 	,test: function(class_name) {
 		return this.getName() == class_name;
@@ -2793,7 +2824,7 @@ ws_editorpart_TextAction.prototype = {
 };
 var ws_editorpart_CumulativeDelete = function(editor,title) {
 	this.removed_text = "";
-	ws_editorpart_TextAction.call(this,editor,title != null ? title : "delete");
+	ws_editorpart_TextAction.call(this,editor,title != null ? title : "ta_delete");
 };
 $hxClasses["ws.editorpart.CumulativeDelete"] = ws_editorpart_CumulativeDelete;
 ws_editorpart_CumulativeDelete.__name__ = ["ws","editorpart","CumulativeDelete"];
@@ -2842,7 +2873,7 @@ ws_editorpart_CumulativeDelete.prototype = $extend(ws_editorpart_TextAction.prot
 });
 var ws_editorpart_CumulativeForwardDelete = function(editor,title) {
 	this.removed_text = "";
-	ws_editorpart_TextAction.call(this,editor,title != null ? title : "delete");
+	ws_editorpart_TextAction.call(this,editor,title != null ? title : "ta_delete");
 };
 $hxClasses["ws.editorpart.CumulativeForwardDelete"] = ws_editorpart_CumulativeForwardDelete;
 ws_editorpart_CumulativeForwardDelete.__name__ = ["ws","editorpart","CumulativeForwardDelete"];
@@ -2891,7 +2922,7 @@ ws_editorpart_CumulativeForwardDelete.prototype = $extend(ws_editorpart_TextActi
 	,__class__: ws_editorpart_CumulativeForwardDelete
 });
 var ws_editorpart_CumulativeInsert = function(editor,$char,title) {
-	ws_editorpart_TextAction.call(this,editor,title != null ? title : "insert");
+	ws_editorpart_TextAction.call(this,editor,title != null ? title : "ta_insert");
 	this.position = editor.getCharPosFromRangeStart(editor.getCurrentSelectionRange());
 	this.new_text = "";
 };
@@ -2929,7 +2960,7 @@ ws_editorpart_CumulativeInsert.prototype = $extend(ws_editorpart_TextAction.prot
 var ws_editorpart_Delete = function(editor,title) {
 	this.removed_text = [];
 	this.selection = [];
-	ws_editorpart_TextAction.call(this,editor,title != null ? title : "delete");
+	ws_editorpart_TextAction.call(this,editor,title != null ? title : "ta_delete");
 	var sel = window.getSelection();
 	var range_count = sel.rangeCount;
 	var range = null;
@@ -2981,7 +3012,7 @@ ws_editorpart_Delete.prototype = $extend(ws_editorpart_TextAction.prototype,{
 	,__class__: ws_editorpart_Delete
 });
 var ws_editorpart_Insert = function(editor,new_text,title) {
-	ws_editorpart_TextAction.call(this,editor,title != null ? title : "insert");
+	ws_editorpart_TextAction.call(this,editor,title != null ? title : "ta_insert");
 	this.selection = editor.getSelectionPoints();
 	var current_range = editor.getCurrentSelectionRange();
 	this.old_text = current_range.toString();

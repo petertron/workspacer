@@ -1,5 +1,7 @@
 package ws.editorpart;
 
+import js.Browser;
+
 class Timeout
 {
     static var period: Float = 30000;
@@ -7,18 +9,18 @@ class Timeout
 
     public function new() {}
 
-    public function start()
+    public function start(): Void
     {
         this.last_date_now = Date.now().getTime();
     }
 
-    public function clear()
+    public function clear(): Void
     {
         this.last_date_now = 0;
     }
 
-    public function hasExpired()
+    public function hasExpired(): Bool
     {
-        return Date.now().getTime() > (this.last_date_now + Timeout.period);
+        return Date.now().getTime() > (last_date_now + period);
     }
 }
