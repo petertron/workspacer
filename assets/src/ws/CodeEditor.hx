@@ -54,19 +54,13 @@ class CodeEditor extends HTMLComponent
     public var line_beginnings: Array<Any> = [];
     var menu_items_enabled: Array<Dynamic>;
 
-    public var settings = {
-        font_family: "8.4pt Monaco",
-        font_size: "8.4pt",
-        line_height: "138%",
-        indentation_width: 4,
-        indentation_method: 'spaces'
-    }
+    public var settings: Settings;
 
     var regexp_ins_tab = ~/\n(?!\n)/g;
 
     var filename: String;
 
-    public function new(settings: Settings)
+    public function new()
     {
         super();
     }
@@ -88,6 +82,13 @@ class CodeEditor extends HTMLComponent
 
     override public function createdCallback(): Void
     {
+        settings = {
+            font_family: "8.4pt Monaco",
+            font_size: "8.4pt",
+            line_height: "138%",
+            indentation_width: 4,
+            indentation_method: 'spaces'
+        }
         this.innerHTML = getContent();
         highlighter_styles = cast(this.querySelector('style'));
         line_numbers = cast(this.querySelector('pre.line-numbers'));
@@ -152,10 +153,13 @@ class CodeEditor extends HTMLComponent
                 line_numbers.style.lineHeight = new_value;
                 edit_area.style.lineHeight = new_value;
             case "indentation_width":
+                settings.indentation_width = Std.parseInt(new_value);
                 edit_area.style.tabSize = new_value;
                 untyped edit_area.style.MSTabSize = new_value;
                 untyped edit_area.style.MozTabSize = new_value;
                 untyped edit_area.style.WebkitTabSize = new_value;
+            case "indentation_method":
+                settings.indentation_method = new_value;
         }
     }
 
