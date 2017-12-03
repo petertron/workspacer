@@ -1699,9 +1699,8 @@ org_tamina_utils_BrowserType.IE.__enum__ = org_tamina_utils_BrowserType;
 org_tamina_utils_BrowserType.Unknown = ["Unknown",7];
 org_tamina_utils_BrowserType.Unknown.toString = $estr;
 org_tamina_utils_BrowserType.Unknown.__enum__ = org_tamina_utils_BrowserType;
-var ws_CodeEditor = function(settings) {
+var ws_CodeEditor = function() {
 	this.regexp_ins_tab = new EReg("\n(?!\n)","g");
-	this.settings = { font_family : "8.4pt Monaco", font_size : "8.4pt", line_height : "138%", indentation_width : 4, indentation_method : "spaces"};
 	this.line_beginnings = [];
 	this.highlighter = null;
 	this.menu_home_left = 16;
@@ -1716,6 +1715,7 @@ ws_CodeEditor.__super__ = org_tamina_html_component_HTMLComponent;
 ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
 	createdCallback: function() {
 		var _gthis = this;
+		this.settings = { font_family : "8.4pt Monaco", font_size : "8.4pt", line_height : "138%", indentation_width : 4, indentation_method : "spaces"};
 		this.innerHTML = this.getContent();
 		ws_CodeEditor.highlighter_styles = this.querySelector("style");
 		this.line_numbers = this.querySelector("pre.line-numbers");
@@ -1766,7 +1766,11 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 			this.line_numbers.style.fontSize = new_value;
 			this.edit_area.style.fontSize = new_value;
 			break;
+		case "indentation_method":
+			this.settings.indentation_method = new_value;
+			break;
 		case "indentation_width":
+			this.settings.indentation_width = Std.parseInt(new_value);
 			this.edit_area.style.tabSize = new_value;
 			this.edit_area.style.MSTabSize = new_value;
 			this.edit_area.style.MozTabSize = new_value;
@@ -2454,7 +2458,7 @@ ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		}
 	}
 	,getView: function() {
-		return "";
+		return "<h3>{{undo_redo}}</h3>\n<div></div>\n<hr />\n<h3></h3>\n";
 	}
 	,__class__: ws_ContextMenu
 	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_left:"set_left",set_top:"set_top",get_height:"get_height",get_width:"get_width",get_rect:"get_rect",set_open:"set_open",get_open:"get_open"})

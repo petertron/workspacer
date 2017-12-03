@@ -22,10 +22,6 @@ class contentBlueprintsWorkspace extends AdministrationPage
         $this->addStylesheetToHead(WS\ASSETS_URL . '/workspace.css');
         $this->addStylesheetToHead(WS\ASSETS_URL . '/editor.css');
         $this->addScriptToHead(WS\ASSETS_URL . '/CustomElements.min.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/webcomponents-lite.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/jsrender.min.js');
-        $this->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
-        //$this->addScriptToHead(WS\ASSETS_URL . '/highlighters.js.php');
         //$this->addScriptToHead(WS\ASSETS_URL . '/workspacer.js');
         $this->Head->appendChild(
             new XMLElement(
@@ -174,7 +170,8 @@ class contentBlueprintsWorkspace extends AdministrationPage
             )
         );
         $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/workspacer.js']));
-        $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/highlighters/highlight-xsl.js']));
+        $this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/highlighters.js.php']));
+        //$this->Contents->appendChild(new XMLElement('script', null, ['src' => WS\ASSETS_URL . '/highlighters/highlight-xsl.js']));
     }
 
     public function __actionIndex()

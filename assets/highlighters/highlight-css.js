@@ -14,7 +14,7 @@
         'border-style border-top border-right border-bottom border-left border-top-color ' +
         'border-right-color border-bottom-color border-left-color ' +
         'border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width ' +
-        'border-bottom-width border-left-width border-width border bottom cap-height caption-side centerline clear clip color ' +
+        'border-bottom-width border-left-width border-width border bottom cap-height caption-side caret-color centerline clear clip color ' +
         'content counter-increment counter-reset cue-after cue-before cue cursor definition-src descent direction display ' +
         'elevation empty-cells float font-size-adjust font-family font-size font-stretch font-style font-variant font-weight font ' +
         'height left letter-spacing line-height list-style-image list-style-position list-style-type list-style margin-top ' +
@@ -45,7 +45,7 @@
         'navy ne-resize no-close-quote none no-open-quote no-repeat normal nowrap n-resize nw-resize ' +
         'oblique olive once open-quote outset outside overline ' +
         'pointer portrait pre print projection purple pt px ' +
-        'red relative repeat repeat-x repeat-y rgb ridge right right-side rightwards rtl run-in ' +
+        'red relative rem repeat repeat-x repeat-y rgb ridge right right-side rightwards rtl run-in ' +
         'sans-serif screen scroll semi-condensed semi-expanded separate se-resize serif show silent ' + 'silver slower slow small small-caps small-caption smaller soft solid speech spell-out ' +
         'square s-resize static status-bar sub super sw-resize ' +
         'table-caption table-cell table-column table-column-group table-footer-group ' +
@@ -73,7 +73,9 @@
 
     var exp_outside = /\{|[\.#][a-z_][a-z0-9_\-]*|\'[^']*\'?|\"[^"]*\"?|\/\*|\:[a-z]+|$/gi,
         exp_inside = /[:;}]|[a-z][a-z\-]+|\d+\.?\d*\%?|\.\d+\%?|\#[0-9a-f]{3,6}|\'[^']*\'?|\"[^"]*\"?|\/\*|$/gi,
-        exp_end_comment = /[^]*?\*\/|$/g;
+        //exp_end_comment = /[^]*?\*\/|$/g;
+        //exp_end_comment = /[^\*]*\*\/|[^\*]*$/g;
+        exp_end_comment = /[^\*]*\*\//g;
 
     var stylesheet =
         `.comment {color: #808080}
@@ -128,8 +130,14 @@
             if (m == "/*") {
                 exp_end_comment.lastIndex = last_index;
                 match2 = exp_end_comment.exec(line_in);
-                last_index = exp_end_comment.lastIndex;
-                frag_out.appendChild(textSpan(COMMENT, m + match2[0]));
+                if (match2[0].length > 0) {
+                    last_index = exp_end_comment.lastIndex;
+                    frag_out.appendChild(textSpan(COMMENT, m + match2[0]));
+                } else {
+                    frag_out.appendChild(textSpan(COMMENT, m + line_in.slice(last_index)));
+                    last_index = line_in.length;
+                }
+                //alert(line_in.slice(last_index));
             }
             else if (first_char == "'" || first_char == "\"") {
                 frag_out.appendChild(textSpan(STRING, m));
@@ -191,7 +199,7 @@
     }
 
     //Symphony.Extensions.Workspacer.highlighters['css'] = {
-    CodeEditor.addHighlighter('css', {
+    Workspacer.addHighlighter('css', {
         'style_prefix': style_prefix,
         'stylesheet': stylesheet,
         'highlight': highlighter
