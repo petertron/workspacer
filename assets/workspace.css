@@ -84,7 +84,26 @@ textarea[name='directory_names'] {
     display: none;
 }
 
-a.link {
+ws-mainbox {
+    clear: both;
+}
+
+ws-mainbox ws-directorybox[dir-num="0"] {
+    clear: both;
+    width: 100%;
+    float: left;
+}
+
+ws-mainbox.double ws-directorybox[dir-num="0"] {
+    width: 49.4%;
+}
+
+ws-mainbox ws-directorybox[dir-num="1"] {
+    width: 49.4%;
+    float: right;
+}
+
+ws-directorybox a.link {
     font-style: italic;
 }
 
@@ -92,17 +111,28 @@ ws-directorybox .add-box {
     display: none;
 }
 
+ws-directorybox div.apply div {
+    width: calc(100% - 3rem);
+}
+
 .dir-controls {
-    margin: 0 1.8rem;
+    clear: both;
+    position: relative;
+    margin: 1.4rem 1.8rem;
+    width: calc(100% - 3.6rem);
 }
 
 .dir-controls select, .dir-controls input {
-    width: calc(100% - 4rem);
+    position: relative;
+    margin: 0;
     float: left;
 }
 
+select.d-list {
+    width: calc(100% + 1.4rem) !important;
+}
+
 .dir-controls button.add {
-    margin: 2px 0 0 0;
     float: right;
 }
 
@@ -112,6 +142,7 @@ ws-directorybox .add-box {
 
 .actions {
     clear: right;
+    float: right;
 }
 
 div#aftb {

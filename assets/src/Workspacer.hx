@@ -5,9 +5,9 @@ import js.html.*;
 import js.jquery.*;
 import haxe.Json;
 import haxe.ds.StringMap;
-import org.tamina.html.component.HTMLApplication;
-import org.tamina.i18n.LocalizationManager;
-import org.tamina.i18n.ITranslation;
+import symhaxe.html.component.SHApplication;
+//import symhaxe.i18n.LocalizationManager;
+//import symhaxe.i18n.ITranslation;
 import ws.MainBox;
 import ws.DirectoryBox;
 import ws.EditorFrame;
@@ -25,7 +25,7 @@ typedef Highlighter = {
 }
 
 @:expose
-class Workspacer extends HTMLApplication
+class Workspacer extends SHApplication
 {
     private static var _instance: Workspacer;
 
@@ -77,13 +77,12 @@ class Workspacer extends HTMLApplication
     function setup(): Void
     {
         var json = Json.parse(new JQuery('#workspacer-json').text());
-        LocalizationManager.instance.setTranslations(json.translations);
         if (Browser.document.body.id == "blueprints-workspace") {
-            main_box = HTMLApplication.createInstance(MainBox);
+            main_box = SHApplication.createInstance(MainBox);
             new JQuery('form').prepend(main_box);
             main_box.setData(json);
         }
-        editor_frame = HTMLApplication.createInstance(EditorFrame);
+        editor_frame = SHApplication.createInstance(EditorFrame);
         editor_frame.visible = false;
         new JQuery('#contents').append(editor_frame);
     }
@@ -175,7 +174,7 @@ class Workspacer extends HTMLApplication
         new JQuery(elements.with_selected).prop('disabled', true).prop('selectedIndex', 0);
         new JQuery('.actions fieldset.apply').addClass('inactive');
     }
-    
+
     public static function filePathFromParts(dir_path: String, filename: String): String
     {
         return (dir_path.length > 0 ? dir_path + "/" : "") + filename;

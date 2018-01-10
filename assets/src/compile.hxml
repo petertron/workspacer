@@ -1,4 +1,4 @@
 -js ../workspacer.js
 -lib jQueryExtern
--lib tamina
+-lib symhaxe
 -main Workspacer

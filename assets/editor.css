@@ -144,6 +144,10 @@ ws-contextmenu button {
     cursor: default;
 }
 
+ws-contextmenu button:hover {
+    cursor: default;
+}
+
 ws-contextmenu button:focus {
     background: none;
     background-color: #888;

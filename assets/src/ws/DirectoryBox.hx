@@ -4,12 +4,11 @@ import js.Browser;
 import js.html.*;
 import js.jquery.*;
 import js.RegExp;
-import haxe.Template; 
-import org.tamina.html.component.HTMLComponent;
-import org.tamina.i18n.LocalizationManager;
+import haxe.Template;
+import symhaxe.html.component.SHComponent;
 
 @view('ws/DirectoryBox.html')
-class DirectoryBox extends HTMLComponent
+class DirectoryBox extends SHComponent
 {
     // Skin parts
 
@@ -102,8 +101,8 @@ class DirectoryBox extends HTMLComponent
     public function set_files(files: Array<Dynamic>): Array<Dynamic>
     {
         Template.globals.current_dir = dir_path;
-        directories_template  = new Template(
-'<select name="sets[::set_num::][dir_path]">
+        directories_template = new Template(
+'<select name="sets[::set_num::][dir_path]" class="d-list">
 ::foreach directories::
 <option value="::path::"::if (path==current_dir):: selected::end::>
 ::if (title)::::title::::else::::path::::end::</option>
@@ -111,7 +110,7 @@ class DirectoryBox extends HTMLComponent
 </select>'
         );
         var h: String = directories_template.execute({set_num: this.getAttribute('dir-num'), directories: directories}, this);
-        this.querySelector('div').innerHTML = h;
+        this.querySelector('div[data-id="_directory_list"]').innerHTML = h;
 
 /*<tbody>
     ::if files.length::
@@ -177,7 +176,7 @@ class DirectoryBox extends HTMLComponent
     }
 
     // Methods
-        
+
     function hideAddBox(): Void
     {
         new JQuery(this).find('div.add-box').hide();
@@ -219,13 +218,15 @@ class DirectoryBox extends HTMLComponent
         new JQuery(this).trigger("openFile", [dir_path, filename]);
     }
 
-    function filePathFromParts(dir_path, filename) {
+    function filePathFromParts(dir_path, filename)
+    {
         return (dir_path ? dir_path + "/" : "") + filename;
     }
 
     // Events
 
-    function onButtonClick(event: MouseEvent) {
+    function onButtonClick(event: MouseEvent): Void
+    {
         var action = cast(event.target, ButtonElement).name;
         switch (action) {
             case "new":

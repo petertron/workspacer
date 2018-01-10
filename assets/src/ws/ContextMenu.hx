@@ -8,11 +8,11 @@ import ws.CodeEditor;
 import ws.Def;
 
 import haxe.Template;
-import org.tamina.html.component.HTMLComponent;
+import symhaxe.html.component.SHComponent;
 
 @:expose
 @view('ws/ContextMenu.html')
-class ContextMenu extends HTMLComponent
+class ContextMenu extends SHComponent
 {
     var editor: CodeEditor;
 
@@ -31,7 +31,7 @@ class ContextMenu extends HTMLComponent
      * Visibility.
      */
     public var open(get, set): Bool;
-    
+
     function get_open(): Bool
     {
         return this.visible;

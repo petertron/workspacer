@@ -1,8 +1,5 @@
 package ws.editorpart;
 
-import org.tamina.i18n.LocalizationManager;
-import org.tamina.i18n.ITranslation;
-
 using Type;
 
 class TextAction
@@ -14,9 +11,9 @@ class TextAction
     {
         this.editor = editor;
         //this.title = title;
-        this.title = LocalizationManager.instance.getString(title);
+        this.title = untyped Symphony.Language.get(title);
     }
-    
+
     public function getName(): String
     {
         var class_name = Type.getClassName(Type.getClass(this));
@@ -28,9 +25,9 @@ class TextAction
         //Type.getClassName(Type.getClass(item);
         return this.getName() == class_name;
     }
-    
+
     public function undo() {}
-    
+
     public function redo() {}
 }
 

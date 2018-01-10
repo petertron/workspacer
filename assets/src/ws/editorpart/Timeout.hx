@@ -1,7 +1,5 @@
 package ws.editorpart;
 
-import js.Browser;
-
 class Timeout
 {
     static var period: Float = 30000;

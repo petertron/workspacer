@@ -261,24 +261,23 @@ Type.resolveClass = function(name) {
 	}
 	return cl;
 };
-var org_tamina_html_component_HTMLApplication = function() {
+var symhaxe_html_component_SHApplication = function() {
 };
-$hxClasses["org.tamina.html.component.HTMLApplication"] = org_tamina_html_component_HTMLApplication;
-org_tamina_html_component_HTMLApplication.__name__ = ["org","tamina","html","component","HTMLApplication"];
-org_tamina_html_component_HTMLApplication.__properties__ = {get_componentsXTagList:"get_componentsXTagList"};
-org_tamina_html_component_HTMLApplication.get_componentsXTagList = function() {
-	if(org_tamina_html_component_HTMLApplication.componentsXTagList == null) {
-		org_tamina_html_component_HTMLApplication.componentsXTagList = new haxe_ds_StringMap();
+$hxClasses["symhaxe.html.component.SHApplication"] = symhaxe_html_component_SHApplication;
+symhaxe_html_component_SHApplication.__name__ = ["symhaxe","html","component","SHApplication"];
+symhaxe_html_component_SHApplication.__properties__ = {get_componentsXTagList:"get_componentsXTagList"};
+symhaxe_html_component_SHApplication.get_componentsXTagList = function() {
+	if(symhaxe_html_component_SHApplication.componentsXTagList == null) {
+		symhaxe_html_component_SHApplication.componentsXTagList = new haxe_ds_StringMap();
 	}
-	return org_tamina_html_component_HTMLApplication.componentsXTagList;
+	return symhaxe_html_component_SHApplication.componentsXTagList;
 };
-org_tamina_html_component_HTMLApplication.createInstance = function(type) {
+symhaxe_html_component_SHApplication.createInstance = function(type) {
 	var className = Type.getClassName(type);
-	var tag = org_tamina_html_component_HTMLApplication.getTagByClassName(className);
-	return window.document.createElement(tag);
+	return window.document.createElement(symhaxe_html_component_SHApplication.getTagByClassName(className));
 };
-org_tamina_html_component_HTMLApplication.isCustomElement = function(nodeName) {
-	var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+symhaxe_html_component_SHApplication.isCustomElement = function(nodeName) {
+	var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 	var key = nodeName.toLowerCase();
 	var _this = this1;
 	if(__map_reserved[key] != null) {
@@ -287,12 +286,12 @@ org_tamina_html_component_HTMLApplication.isCustomElement = function(nodeName) {
 		return _this.h.hasOwnProperty(key);
 	}
 };
-org_tamina_html_component_HTMLApplication.getTagByClassName = function(className) {
+symhaxe_html_component_SHApplication.getTagByClassName = function(className) {
 	var result = "";
-	var tag = org_tamina_html_component_HTMLApplication.get_componentsXTagList().keys();
+	var tag = symhaxe_html_component_SHApplication.get_componentsXTagList().keys();
 	while(tag.hasNext()) {
 		var tag1 = tag.next();
-		var _this = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var _this = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var value = __map_reserved[tag1] != null ? _this.getReserved(tag1) : _this.h[tag1];
 		if(value == className) {
 			result = tag1;
@@ -301,21 +300,21 @@ org_tamina_html_component_HTMLApplication.getTagByClassName = function(className
 	}
 	return result;
 };
-org_tamina_html_component_HTMLApplication.prototype = {
+symhaxe_html_component_SHApplication.prototype = {
 	loadComponents: function() {
-		var tag = org_tamina_html_component_HTMLApplication.get_componentsXTagList().keys();
+		var tag = symhaxe_html_component_SHApplication.get_componentsXTagList().keys();
 		while(tag.hasNext()) {
 			var tag1 = tag.next();
-			var _this = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+			var _this = symhaxe_html_component_SHApplication.get_componentsXTagList();
 			var componentClass = Type.resolveClass(__map_reserved[tag1] != null ? _this.getReserved(tag1) : _this.h[tag1]);
 			window.document.registerElement(tag1,componentClass);
 		}
 	}
-	,__class__: org_tamina_html_component_HTMLApplication
+	,__class__: symhaxe_html_component_SHApplication
 };
 var Workspacer = $hx_exports["Workspacer"] = function() {
 	this.directories = [];
-	org_tamina_html_component_HTMLApplication.call(this);
+	symhaxe_html_component_SHApplication.call(this);
 	Workspacer.highlighters = new haxe_ds_StringMap();
 };
 $hxClasses["Workspacer"] = Workspacer;
@@ -343,8 +342,8 @@ Workspacer.addHighlighter = function(abbrev,highlighter) {
 		_this.h[abbrev] = highlighter;
 	}
 };
-Workspacer.__super__ = org_tamina_html_component_HTMLApplication;
-Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototype,{
+Workspacer.__super__ = symhaxe_html_component_SHApplication;
+Workspacer.prototype = $extend(symhaxe_html_component_SHApplication.prototype,{
 	get_progress_mode: function() {
 		return window.document.body.style.cursor == "progress";
 	}
@@ -358,13 +357,12 @@ Workspacer.prototype = $extend(org_tamina_html_component_HTMLApplication.prototy
 	}
 	,setup: function() {
 		var json = JSON.parse($("#workspacer-json").text());
-		org_tamina_i18n_LocalizationManager.get_instance().setTranslations(json.translations);
 		if(window.document.body.id == "blueprints-workspace") {
-			this.main_box = org_tamina_html_component_HTMLApplication.createInstance(ws_MainBox);
+			this.main_box = symhaxe_html_component_SHApplication.createInstance(ws_MainBox);
 			$("form").prepend(this.main_box);
 			this.main_box.setData(json);
 		}
-		this.editor_frame = org_tamina_html_component_HTMLApplication.createInstance(ws_EditorFrame);
+		this.editor_frame = symhaxe_html_component_SHApplication.createInstance(ws_EditorFrame);
 		this.editor_frame.set_visible(false);
 		$("#contents").append(this.editor_frame);
 	}
@@ -1217,7 +1215,7 @@ js_Browser.__name__ = ["js","Browser"];
 js_Browser.alert = function(v) {
 	window.alert(js_Boot.__string_rec(v,""));
 };
-var org_tamina_geom_Point = function(x,y) {
+var symhaxe_geom_Point = function(x,y) {
 	if(y == null) {
 		y = 0;
 	}
@@ -1227,18 +1225,18 @@ var org_tamina_geom_Point = function(x,y) {
 	this.x = x;
 	this.y = y;
 };
-$hxClasses["org.tamina.geom.Point"] = org_tamina_geom_Point;
-org_tamina_geom_Point.__name__ = ["org","tamina","geom","Point"];
-org_tamina_geom_Point.prototype = {
-	__class__: org_tamina_geom_Point
+$hxClasses["symhaxe.geom.Point"] = symhaxe_geom_Point;
+symhaxe_geom_Point.__name__ = ["symhaxe","geom","Point"];
+symhaxe_geom_Point.prototype = {
+	__class__: symhaxe_geom_Point
 };
-var org_tamina_html_component_HTMLComponent = function() {
+var symhaxe_html_component_SHComponent = function() {
 	this._skinPartsAttached = false;
 };
-$hxClasses["org.tamina.html.component.HTMLComponent"] = org_tamina_html_component_HTMLComponent;
-org_tamina_html_component_HTMLComponent.__name__ = ["org","tamina","html","component","HTMLComponent"];
-org_tamina_html_component_HTMLComponent.__super__ = HTMLHtmlElement;
-org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prototype,{
+$hxClasses["symhaxe.html.component.SHComponent"] = symhaxe_html_component_SHComponent;
+symhaxe_html_component_SHComponent.__name__ = ["symhaxe","html","component","SHComponent"];
+symhaxe_html_component_SHComponent.__super__ = HTMLHtmlElement;
+symhaxe_html_component_SHComponent.prototype = $extend(HTMLHtmlElement.prototype,{
 	createdCallback: function() {
 		this.initDefaultValues();
 		this.parseContent();
@@ -1252,11 +1250,11 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 	}
 	,creationCompleteCallback: function() {
 		this.creationComplete = true;
-		this.dispatchEvent(org_tamina_html_component_HTMLComponentEventFactory.createEvent("creationComplete",false));
+		this.dispatchEvent(symhaxe_html_component_SHComponentEventFactory.createEvent("creationComplete",false));
 	}
 	,attachedCallback: function() {
 		if(!this.initialized) {
-			this.dispatchEvent(org_tamina_html_component_HTMLComponentEventFactory.createEvent("initialize",false));
+			this.dispatchEvent(symhaxe_html_component_SHComponentEventFactory.createEvent("initialize",false));
 		}
 		this.initialized = true;
 	}
@@ -1318,7 +1316,7 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 	,initSkinParts: function(target) {
 		var c = js_Boot.getClass(this);
 		this._skinParts = [];
-		while(c != org_tamina_html_component_HTMLComponent && c != null) {
+		while(c != symhaxe_html_component_SHComponent && c != null) {
 			var meta = haxe_rtti_Meta.getFields(c);
 			var metaFields = Reflect.fields(meta);
 			var _g1 = 0;
@@ -1327,7 +1325,7 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 				var i = _g1++;
 				var field = Reflect.field(meta,metaFields[i]);
 				if(Object.prototype.hasOwnProperty.call(field,"skinpart")) {
-					var element = org_tamina_utils_HTMLUtils.getElementByAttribute(target,"data-id",metaFields[i]);
+					var element = symhaxe_utils_HTMLUtils.getElementByAttribute(target,"data-id",metaFields[i]);
 					this[metaFields[i]] = element;
 					if(element == null) {
 						console.log("skinpart is null: " + metaFields[i] + " from " + this.nodeName);
@@ -1345,7 +1343,7 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 		while(_g < _g1.length) {
 			var skinPart = _g1[_g];
 			++_g;
-			if(org_tamina_html_component_HTMLApplication.isCustomElement(skinPart.nodeName) && skinPart.initialized != true) {
+			if(symhaxe_html_component_SHApplication.isCustomElement(skinPart.nodeName) && skinPart.initialized != true) {
 				this._skinPartsWaiting.push(skinPart);
 			}
 		}
@@ -1392,7 +1390,8 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 			++_g;
 			var totalString = result1[0];
 			var key = StringTools.trim(result1[1]);
-			content = StringTools.replace(content,totalString,org_tamina_i18n_LocalizationManager.get_instance().getString(key));
+			var translated = Symphony.Language.get(key);
+			content = StringTools.replace(content,totalString,translated);
 		}
 		return content;
 	}
@@ -1408,13 +1407,13 @@ org_tamina_html_component_HTMLComponent.prototype = $extend(HTMLHtmlElement.prot
 			}
 		}
 	}
-	,__class__: org_tamina_html_component_HTMLComponent
+	,__class__: symhaxe_html_component_SHComponent
 	,__properties__: {set_visible:"set_visible",get_visible:"get_visible"}
 });
-var org_tamina_html_component_HTMLComponentEventFactory = function() { };
-$hxClasses["org.tamina.html.component.HTMLComponentEventFactory"] = org_tamina_html_component_HTMLComponentEventFactory;
-org_tamina_html_component_HTMLComponentEventFactory.__name__ = ["org","tamina","html","component","HTMLComponentEventFactory"];
-org_tamina_html_component_HTMLComponentEventFactory.createEvent = function(type,bubbles) {
+var symhaxe_html_component_SHComponentEventFactory = function() { };
+$hxClasses["symhaxe.html.component.SHComponentEventFactory"] = symhaxe_html_component_SHComponentEventFactory;
+symhaxe_html_component_SHComponentEventFactory.__name__ = ["symhaxe","html","component","SHComponentEventFactory"];
+symhaxe_html_component_SHComponentEventFactory.createEvent = function(type,bubbles) {
 	if(bubbles == null) {
 		bubbles = true;
 	}
@@ -1422,57 +1421,10 @@ org_tamina_html_component_HTMLComponentEventFactory.createEvent = function(type,
 	result.initEvent(type,bubbles,true);
 	return result;
 };
-var org_tamina_i18n_ITranslation = function() { };
-$hxClasses["org.tamina.i18n.ITranslation"] = org_tamina_i18n_ITranslation;
-org_tamina_i18n_ITranslation.__name__ = ["org","tamina","i18n","ITranslation"];
-org_tamina_i18n_ITranslation.prototype = {
-	__class__: org_tamina_i18n_ITranslation
-};
-var org_tamina_i18n_LocalizationManager = function() {
-	this._translations = new haxe_ds_StringMap();
-};
-$hxClasses["org.tamina.i18n.LocalizationManager"] = org_tamina_i18n_LocalizationManager;
-org_tamina_i18n_LocalizationManager.__name__ = ["org","tamina","i18n","LocalizationManager"];
-org_tamina_i18n_LocalizationManager.__properties__ = {get_instance:"get_instance"};
-org_tamina_i18n_LocalizationManager.add = function(manager) {
-	org_tamina_i18n_LocalizationManager._instance = manager;
-};
-org_tamina_i18n_LocalizationManager.get_instance = function() {
-	if(org_tamina_i18n_LocalizationManager._instance == null) {
-		org_tamina_i18n_LocalizationManager._instance = new org_tamina_i18n_LocalizationManager();
-	}
-	return org_tamina_i18n_LocalizationManager._instance;
-};
-org_tamina_i18n_LocalizationManager.prototype = {
-	setTranslations: function(translations) {
-		var _g = 0;
-		while(_g < translations.length) {
-			var translation = translations[_g];
-			++_g;
-			var _this = this._translations;
-			var key = translation.fieldName;
-			if(__map_reserved[key] != null) {
-				_this.setReserved(key,translation);
-			} else {
-				_this.h[key] = translation;
-			}
-		}
-	}
-	,getString: function(key) {
-		var result = "";
-		var _this = this._translations;
-		if(__map_reserved[key] != null ? _this.existsReserved(key) : _this.h.hasOwnProperty(key)) {
-			var _this1 = this._translations;
-			result = (__map_reserved[key] != null ? _this1.getReserved(key) : _this1.h[key]).value;
-		}
-		return result;
-	}
-	,__class__: org_tamina_i18n_LocalizationManager
-};
-var org_tamina_utils_HTMLUtils = function() { };
-$hxClasses["org.tamina.utils.HTMLUtils"] = org_tamina_utils_HTMLUtils;
-org_tamina_utils_HTMLUtils.__name__ = ["org","tamina","utils","HTMLUtils"];
-org_tamina_utils_HTMLUtils.getElementById = function(parent,id) {
+var symhaxe_utils_HTMLUtils = function() { };
+$hxClasses["symhaxe.utils.HTMLUtils"] = symhaxe_utils_HTMLUtils;
+symhaxe_utils_HTMLUtils.__name__ = ["symhaxe","utils","HTMLUtils"];
+symhaxe_utils_HTMLUtils.getElementById = function(parent,id) {
 	var result = null;
 	if(parent.children != null) {
 		var _g1 = 0;
@@ -1480,18 +1432,18 @@ org_tamina_utils_HTMLUtils.getElementById = function(parent,id) {
 		while(_g1 < _g) {
 			var i = _g1++;
 			var el = parent.children.item(i);
-			var elId = org_tamina_utils_HTMLUtils.getAttribute(el,"id");
+			var elId = symhaxe_utils_HTMLUtils.getAttribute(el,"id");
 			if(elId == id) {
 				result = el;
 				break;
 			} else {
-				result = org_tamina_utils_HTMLUtils.getElementById(el,id);
+				result = symhaxe_utils_HTMLUtils.getElementById(el,id);
 			}
 		}
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.getElementByAttribute = function(parent,attribute,value) {
+symhaxe_utils_HTMLUtils.getElementByAttribute = function(parent,attribute,value) {
 	var result = null;
 	if(parent.children != null) {
 		var _g1 = 0;
@@ -1500,12 +1452,12 @@ org_tamina_utils_HTMLUtils.getElementByAttribute = function(parent,attribute,val
 			var i = _g1++;
 			if(result == null) {
 				var el = parent.children.item(i);
-				var elId = org_tamina_utils_HTMLUtils.getAttribute(el,attribute);
+				var elId = symhaxe_utils_HTMLUtils.getAttribute(el,attribute);
 				if(elId == value) {
 					result = el;
 					return result;
 				} else {
-					result = org_tamina_utils_HTMLUtils.getElementByAttribute(el,attribute,value);
+					result = symhaxe_utils_HTMLUtils.getElementByAttribute(el,attribute,value);
 				}
 			} else {
 				return result;
@@ -1514,7 +1466,7 @@ org_tamina_utils_HTMLUtils.getElementByAttribute = function(parent,attribute,val
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.getAttribute = function(element,name) {
+symhaxe_utils_HTMLUtils.getAttribute = function(element,name) {
 	var result = "";
 	var _g1 = 0;
 	var _g = element.attributes.length;
@@ -1528,22 +1480,22 @@ org_tamina_utils_HTMLUtils.getAttribute = function(element,name) {
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.getEventPath = function(event) {
+symhaxe_utils_HTMLUtils.getEventPath = function(event) {
 	var result = [];
 	if(event.target != null && js_Boot.__instanceof(event.target,HTMLElement)) {
-		result = org_tamina_utils_HTMLUtils.recursivelyFindParent(event.target);
+		result = symhaxe_utils_HTMLUtils.recursivelyFindParent(event.target);
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.recursivelyFindParent = function(element) {
+symhaxe_utils_HTMLUtils.recursivelyFindParent = function(element) {
 	var result = [];
 	result.push(element);
 	if(element.nodeName.toLowerCase() != "body" && element.parentNode != null) {
-		result = result.concat(org_tamina_utils_HTMLUtils.recursivelyFindParent(element.parentNode));
+		result = result.concat(symhaxe_utils_HTMLUtils.recursivelyFindParent(element.parentNode));
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.findParent = function(element,doesMatch,maxLevel,currLevel) {
+symhaxe_utils_HTMLUtils.findParent = function(element,doesMatch,maxLevel,currLevel) {
 	if(currLevel == null) {
 		currLevel = 0;
 	}
@@ -1557,11 +1509,11 @@ org_tamina_utils_HTMLUtils.findParent = function(element,doesMatch,maxLevel,curr
 		return element.parentElement;
 	}
 	if(++currLevel < maxLevel) {
-		return org_tamina_utils_HTMLUtils.findParent(element.parentElement,doesMatch,maxLevel,currLevel);
+		return symhaxe_utils_HTMLUtils.findParent(element.parentElement,doesMatch,maxLevel,currLevel);
 	}
 	return null;
 };
-org_tamina_utils_HTMLUtils.removeElement = function(element) {
+symhaxe_utils_HTMLUtils.removeElement = function(element) {
 	var result = true;
 	if($bind(element,element.remove) != null) {
 		element.remove();
@@ -1572,7 +1524,7 @@ org_tamina_utils_HTMLUtils.removeElement = function(element) {
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.getElementOffset = function(element) {
+symhaxe_utils_HTMLUtils.getElementOffset = function(element) {
 	var result = { top : 0, left : 0};
 	var rect = element.getBoundingClientRect();
 	var body = window.document.body;
@@ -1581,52 +1533,52 @@ org_tamina_utils_HTMLUtils.getElementOffset = function(element) {
 	result.left = Math.round(rect.left + win.pageXOffset - element.clientLeft);
 	return result;
 };
-org_tamina_utils_HTMLUtils.getTouchPosition = function(element,evt) {
-	var offset = org_tamina_utils_HTMLUtils.getElementOffset(element);
+symhaxe_utils_HTMLUtils.getTouchPosition = function(element,evt) {
+	var offset = symhaxe_utils_HTMLUtils.getElementOffset(element);
 	var touch = evt.touches.item(0);
-	return new org_tamina_geom_Point(touch.pageX - offset.left,touch.pageY - offset.top);
+	return new symhaxe_geom_Point(touch.pageX - offset.left,touch.pageY - offset.top);
 };
-org_tamina_utils_HTMLUtils.isTouchSupported = function() {
+symhaxe_utils_HTMLUtils.isTouchSupported = function() {
 	var result = !!(('ontouchstart' in window)
             || (window.navigator['msPointerEnabled'] && window.navigator['msMaxTouchPoints'] > 0)
             || (window.navigator['pointerEnabled'] && window.navigator['maxTouchPoints'] > 0));
 	return result;
 };
-org_tamina_utils_HTMLUtils.getBrowserType = function(agent) {
+symhaxe_utils_HTMLUtils.getBrowserType = function(agent) {
 	if(agent == null) {
 		agent = window.navigator.userAgent;
 	}
-	var result = org_tamina_utils_BrowserType.Unknown;
+	var result = symhaxe_utils_BrowserType.Unknown;
 	if(new EReg("WebKit","").match(agent)) {
 		if(new EReg("Chrome","").match(agent)) {
-			result = org_tamina_utils_BrowserType.Chrome;
+			result = symhaxe_utils_BrowserType.Chrome;
 			var isAndroid = agent.indexOf("Mozilla/5.0") > -1 && agent.indexOf("Android ") > -1 && agent.indexOf("AppleWebKit") > -1;
 			if(isAndroid) {
-				result = org_tamina_utils_BrowserType.Android;
+				result = symhaxe_utils_BrowserType.Android;
 			}
 		} else if(new EReg("Safari","").match(agent)) {
-			result = org_tamina_utils_BrowserType.Safari;
+			result = symhaxe_utils_BrowserType.Safari;
 		} else {
-			result = org_tamina_utils_BrowserType.Opera;
+			result = symhaxe_utils_BrowserType.Opera;
 		}
 	} else if(new EReg("Opera","").match(agent)) {
-		result = org_tamina_utils_BrowserType.Opera;
+		result = symhaxe_utils_BrowserType.Opera;
 	} else if(new EReg("Mozilla","").match(agent)) {
 		var isIE = agent.indexOf("MSIE ") > -1 || agent.indexOf("Trident/") > -1 || agent.indexOf("Edge/") > -1;
 		var isAndroid1 = agent.indexOf("Mozilla/5.0") > -1 && agent.indexOf("Android ") > -1 && agent.indexOf("AppleWebKit") > -1;
 		if(isIE) {
-			result = org_tamina_utils_BrowserType.IE;
+			result = symhaxe_utils_BrowserType.IE;
 		} else if(isAndroid1) {
-			result = org_tamina_utils_BrowserType.Android;
+			result = symhaxe_utils_BrowserType.Android;
 		} else {
-			result = org_tamina_utils_BrowserType.FireFox;
+			result = symhaxe_utils_BrowserType.FireFox;
 		}
 	} else {
-		result = org_tamina_utils_BrowserType.IE;
+		result = symhaxe_utils_BrowserType.IE;
 	}
 	return result;
 };
-org_tamina_utils_HTMLUtils.getIEVersion = function(ua) {
+symhaxe_utils_HTMLUtils.getIEVersion = function(ua) {
 	if(ua == null) {
 		ua = window.navigator.userAgent;
 	}
@@ -1644,7 +1596,7 @@ org_tamina_utils_HTMLUtils.getIEVersion = function(ua) {
 	}
 	return -1;
 };
-org_tamina_utils_HTMLUtils.getChromeVersion = function(ua) {
+symhaxe_utils_HTMLUtils.getChromeVersion = function(ua) {
 	if(ua == null) {
 		ua = window.navigator.userAgent;
 	}
@@ -1654,7 +1606,7 @@ org_tamina_utils_HTMLUtils.getChromeVersion = function(ua) {
 	}
 	return -1;
 };
-org_tamina_utils_HTMLUtils.getFirefoxVersion = function(ua) {
+symhaxe_utils_HTMLUtils.getFirefoxVersion = function(ua) {
 	if(ua == null) {
 		ua = window.navigator.userAgent;
 	}
@@ -1664,7 +1616,7 @@ org_tamina_utils_HTMLUtils.getFirefoxVersion = function(ua) {
 	}
 	return -1;
 };
-org_tamina_utils_HTMLUtils.getSafariVersion = function(ua) {
+symhaxe_utils_HTMLUtils.getSafariVersion = function(ua) {
 	if(ua == null) {
 		ua = window.navigator.userAgent;
 	}
@@ -1674,31 +1626,31 @@ org_tamina_utils_HTMLUtils.getSafariVersion = function(ua) {
 	}
 	return -1;
 };
-var org_tamina_utils_BrowserType = { __ename__ : true, __constructs__ : ["Chrome","Android","Safari","WebKitOther","FireFox","Opera","IE","Unknown"] };
-org_tamina_utils_BrowserType.Chrome = ["Chrome",0];
-org_tamina_utils_BrowserType.Chrome.toString = $estr;
-org_tamina_utils_BrowserType.Chrome.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.Android = ["Android",1];
-org_tamina_utils_BrowserType.Android.toString = $estr;
-org_tamina_utils_BrowserType.Android.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.Safari = ["Safari",2];
-org_tamina_utils_BrowserType.Safari.toString = $estr;
-org_tamina_utils_BrowserType.Safari.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.WebKitOther = ["WebKitOther",3];
-org_tamina_utils_BrowserType.WebKitOther.toString = $estr;
-org_tamina_utils_BrowserType.WebKitOther.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.FireFox = ["FireFox",4];
-org_tamina_utils_BrowserType.FireFox.toString = $estr;
-org_tamina_utils_BrowserType.FireFox.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.Opera = ["Opera",5];
-org_tamina_utils_BrowserType.Opera.toString = $estr;
-org_tamina_utils_BrowserType.Opera.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.IE = ["IE",6];
-org_tamina_utils_BrowserType.IE.toString = $estr;
-org_tamina_utils_BrowserType.IE.__enum__ = org_tamina_utils_BrowserType;
-org_tamina_utils_BrowserType.Unknown = ["Unknown",7];
-org_tamina_utils_BrowserType.Unknown.toString = $estr;
-org_tamina_utils_BrowserType.Unknown.__enum__ = org_tamina_utils_BrowserType;
+var symhaxe_utils_BrowserType = { __ename__ : true, __constructs__ : ["Chrome","Android","Safari","WebKitOther","FireFox","Opera","IE","Unknown"] };
+symhaxe_utils_BrowserType.Chrome = ["Chrome",0];
+symhaxe_utils_BrowserType.Chrome.toString = $estr;
+symhaxe_utils_BrowserType.Chrome.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.Android = ["Android",1];
+symhaxe_utils_BrowserType.Android.toString = $estr;
+symhaxe_utils_BrowserType.Android.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.Safari = ["Safari",2];
+symhaxe_utils_BrowserType.Safari.toString = $estr;
+symhaxe_utils_BrowserType.Safari.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.WebKitOther = ["WebKitOther",3];
+symhaxe_utils_BrowserType.WebKitOther.toString = $estr;
+symhaxe_utils_BrowserType.WebKitOther.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.FireFox = ["FireFox",4];
+symhaxe_utils_BrowserType.FireFox.toString = $estr;
+symhaxe_utils_BrowserType.FireFox.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.Opera = ["Opera",5];
+symhaxe_utils_BrowserType.Opera.toString = $estr;
+symhaxe_utils_BrowserType.Opera.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.IE = ["IE",6];
+symhaxe_utils_BrowserType.IE.toString = $estr;
+symhaxe_utils_BrowserType.IE.__enum__ = symhaxe_utils_BrowserType;
+symhaxe_utils_BrowserType.Unknown = ["Unknown",7];
+symhaxe_utils_BrowserType.Unknown.toString = $estr;
+symhaxe_utils_BrowserType.Unknown.__enum__ = symhaxe_utils_BrowserType;
 var ws_CodeEditor = function() {
 	this.regexp_ins_tab = new EReg("\n(?!\n)","g");
 	this.line_beginnings = [];
@@ -1707,12 +1659,12 @@ var ws_CodeEditor = function() {
 	this.menu_home_top = 16;
 	this.y_margin = 2;
 	this.x_margin = 3;
-	org_tamina_html_component_HTMLComponent.call(this);
+	symhaxe_html_component_SHComponent.call(this);
 };
 $hxClasses["ws.CodeEditor"] = ws_CodeEditor;
 ws_CodeEditor.__name__ = ["ws","CodeEditor"];
-ws_CodeEditor.__super__ = org_tamina_html_component_HTMLComponent;
-ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+ws_CodeEditor.__super__ = symhaxe_html_component_SHComponent;
+ws_CodeEditor.prototype = $extend(symhaxe_html_component_SHComponent.prototype,{
 	createdCallback: function() {
 		var _gthis = this;
 		this.settings = { font_family : "8.4pt Monaco", font_size : "8.4pt", line_height : "138%", indentation_width : 4, indentation_method : "spaces"};
@@ -1737,13 +1689,13 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 		this.setAttribute("class","ps-code-editor");
 		this.setAttribute("tabindex","0");
 		this.setAttribute("spellcheck","false");
-		this.menu = org_tamina_html_component_HTMLApplication.createInstance(ws_ContextMenu);
-		this.menu.addItem("undo","{{m_undo}}");
-		this.menu.addItem("redo","{{m_redo}}");
-		this.menu.addItem("cut","{{m_cut}}");
-		this.menu.addItem("copy","{{m_copy}}");
-		this.menu.addItem("delete","{{m_delete}}");
-		this.menu.addItem("selectAll","{{m_select_all}}");
+		this.menu = symhaxe_html_component_SHApplication.createInstance(ws_ContextMenu);
+		this.menu.addItem("undo","{{Undo}}");
+		this.menu.addItem("redo","{{Redo}}");
+		this.menu.addItem("cut","{{Cut}}");
+		this.menu.addItem("copy","{{Copy}}");
+		this.menu.addItem("delete","{{Delete}}");
+		this.menu.addItem("selectAll","{{Select all}}");
 		this.menu.addEventListener("menu_action",$bind(this,this.editor_onmenuaction));
 		this.menu.set_top(10);
 		this.menu.set_left(10);
@@ -1797,16 +1749,16 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 		} else {
 			var items_enabled = [];
 			if(this.undo_stack.get_hasItems()) {
-				this.menu.setItemLabel("undo","{{m_undo}} " + this.undo_stack.getLastItem().title);
+				this.menu.setItemLabel("undo","{{Undo}} " + this.undo_stack.getLastItem().title);
 				items_enabled.push("undo");
 			} else {
-				this.menu.setItemLabel("undo","{{m_undo}}");
+				this.menu.setItemLabel("undo","{{Undo}}");
 			}
 			if(this.redo_stack.get_hasItems()) {
-				this.menu.setItemLabel("redo","{{m_redo}} " + this.redo_stack.getLastItem().title);
+				this.menu.setItemLabel("redo","{{Redo}} " + this.redo_stack.getLastItem().title);
 				items_enabled.push("redo");
 			} else {
-				this.menu.setItemLabel("redo","{{m_redo}}");
+				this.menu.setItemLabel("redo","{{Redo}}");
 			}
 			var selection = window.getSelection();
 			if(!selection.isCollapsed) {
@@ -2337,12 +2289,12 @@ ws_CodeEditor.prototype = $extend(org_tamina_html_component_HTMLComponent.protot
 	,__class__: ws_CodeEditor
 });
 var ws_ContextMenu = $hx_exports["ws"]["ContextMenu"] = function() {
-	org_tamina_html_component_HTMLComponent.call(this);
+	symhaxe_html_component_SHComponent.call(this);
 };
 $hxClasses["ws.ContextMenu"] = ws_ContextMenu;
 ws_ContextMenu.__name__ = ["ws","ContextMenu"];
-ws_ContextMenu.__super__ = org_tamina_html_component_HTMLComponent;
-ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+ws_ContextMenu.__super__ = symhaxe_html_component_SHComponent;
+ws_ContextMenu.prototype = $extend(symhaxe_html_component_SHComponent.prototype,{
 	get_open: function() {
 		return this.get_visible();
 	}
@@ -2458,21 +2410,21 @@ ws_ContextMenu.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		}
 	}
 	,getView: function() {
-		return "<h3>{{undo_redo}}</h3>\n<div></div>\n<hr />\n<h3></h3>\n";
+		return "<h3>{{Undo / Redo}}</h3>\n<div></div>\n<hr />\n<h3></h3>\n";
 	}
 	,__class__: ws_ContextMenu
-	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_left:"set_left",set_top:"set_top",get_height:"get_height",get_width:"get_width",get_rect:"get_rect",set_open:"set_open",get_open:"get_open"})
+	,__properties__: $extend(symhaxe_html_component_SHComponent.prototype.__properties__,{set_left:"set_left",set_top:"set_top",get_height:"get_height",get_width:"get_width",get_rect:"get_rect",set_open:"set_open",get_open:"get_open"})
 });
 var ws_Def = function() { };
 $hxClasses["ws.Def"] = ws_Def;
 ws_Def.__name__ = ["ws","Def"];
 var ws_DirectoryBox = function() {
-	org_tamina_html_component_HTMLComponent.call(this);
+	symhaxe_html_component_SHComponent.call(this);
 };
 $hxClasses["ws.DirectoryBox"] = ws_DirectoryBox;
 ws_DirectoryBox.__name__ = ["ws","DirectoryBox"];
-ws_DirectoryBox.__super__ = org_tamina_html_component_HTMLComponent;
-ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+ws_DirectoryBox.__super__ = symhaxe_html_component_SHComponent;
+ws_DirectoryBox.prototype = $extend(symhaxe_html_component_SHComponent.prototype,{
 	get_dir_path: function() {
 		return this._dir_path;
 	}
@@ -2484,9 +2436,9 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 	}
 	,set_files: function(files) {
 		haxe_Template.globals.current_dir = this.get_dir_path();
-		this.directories_template = new haxe_Template("<select name=\"sets[::set_num::][dir_path]\">\n::foreach directories::\n<option value=\"::path::\"::if (path==current_dir):: selected::end::>\n::if (title)::::title::::else::::path::::end::</option>\n::end::\n</select>");
+		this.directories_template = new haxe_Template("<select name=\"sets[::set_num::][dir_path]\" class=\"d-list\">\n::foreach directories::\n<option value=\"::path::\"::if (path==current_dir):: selected::end::>\n::if (title)::::title::::else::::path::::end::</option>\n::end::\n</select>");
 		var h = this.directories_template.execute({ set_num : this.getAttribute("dir-num"), directories : this.directories},this);
-		this.querySelector("div").innerHTML = h;
+		this.querySelector("div[data-id=\"_directory_list\"]").innerHTML = h;
 		this.files_template = new haxe_Template("::if files.length::\n::foreach files::<tr>\n    <td>\n        <a class=\"::class::\" title=\"::title::\" data-href=\"::href::\" tabindex=\"0\">::name::</a>\n        <label class=\"accessible\" for=\"::href::\">Select File &apos;::name::&apos;</label>\n        <input name=\"sets[::set_num::][items][::name::]\" value=\"yes\" type=\"checkbox\" id=\"::href::\"/>\n    </td>\n    <td>::description::</td>\n    <td>::size::</td>\n    <td>::mtime::</td>\n</tr>::end::\n::else::<tr><td class=\"inactive\" colspan=\"4\">None found.</td></tr>\n::end::");
 		this._files = files;
 		this.deselect();
@@ -2496,14 +2448,14 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 		return this._files;
 	}
 	,createdCallback: function() {
-		org_tamina_html_component_HTMLComponent.prototype.createdCallback.call(this);
+		symhaxe_html_component_SHComponent.prototype.createdCallback.call(this);
 		$(this).addClass("ws-progress");
 		this.directories = [];
 		this.set_dir_path("");
 		this.className = "column";
 	}
 	,attachedCallback: function() {
-		org_tamina_html_component_HTMLComponent.prototype.attachedCallback.call(this);
+		symhaxe_html_component_SHComponent.prototype.attachedCallback.call(this);
 		$(this).on("click","button",$bind(this,this.onButtonClick));
 		$(this).on("change","select",$bind(this,this.onSelectChange));
 		$(this).on("click","a.dir",$bind(this,this.onDirectoryAnchorClick));
@@ -2585,21 +2537,21 @@ ws_DirectoryBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prot
 		}
 	}
 	,getView: function() {
-		return "<fieldset class=\"dir-controls\">\n    <div data-id=\"_directory_list\"></div>\n    <button type=\"button\" name=\"new\" class=\"button add\">+</button>\n</fieldset>\n<div class=\"dir-controls add-box\">\n<button class=\"button\" type=\"button\" name=\"new_file\">{{b_new_file}}</button>\n<button class=\"button\" type=\"button\" name=\"new_dirs\">{{b_new_directories}}</button>\n</div>\n<div class=\"dir-controls add-dirs-box\" style=\"display: none\">\n<label>{{l_new_directories}}<i>{{i_new_directories}}</i><textarea name=\"dir_names\"></textarea></label> <button class=\"button\" type=\"button\" name=\"create_dirs\">{{b_create}}</button>\n<button class=\"button\" type=\"button\" name=\"cancel_dirs\">Cancel</button>\n</div>\n<table data-id=\"_file_list\" class=\"selectable\" data-interactive=\"interactive\">\n<thead><th>{{h_name}}</th><th>{{h_description}}</th><th>{{h_size}}</th><th>{{h_last_modified}}</th></thead>\n<tbody></tbody>\n</table>\n";
+		return "<div class=\"apply dir-controls\">\n    <div data-id=\"_directory_list\"></div>\n    <button type=\"button\" name=\"new\" class=\"button add\">+</button>\n</div>\n<div class=\"dir-controls add-box\">\n<button class=\"button\" type=\"button\" name=\"new_file\">{{New File}}</button>\n<button class=\"button\" type=\"button\" name=\"new_dirs\">{{New Directories}}</button>\n</div>\n<div class=\"dir-controls add-dirs-box\" style=\"display: none\">\n<label>{{New Directories}}<i>{{Put each directory name on a separate line}}</i><textarea name=\"dir_names\"></textarea></label> <button class=\"button\" type=\"button\" name=\"create_dirs\">{{Create}}</button>\n<button class=\"button\" type=\"button\" name=\"cancel_dirs\">Cancel</button>\n</div>\n<table data-id=\"_file_list\" class=\"selectable\" data-interactive=\"interactive\">\n<thead><th>{{Name}}</th><th>{{Description}}</th><th>{{Size}}</th><th>{{Last Modified}}</th></thead>\n<tbody></tbody>\n</table>\n";
 	}
 	,__class__: ws_DirectoryBox
-	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_files:"set_files",get_files:"get_files",set_dir_path:"set_dir_path",get_dir_path:"get_dir_path"})
+	,__properties__: $extend(symhaxe_html_component_SHComponent.prototype.__properties__,{set_files:"set_files",get_files:"get_files",set_dir_path:"set_dir_path",get_dir_path:"get_dir_path"})
 });
 var ws_EditorFrame = $hx_exports["ws"]["EditorFrame"] = function() {
-	org_tamina_html_component_HTMLComponent.call(this);
+	symhaxe_html_component_SHComponent.call(this);
 };
 $hxClasses["ws.EditorFrame"] = ws_EditorFrame;
 ws_EditorFrame.__name__ = ["ws","EditorFrame"];
-ws_EditorFrame.__super__ = org_tamina_html_component_HTMLComponent;
-ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+ws_EditorFrame.__super__ = symhaxe_html_component_SHComponent;
+ws_EditorFrame.prototype = $extend(symhaxe_html_component_SHComponent.prototype,{
 	attachedCallback: function() {
 		var _gthis = this;
-		this.code_editor = org_tamina_html_component_HTMLApplication.createInstance(ws_CodeEditor);
+		this.code_editor = symhaxe_html_component_SHApplication.createInstance(ws_CodeEditor);
 		var settings = JSON.parse($("#editor-settings").text());
 		var value;
 		var _g = 0;
@@ -2619,21 +2571,21 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		$(this).on("click","button",$bind(this,this.onButtonClick));
 		this.button_sets = new haxe_ds_StringMap();
 		var _this = this.button_sets;
-		var value1 = this.translateContent("<button type=\"button\" class=\"button new float-right\" name=\"create\" accesskey=\"s\">{{b_create_file}}</button>");
+		var value1 = this.translateContent("<button type=\"button\" class=\"button new float-right\" name=\"create\" accesskey=\"s\">{{Create File}}</button>");
 		if(__map_reserved["new"] != null) {
 			_this.setReserved("new",value1);
 		} else {
 			_this.h["new"] = value1;
 		}
 		var _this1 = this.button_sets;
-		var value2 = this.translateContent("<button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\">{{b_save_as}}</button><button type=\"button\" class=\"button float-right\" name=\"save\" style=\"float: right\" accesskey=\"s\">{{b_save_changes}}</button>");
+		var value2 = this.translateContent("<button type=\"button\" name=\"create\" class=\"button edit\" style=\"margin-left: 0\">{{Save As}}</button><button type=\"button\" class=\"button float-right\" name=\"save\" style=\"float: right\" accesskey=\"s\">{{Save Changes}}</button>");
 		if(__map_reserved["edit"] != null) {
 			_this1.setReserved("edit",value2);
 		} else {
 			_this1.h["edit"] = value2;
 		}
 		var _this2 = this.button_sets;
-		var value3 = this.translateContent("<button type=\"button\" class=\"button edit float-right\" name=\"save\" accesskey=\"s\">{{b_save_changes}}</button>");
+		var value3 = this.translateContent("<button type=\"button\" class=\"button edit float-right\" name=\"save\" accesskey=\"s\">{{Save Changes}}</button>");
 		if(__map_reserved["edit-xsl"] != null) {
 			_this2.setReserved("edit-xsl",value3);
 		} else {
@@ -2668,22 +2620,22 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		var _gthis = this;
 		if(filename != null) {
 			this.potential_filename = filename;
-			this.set_headerText("{{t_loading}} " + this.getFilePath(filename));
+			this.set_headerText("{{Loading}} " + this.getFilePath(filename));
 			this.className = "edit";
 			this.code_editor.setText("");
 			$.ajax({ method : "GET", url : Workspacer.ajax_url, data : { action : "load", file_path : this.getFilePath(filename)}, dataType : "json"}).done(function(data) {
 				_gthis.current_filename = _gthis.potential_filename;
 				_gthis.code_editor.setFilename(_gthis.current_filename);
 				_gthis.code_editor.setText(data.text);
-				var tmp = "{{t_editing}} " + _gthis.getFilePath(_gthis.current_filename);
+				var tmp = "{{Editing}} " + _gthis.getFilePath(_gthis.current_filename);
 				_gthis.set_headerText(tmp);
 			}).fail(function(jqXHR,textStatus) {
-				var tmp1 = "{{t_failed_to_load}} " + _gthis.getFilePath(_gthis.potential_filename);
+				var tmp1 = "{{Failed to load}} " + _gthis.getFilePath(_gthis.potential_filename);
 				_gthis.set_headerText(tmp1);
 				window.console.log(textStatus);
 			});
 		} else {
-			this.set_headerText("{{t_new_file}}");
+			this.set_headerText("{{New File}}");
 			this.className = "new";
 			this.code_editor.reset();
 			this.code_editor.setFilename(null);
@@ -2699,28 +2651,28 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 			this.close();
 			break;
 		case "create":
-			var potential_filename = window.prompt(this.getTranslation("t_file_name"));
+			var potential_filename = window.prompt(this.getTranslation("File name"));
 			if(potential_filename != null) {
 				file_path = Workspacer.filePathFromParts(this.dir_path,potential_filename);
-				this.set_headerText("{{t_creating_file}} " + file_path);
+				this.set_headerText("{{Creating file}} " + file_path);
 				Workspacer.S_serverPost({ action : "create", file_path : file_path, text : this.code_editor.getText()},function(data) {
 					if(data.alert_msg == null) {
 						_gthis.current_filename = potential_filename;
 					}
 					_gthis.setButtonSet("edit");
-					var tmp = "{{t_editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
+					var tmp = "{{Editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
 					_gthis.set_headerText(tmp);
 					_gthis.code_editor.setFilename(_gthis.current_filename);
 				},function() {
-					_gthis.set_headerText(_gthis.current_filename.length > 0 ? _gthis.current_filename : "{{t_new_file}}");
+					_gthis.set_headerText(_gthis.current_filename.length > 0 ? _gthis.current_filename : "{{New file}}");
 				});
 			}
 			break;
 		case "save":
 			file_path = Workspacer.filePathFromParts(this.dir_path,this.current_filename);
-			this.set_headerText("{{t_saving}} " + file_path);
+			this.set_headerText("{{Saving}} " + file_path);
 			Workspacer.S_serverPost({ action : "save", file_path : file_path, filename : this.current_filename, text : this.code_editor.getText()},function(data1) {
-				var tmp1 = "{{t_editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
+				var tmp1 = "{{Editing}} " + Workspacer.filePathFromParts(_gthis.dir_path,_gthis.current_filename);
 				_gthis.set_headerText(tmp1);
 				_gthis.code_editor.setFilename(_gthis.current_filename);
 			});
@@ -2728,29 +2680,29 @@ ws_EditorFrame.prototype = $extend(org_tamina_html_component_HTMLComponent.proto
 		}
 	}
 	,getTranslation: function(key) {
-		return org_tamina_i18n_LocalizationManager.get_instance().getString(key);
+		return Symphony.Language.get(key);
 	}
 	,getView: function() {
-		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">{{b_close}}</button>\n</header>\n<footer></footer>\n";
+		return "<header class=\"top-panel\">\n    <p></p>\n    <button name=\"close\" type=\"button\">{{Close}}</button>\n</header>\n<footer></footer>\n";
 	}
 	,__class__: ws_EditorFrame
-	,__properties__: $extend(org_tamina_html_component_HTMLComponent.prototype.__properties__,{set_headerText:"set_headerText"})
+	,__properties__: $extend(symhaxe_html_component_SHComponent.prototype.__properties__,{set_headerText:"set_headerText"})
 });
 var ws_MainBox = function() {
 	this.dir_boxes = [];
-	org_tamina_html_component_HTMLComponent.call(this);
+	symhaxe_html_component_SHComponent.call(this);
 };
 $hxClasses["ws.MainBox"] = ws_MainBox;
 ws_MainBox.__name__ = ["ws","MainBox"];
-ws_MainBox.__super__ = org_tamina_html_component_HTMLComponent;
-ws_MainBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype,{
+ws_MainBox.__super__ = symhaxe_html_component_SHComponent;
+ws_MainBox.prototype = $extend(symhaxe_html_component_SHComponent.prototype,{
 	createdCallback: function() {
-		org_tamina_html_component_HTMLComponent.prototype.createdCallback.call(this);
+		symhaxe_html_component_SHComponent.prototype.createdCallback.call(this);
 		this.dir_boxes = [];
-		this.dir_boxes[0] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
+		this.dir_boxes[0] = symhaxe_html_component_SHApplication.createInstance(ws_DirectoryBox);
 		this.dir_boxes[0].setAttribute("dir-num","0");
 		this.appendChild(this.dir_boxes[0]);
-		this.dir_boxes[1] = org_tamina_html_component_HTMLApplication.createInstance(ws_DirectoryBox);
+		this.dir_boxes[1] = symhaxe_html_component_SHApplication.createInstance(ws_DirectoryBox);
 		this.dir_boxes[1].setAttribute("dir-num","1");
 		this.dir_boxes[1].set_visible(false);
 		this.appendChild(this.dir_boxes[1]);
@@ -2774,7 +2726,7 @@ ws_MainBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype
 			this.dir_boxes[1].set_visible(false);
 			break;
 		case "split-view":
-			this.className = "two columns";
+			this.className = "double";
 			this.dir_boxes[1].set_dir_path(this.dir_boxes[0].get_dir_path());
 			this.dir_boxes[1].set_files(this.dir_boxes[0].get_files().slice(0));
 			this.dir_boxes[1].set_visible(true);
@@ -2808,7 +2760,7 @@ ws_MainBox.prototype = $extend(org_tamina_html_component_HTMLComponent.prototype
 });
 var ws_editorpart_TextAction = function(editor,title) {
 	this.editor = editor;
-	this.title = org_tamina_i18n_LocalizationManager.get_instance().getString(title);
+	this.title = Symphony.Language.get(title);
 };
 $hxClasses["ws.editorpart.TextAction"] = ws_editorpart_TextAction;
 ws_editorpart_TextAction.__name__ = ["ws","editorpart","TextAction"];
@@ -3127,7 +3079,7 @@ ws_CodeEditor.__meta__ = { obj : { view : ["ws/CodeEditor.html"]}};
 ws_CodeEditor.__registered = (function($this) {
 	var $r;
 	{
-		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var key = "ws-codeeditor".toLowerCase();
 		var _this = this1;
 		if(__map_reserved[key] != null) {
@@ -3144,7 +3096,7 @@ ws_ContextMenu.KEY = { UP_ARROW : 38, DOWN_ARROW : 40};
 ws_ContextMenu.__registered = (function($this) {
 	var $r;
 	{
-		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var key = "ws-contextmenu".toLowerCase();
 		var _this = this1;
 		if(__map_reserved[key] != null) {
@@ -3162,7 +3114,7 @@ ws_DirectoryBox.__meta__ = { obj : { view : ["ws/DirectoryBox.html"]}, fields : 
 ws_DirectoryBox.__registered = (function($this) {
 	var $r;
 	{
-		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var key = "ws-directorybox".toLowerCase();
 		var _this = this1;
 		if(__map_reserved[key] != null) {
@@ -3178,7 +3130,7 @@ ws_EditorFrame.__meta__ = { obj : { view : ["ws/EditorFrame.html"]}};
 ws_EditorFrame.__registered = (function($this) {
 	var $r;
 	{
-		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var key = "ws-editorframe".toLowerCase();
 		var _this = this1;
 		if(__map_reserved[key] != null) {
@@ -3194,7 +3146,7 @@ ws_MainBox.__meta__ = { obj : { view : ["ws/MainBox.html"]}};
 ws_MainBox.__registered = (function($this) {
 	var $r;
 	{
-		var this1 = org_tamina_html_component_HTMLApplication.get_componentsXTagList();
+		var this1 = symhaxe_html_component_SHApplication.get_componentsXTagList();
 		var key = "ws-mainbox".toLowerCase();
 		var _this = this1;
 		if(__map_reserved[key] != null) {

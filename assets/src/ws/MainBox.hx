@@ -3,13 +3,12 @@ package ws;
 import js.Browser;
 import js.html.*;
 import js.jquery.*;
-import org.tamina.html.component.HTMLApplication;
-import org.tamina.html.component.HTMLComponent;
-import org.tamina.i18n.LocalizationManager;
+import symhaxe.html.component.SHApplication;
+import symhaxe.html.component.SHComponent;
 import ws.DirectoryBox;
 
 @view('ws/MainBox.html')
-class MainBox extends HTMLComponent
+class MainBox extends SHComponent
 {
     public var dir_boxes: Array<DirectoryBox> = [];
     var directories: Array<Dynamic>;
@@ -23,10 +22,10 @@ class MainBox extends HTMLComponent
     {
         super.createdCallback();
         dir_boxes = [];
-        dir_boxes[0] = HTMLApplication.createInstance(DirectoryBox);
+        dir_boxes[0] = SHApplication.createInstance(DirectoryBox);
         dir_boxes[0].setAttribute('dir-num', "0");
         this.appendChild(dir_boxes[0]);
-        dir_boxes[1] = HTMLApplication.createInstance(DirectoryBox);
+        dir_boxes[1] = SHApplication.createInstance(DirectoryBox);
         dir_boxes[1].setAttribute('dir-num', "1");
         dir_boxes[1].visible = false;
         this.appendChild(dir_boxes[1]);
@@ -43,7 +42,8 @@ class MainBox extends HTMLComponent
     {
         switch (command) {
             case "split-view":
-                this.className = "two columns";
+                //this.className = "two columns";
+                this.className = "double";
                 dir_boxes[1].dir_path = dir_boxes[0].dir_path;
                 dir_boxes[1].files = dir_boxes[0].files.slice(0);
                 dir_boxes[1].visible = true;

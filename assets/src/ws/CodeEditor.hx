@@ -6,8 +6,8 @@ import js.html.*;
 import haxe.ds.StringMap;
 import Reflect;
 
-import org.tamina.html.component.HTMLApplication;
-import org.tamina.html.component.HTMLComponent;
+import symhaxe.html.component.SHApplication;
+import symhaxe.html.component.SHComponent;
 
 import Workspacer;
 import ws.Def;
@@ -30,7 +30,7 @@ typedef Highlighter = {
 
 //@:expose
 @view('ws/CodeEditor.html')
-class CodeEditor extends HTMLComponent
+class CodeEditor extends SHComponent
 {
     @:const var x_margin: Int = 3;
     @:const var y_margin: Int = 2;
@@ -117,14 +117,14 @@ class CodeEditor extends HTMLComponent
         this.setAttribute('tabindex', "0");
         this.setAttribute('spellcheck', "false");
 
-        menu = HTMLApplication.createInstance(ContextMenu);
-        menu.addItem('undo', '{{m_undo}}');
-        menu.addItem('redo', '{{m_redo}}');
-        menu.addItem('cut', '{{m_cut}}');
-        menu.addItem("copy", '{{m_copy}}');
-        //menu.addItem("paste", "Paste");
-        menu.addItem('delete', '{{m_delete}}');
-        menu.addItem('selectAll', '{{m_select_all}}');
+        menu = SHApplication.createInstance(ContextMenu);
+        menu.addItem('undo', '{{Undo}}');
+        menu.addItem('redo', '{{Redo}}');
+        menu.addItem('cut', '{{Cut}}');
+        menu.addItem("copy", '{{Copy}}');
+        //menu.addItem("paste", "{{Paste}}");
+        menu.addItem('delete', '{{Delete}}');
+        menu.addItem('selectAll', '{{Select all}}');
         menu.addEventListener('menu_action', editor_onmenuaction);
         menu.top = 10;
         menu.left = 10;
@@ -133,7 +133,7 @@ class CodeEditor extends HTMLComponent
 
         this.addEventListener('keydown', editor_onkeydown);
         this.addEventListener('contextmenu', editor_oncontextmenu);
-        
+
         undo_stack = new Stack();
         redo_stack = new Stack();
         timeout = new Timeout();
@@ -184,16 +184,16 @@ class CodeEditor extends HTMLComponent
             // Set enabled items.
             var items_enabled: Array<String> = [];
             if (undo_stack.hasItems) {
-                menu.setItemLabel("undo", '{{m_undo}} ${undo_stack.getLastItem().title}');
+                menu.setItemLabel("undo", '{{Undo}} ${undo_stack.getLastItem().title}');
                 items_enabled.push("undo");
             } else {
-                menu.setItemLabel("undo", '{{m_undo}}');
+                menu.setItemLabel("undo", '{{Undo}}');
             }
             if (redo_stack.hasItems) {
-                menu.setItemLabel("redo", '{{m_redo}} ${redo_stack.getLastItem().title}');
+                menu.setItemLabel("redo", '{{Redo}} ${redo_stack.getLastItem().title}');
                 items_enabled.push("redo");
             } else {
-                menu.setItemLabel("redo", '{{m_redo}}');
+                menu.setItemLabel("redo", '{{Redo}}');
             }
             var selection = Browser.window.getSelection();
             if (!selection.isCollapsed) {
