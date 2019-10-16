@@ -17,21 +17,26 @@ trait Files
                 $item_out = array('name' => $name);
                 $file_path = $dir_path ? $dir_path . '/' . $name : $name;
                 if (is_link($file_path)) {
-                    $real_file_path = readlink($file_path);
-                    if (substr($real_file_path, 0, 1) == '/') {
-                        $real_file_path = substr($real_file_path, strlen(WORKSPACE) + 1);
-                    }
-                    $real_file_path = trim($real_file_path, '/');
-                    if (is_dir($real_file_path)) {
-                        $item_out['class'] = 'link dir';
-                        $item_out['href'] = $real_file_path;
-                        $item_out['title'] = 'Symlink. View real directory \'' . $real_file_path . '\'';
-                        $item_out['size'] = $this->getNumFilesInDirectory($real_file_path);
+                    $real_file_path = @readlink($file_path);
+                    if ($real_file_path !== false) {
+                        if (substr($real_file_path, 0, 1) == '/') {
+                            $real_file_path = substr($real_file_path, strlen(WORKSPACE) + 1);
+                        }
+                        $real_file_path = trim($real_file_path, '/');
+                        if (is_dir($real_file_path)) {
+                            $item_out['class'] = 'link dir';
+                            $item_out['href'] = $real_file_path;
+                            $item_out['title'] = 'Symlink. View real directory \'' . $real_file_path . '\'';
+                            $item_out['size'] = $this->getNumFilesInDirectory($real_file_path);
+                        } else {
+                            $item_out['class'] = 'link file';
+                            $item_out['href'] = $real_file_path;
+                            $item_out['title'] = 'Symlink. Edit real file \'' . $real_file_path . '\'';
+                            $item_out['size'] = General::formatFilesize(filesize($real_file_path));
+                        }
                     } else {
-                        $item_out['class'] = 'link file';
-                        $item_out['href'] = $real_file_path;
-                        $item_out['title'] = 'Symlink. Edit real file \'' . $real_file_path . '\'';
-                        $item_out['size'] = General::formatFilesize(filesize($real_file_path));
+                        $item_out['class'] = 'link';
+                        $item_out['title'] = 'Symlink';
                     }
                 } else {
                     if (is_dir($file_path)) {
@@ -47,20 +52,25 @@ trait Files
 
                     }
                 }
-                $description = $finfo->file($file_path);
-                $comma_pos = strpos($description, ',');
-                if ($comma_pos) {
-                    $description = substr($description, 0, $comma_pos);
+                $description = @$finfo->file($file_path);
+                if ($description) {
+                    $comma_pos = strpos($description, ',');
+                    if ($comma_pos) {
+                        $description = substr($description, 0, $comma_pos);
+                    }
+                    $item_out['description'] = $description;
+                    $item_out['mtime'] = date($format, filemtime($file_path));
+                } else {
+                    $item_out['description'] = 'unknown';
+                    $item_out['mtime'] = '-';
                 }
-                $item_out['description'] = $description;
-                $item_out['mtime'] = date($format, filemtime($file_path));
                 $output[] = $item_out;
             }
         }
         chdir($cwd);
         return $output;
     }
-    
+
     function scanDirectory($dir_path = '')
     {
         $files = scandir($dir_path == '' ? '.' : $dir_path);
@@ -70,7 +80,7 @@ trait Files
             return false;
         }
     }
-    
+
     function getRecursiveDirList()
     {
         $dir_list = General::listDirStructure(WORKSPACE, null, true, WORKSPACE);
@@ -80,7 +90,7 @@ trait Files
         }
         return $output;
     }
-    
+
     function getNumFilesInDirectory($file_path)
     {
         $child_names = $this->scanDirectory($file_path);

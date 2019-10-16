@@ -9,52 +9,55 @@
     <authors>
         <author>
             <name github="petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
-            <email>petertron@mailservice.ms</email>
-            <!--<website>http://www.peter-s.tk</website>-->
+            <email>peter.s@mail.uk</email>
+            <website>https://il.ink/peter.s</website>
         </author>
     </authors>
     <releases>
-        <release version="0.6.1" date="2017-12-03" min="2.5.0" max="3.0.0">
+        <release version="0.6.2" date="2019-10-16" min="2.5.0" max="2.8.0">
+            - Prevent crashing when a symbolic link cannot be resolved.
+        </release>
+        <release version="0.6.1" date="2017-12-03" min="2.5.0" max="2.8.0">
             - The tab key works again.
         </release>
-        <release version="0.6.0" date="2017-11-24" min="2.5.0" max="3.0.0">
+        <release version="0.6.0" date="2017-11-24" min="2.5.0" max="2.8.0">
             - Editor now has a custom context menu.
             - Editor now has language translation.
         </release>
-        <release version="0.5.1" date="2017-10-25" min="2.5.0" max="3.0.0">
+        <release version="0.5.1" date="2017-10-25" min="2.5.0" max="2.8.0">
             - Fix editor caret bug.
         </release>
-        <release version="0.5.0" date="2017-10-23" min="2.5.0" max="3.0.0">
+        <release version="0.5.0" date="2017-10-23" min="2.5.0" max="2.8.0">
             - Improved file manager with split-view mode.
             - File editor now uses a modal box.
         </release>
-        <release version="0.4.0" date="2016-06-27" min="2.5.0" max="3.0.0">
+        <release version="0.4.0" date="2016-06-27" min="2.5.0" max="2.8.0">
             - Iframe now uses 'srcdoc' attribute.
             - URL bugs fixed.
         </release>
-        <release version="0.3.2" date="2016-04-08" min="2.5.0" max="3.0.0">
+        <release version="0.3.2" date="2016-04-08" min="2.5.0" max="2.8.0">
             - Fixed "file not found" fault.
         </release>
-        <release version="0.3.1" date="2016-04-07" min="2.5.0" max="3.0.0">
+        <release version="0.3.1" date="2016-04-07" min="2.5.0" max="2.8.0">
             - Fixed faulty URLs leading to page not found.
         </release>
-        <release version="0.3.0" date="2016-04-05" min="2.5.0" max="3.0.0">
+        <release version="0.3.0" date="2016-04-05" min="2.5.0" max="2.8.0">
             - Editor save &amp; delete buttons moved to bottom of window.
             - Save-as button added to editor, filename box removed.
             - Several bugs fixed.
         </release>
-        <release version="0.2.1" date="2015-10-23" min="2.5.0" max="3.0.0">
+        <release version="0.2.1" date="2015-10-23" min="2.5.0" max="2.8.0">
             - Editor caret can be placed on last line in Blink-based browsers.
             - Editor window scrolls when text is entered on bottom line.
         </release>
-        <release version="0.2.0" date="2015-10-16" min="2.5.0" max="3.0.0">
+        <release version="0.2.0" date="2015-10-16" min="2.5.0" max="2.8.0">
             - Height of editor is set to fit available space in browser window.
             - 'Save' and 'delete' buttons moved to page context area.
         </release>
-        <release version="0.1.1" date="2015-09-24" min="2.5.0" max="3.0.0">
+        <release version="0.1.1" date="2015-09-24" min="2.5.0" max="2.8.0">
             - Saving files did not always work. Alterations made to JS code.
         </release>
-        <release version="0.1.0" date="2015-08-29" min="2.5.0" max="3.0.0">
+        <release version="0.1.0" date="2015-08-29" min="2.5.0" max="2.8.0">
             - Initial release.
         </release>
     </releases>

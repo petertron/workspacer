@@ -112,7 +112,8 @@ class contentExtensionWorkspacerAjax
                                             );
                                             //$canProceed = false;
                                         }
-                                    } elseif (!General::deleteFile($file_path_abs)) {
+                                    #} elseif (!General::deleteFile($file_path_abs)) {
+                                    } elseif (!@unlink($file_path_abs)) {
                                         $file_path = $this->getWorkspaceRelativePath($file_path_abs);
                                         $this->pageAlert(
                                             __('Failed to delete %s.', array('<code>' . $file_path . '</code>'))

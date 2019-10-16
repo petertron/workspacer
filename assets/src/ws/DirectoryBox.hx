@@ -133,7 +133,11 @@ class DirectoryBox extends SHComponent
 '::if files.length::
 ::foreach files::<tr>
     <td>
-        <a class="::class::" title="::title::" data-href="::href::" tabindex="0">::name::</a>
+        ::if href::
+            <a class="::class::" title="::title::" data-href="::href::" tabindex="0">::name::</a>
+        ::else::
+            <span class="::class::" title="::title::">::name::</span>
+        ::end::
         <label class="accessible" for="::href::">Select File &apos;::name::&apos;</label>
         <input name="sets[::set_num::][items][::name::]" value="yes" type="checkbox" id="::href::"/>
     </td>
