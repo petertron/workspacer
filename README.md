@@ -1,4 +1,4 @@
-# Workspacer version 0.6.2 for Symphony CMS version 2.5+
+# Workspacer version 0.7.0 for Symphony CMS version 2.5+
 
 Workspacer allows files in the Workspace folder to be managed and edited. It also restores the ability, pre Symphony 2.4, to edit Page XSL templates from the Pages page.
 
@@ -22,9 +22,16 @@ On Symphony's Preferences page there are options to change some of the editor's 
 
 ## Browser Compatibility.
 
-Workspacer will not work fully on Internet Explorer version 9 or lower.
+Version 0.7.x requires Chrome/Chromium or one of its derivatives at the moment. This is due to the use of some recently added features in JavaScript.
 
 ## Changes
+
+### Version 0.7.0
+
+Some redesigning has been done for this release.
+* Split-view mode is gone.
+* A file uploader has been added.
+* File renaming has been added at last.
 
 ### Version 0.6.2
 

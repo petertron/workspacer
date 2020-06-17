@@ -1,4 +1,0 @@
--js ../workspacer.js
--lib jQueryExtern
--lib symhaxe
--main Workspacer

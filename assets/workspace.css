@@ -1,166 +1,284 @@
-div.section-header {
-	clear: both;
-	position: relative;
-	margin-bottom: 5px;
-	background-color: rgba(0, 0, 0, 0.08);
-	border-top: 1px solid rgba(0, 0, 0, 0.09);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.09);
-/*	box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.05);
-	-webkit-box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.05);*/
-	/*min-height: 100%;*/
-}
-
-ul.actions fieldset.apply {
-	background-color: #83b340;
-	background-image: -webkit-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
-	background-image:	 -moz-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
-	background-image:	  -ms-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
-	background-image:	   -o-linear-gradient(top, #92c44d 0%, #92c44d 30%, #78a737 100%);
-	background-image:	linear-gradient(to bottom, #92c44d 0%, #92c44d 30%, #78a737 100%);
-	border-color: rgba(50, 70, 23, 0.3);
-	border-bottom-color: rgba(50, 70, 23, 0.5);
-	color: rgba(255, 255, 255, 0.9);
-	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
-}
-
-ul.actions li fieldset.apply select {
-	color: rgba(255, 255, 255, 0.9);
-	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
-}
-
-ul.actions li fieldset.apply button {
-	background: none;
-	color: rgba(255, 255, 255, 0.9);
-	text-shadow: 1px 1px 1px rgba(50, 70, 23, 0.25);
-}
-
-ul.actions li fieldset.apply option {
-	background-color: white;
-	color: black;
-}
-
-ul.actions form button[type='submit'] {
-	display: inline-block;
-	height: 22px;
-}
-
-ul.actions li input[type='file'] {
-	margin: 0 0 0 10px;
-	height: 22px;
-}
-
-div.new-directories {
-	position: relative;
-	margin: 8px 0 3px 0;
-	padding-left: 19px;
-}
-
-textarea[name='directory_names'] {
-	display: block;
-	margin: -14px 0 6px;
-	width: 280px;
-	min-height: 20px;
-	resize: vertical;
-}
-
-
-.hidden {
-	display: none;
-}
-
-.relative {
-	position: relative;
-}
-
-.ws-progress {
-    cursor: progress;
-}
-
-#wrapper[data-dir-num="0"] .for-dir-1 {
-    display: none;
-}
-
-#wrapper[data-dir-num="1"] .for-dir-0 {
-    display: none;
-}
-
-ws-mainbox {
-    clear: both;
-}
-
-ws-mainbox ws-directorybox[dir-num="0"] {
-    clear: both;
-    width: 100%;
-    float: left;
-}
-
-ws-mainbox.double ws-directorybox[dir-num="0"] {
-    width: 49.4%;
-}
-
-ws-mainbox ws-directorybox[dir-num="1"] {
-    width: 49.4%;
-    float: right;
-}
-
-ws-directorybox a.link {
-    font-style: italic;
-}
-
-ws-directorybox .add-box {
-    display: none;
-}
-
-ws-directorybox div.apply div {
-    width: calc(100% - 3rem);
-}
-
-.dir-controls {
-    clear: both;
-    position: relative;
-    margin: 1.4rem 1.8rem;
-    width: calc(100% - 3.6rem);
-}
-
-.dir-controls select, .dir-controls input {
-    position: relative;
-    margin: 0;
-    float: left;
-}
-
-select.d-list {
-    width: calc(100% + 1.4rem) !important;
-}
-
-.dir-controls button.add {
-    float: right;
-}
-
 #version {
     clear: both;
 }
 
-.actions {
-    clear: right;
+tbody a.dir {
+    color: #884610;
+}
+
+.leftmost {
+    float: left;
+    margin-left: 0;
+}
+
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+    margin-right: 0;
+}
+
+.apply.directory-selector {
+    border-radius: 0;
+    float: none;
+}
+
+.apply.directory-selector div {
+    width: 100%;
+}
+
+#context .directory-selector {
+    width: 30rem;
+}
+
+/*select.directory-selector {
+    appearance: none;
+    -moz-appearance: none;
+    width: 32rem;
+    height: 2.2rem;
+    border: 1px solid rgba(0, 0, 0, .25);
+    margin: 0;
+}*/
+
+dialog {
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, .25);
+    border-radius: .4rem;
+    background-color: white;
+    /*padding: .85rem;*/
+    overflow: hidden;
+}
+
+dialog header {
+    position: relative;
+    box-sizing: border-box;
+    height: 2.6rem;
+}
+
+dialog header h1 {
+    font-size: 1.3rem;
+    font-weight: normal;
+    float: left;
+}
+
+dialog header button {
     float: right;
 }
 
-div#aftb {
-	position: absolute;
-	z-index: 0;
-	top: -2px;
-	left: 18px;
-	opacity: 0;
-	cursor: pointer;
-	overflow: hidden;
+#NewDirectoriesBox header p {
+    float: left;
 }
 
-div#aftb input {
-	border: 0;
-	font-size: 1000px;
-	cursor: pointer;
+#NewDirectoriesBox .new-file {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 1rem;
 }
 
-select option {
-	font: 127.28%/1.35 'Lucida Grande', Leelawadee, Tahoma, Verdana, sans-serif !important;
+#NewDirectoriesBox .new-file input {
+    flex: auto;
+}
+
+#NewDirectoriesBox .new-file button {
+    flex: none;
+    /*margin-left: 1.2rem;*/
+    /*width: 10%;*/
+}
+
+#NewDirectoriesBox footer {
+    clear: both;
+    position: relative;
+    box-sizing: border-box;
+    height: 2.6rem;
+    padding-top: .85rem;
+}
+/*
+#NewDirectoriesBox button.float-right {
+    float: right;
+}
+*/
+#MoveCopyDeleteBox, #RenameBox {
+    width: 70%;
+    min-width: 200px;
+}
+
+dialog header {
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+
+dialog .context {
+	position: relative;
+	clear: both;
+	min-height: 3.8rem;
+	margin: 0;
+	/*padding: 2.5rem 1.8rem 0;*/
+	/*color: #000;
+	background-color: #f4f4f4;*/
+}
+
+dialog .context:after {
+	content: ' ';
+	display: block;
+	clear: both;
+	visibility: hidden;
+}
+
+dialog .context h1 {
+	float: left;
+	padding: 0;
+	font-size: 127.28%;
+	font-weight: normal;
+	line-height: 1.35;
+	border-bottom: 0;
+}
+
+dialog div.selector-box {
+    margin: 0 0 1.2rem 0;
+    overflow: hidden;
+}
+
+tr[data-mode="pre-active"] a.pre-active, tr[data-mode="active"] a.active {
+    display: inline;
+}
+
+tr[data-mode="active"] a.pre-active, tr[data-mode="pre-active"] a.active {
+    display: none;
+}
+
+
+a.uploading {
+    display: none;
+}
+
+div.new-files {
+    position: relative;
+    /*width: 100%;*/
+    background-color: #ffffc0;
+}
+
+div.new-files fieldset {
+    display: flex;
+    padding: 0;
+    margin: 0;
+}
+
+div.new-files fieldset label {
+    flex: initial;
+}
+
+div.new-files fieldset input {
+    flex: auto;
+    margin: 0;
+}
+
+div.new-files fieldset button {
+    flex: none;
+    margin: 0;
+}
+
+label i a.remove {
+    margin: 0;
+    color: #E0A000;
+}
+
+fieldset.bottom-actions:disabled {
+    display: none;
+}
+
+#NewDirectoriesBox, #UploadBox, #EditorBox {
+    width: 96.8%;
+    height: 94.4%;
+    background-color: white;
+    padding: 1.2rem;
+    overflow: hidden;
+}
+
+#EditorBox form {
+    clear: both;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+#EditorBox header {
+    flex: none;
+    box-sizing: border-box;
+    margin: 0 0 .84rem 0;
+}
+
+#EditorBox header div {
+    float: left;
+}
+
+#EditorBox header label {
+    display: inline;
+}
+
+#EditorBox h1 span {
+    margin-left: 2.8rem;
+    color: #505050;
+}
+
+#EditorBox .status-line {
+    margin-bottom: 1rem;
+    padding: 0.4rem 1rem 0.3rem 1rem;
+}
+
+#EditorBox fieldset.editor {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    flex: auto;
+}
+
+#EditorBox fieldset[name="fs_saveAs"] {
+    flex: auto;
+}
+
+#EditorBox fieldset.bottom-actions {
+    box-sizing: border-box;
+    width: 100%;
+    margin: .84rem 0 0 0;
+    flex: none;
+}
+
+dialog .flex-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+}
+
+dialog .flex-item {
+    width: calc(50% - .75rem);
+}
+
+code-area {
+    clear: both;
+    border: 1px solid rgba(0, 0, 0, .25);
+    height: 100%;
+}
+
+code-area:focus {
+    border-color: rgba(0, 0, 0, .40);
+}
+
+fieldset.editor {
+    margin: 0;
+    padding: 0;
+}
+
+fieldset.bottom-actions {
+    padding: 0;
+    margin: .84rem 0 0 0;
+}
+
+.progress {
+    cursor: progress;
 }

@@ -1,5 +1,8 @@
 <?php
 
+header('Content-Type: application/javascript');
+//console.log("Barty");
+echo 'var highlighters = [];' . PHP_EOL;
 require 'TextSplitter.js';
 require 'highlighters/highlight-xsl.js';
 //include 'highlighters/highlight-css.js';

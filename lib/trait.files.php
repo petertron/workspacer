@@ -1,77 +1,77 @@
 <?php
 
-use Workspacer as WS;
-
 trait Files
 {
-    function getDirectoryEntries($dir_path = null)
+    function getDirectoryEntries(string $dir_path = null)
     {
-        $cwd = getcwd();
-        chdir(WORKSPACE);
-        $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
-        $finfo = new finfo();
-        $names = $this->scanDirectory($dir_path);
-        $output = array();
-        if ($names) {
-            foreach ($names as $name) {
-                $item_out = array('name' => $name);
-                $file_path = $dir_path ? $dir_path . '/' . $name : $name;
-                if (is_link($file_path)) {
-                    $real_file_path = @readlink($file_path);
-                    if ($real_file_path !== false) {
-                        if (substr($real_file_path, 0, 1) == '/') {
-                            $real_file_path = substr($real_file_path, strlen(WORKSPACE) + 1);
-                        }
-                        $real_file_path = trim($real_file_path, '/');
-                        if (is_dir($real_file_path)) {
-                            $item_out['class'] = 'link dir';
-                            $item_out['href'] = $real_file_path;
-                            $item_out['title'] = 'Symlink. View real directory \'' . $real_file_path . '\'';
-                            $item_out['size'] = $this->getNumFilesInDirectory($real_file_path);
-                        } else {
-                            $item_out['class'] = 'link file';
-                            $item_out['href'] = $real_file_path;
-                            $item_out['title'] = 'Symlink. Edit real file \'' . $real_file_path . '\'';
-                            $item_out['size'] = General::formatFilesize(filesize($real_file_path));
-                        }
-                    } else {
-                        $item_out['class'] = 'link';
-                        $item_out['title'] = 'Symlink';
-                    }
-                } else {
-                    if (is_dir($file_path)) {
-                        $item_out['class'] = 'dir';
-                        $item_out['href'] = basename($file_path);
-                        $item_out['title'] = 'View directory \'' . $file_path . '\'';
-                        $item_out['size'] = $this->getNumFilesInDirectory($file_path);
-                    } else {
-                        $item_out['class'] = 'file';
-                        $item_out['href'] = basename($file_path);
-                        $item_out['title'] = 'Edit file \'' . $file_path . '\'';
-                        $item_out['size'] = General::formatFilesize(filesize($file_path));
-
-                    }
-                }
-                $description = @$finfo->file($file_path);
-                if ($description) {
-                    $comma_pos = strpos($description, ',');
-                    if ($comma_pos) {
-                        $description = substr($description, 0, $comma_pos);
-                    }
-                    $item_out['description'] = $description;
-                    $item_out['mtime'] = date($format, filemtime($file_path));
-                } else {
-                    $item_out['description'] = 'unknown';
-                    $item_out['mtime'] = '-';
-                }
-                $output[] = $item_out;
-            }
+        $dir_path_abs = WORKSPACE . ($dir_path ? '/' . $dir_path : null);
+        $rdi = new RecursiveDirectoryIterator($dir_path_abs,  RecursiveDirectoryIterator::SKIP_DOTS);
+        $iterator = new RecursiveIteratorIterator($rdi, RecursiveIteratorIterator::SELF_FIRST);
+        $return = [];
+        foreach ($iterator as $file_info) {
+            $return[] = $this->getDirectoryEntry($file_info);
         }
-        chdir($cwd);
-        return $output;
+
+        return $return;
     }
 
-    function scanDirectory($dir_path = '')
+    function getDirectoryEntry($file_info)
+    {
+        $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
+        $item_out = [
+            'name' => $file_info->getFilename(),
+            'type' => '-',
+            'size' => '-',
+            'mdate' => '-'
+        ];
+        $target_file_info = null;
+        if ($file_info->isLink()) {
+            $target_file_path = $file_info->getRealPath();
+            if ($target_file_path === false) {
+                $item_out['link_target'] = '';
+            } else {
+                $target_file_info = new SplFileInfo($target_file_path);
+                if (strpos($target_file_path, WORKSPACE) !== 0) {
+                    $item_out['link_target'] = $target_file_path;
+                } else {
+                    $item_out['link_target'] = substr($target_file_path, strlen(WORKSPACE) + 1);
+                }
+            }
+        } else {
+            $target_file_info = $file_info;
+        }
+        if (isset($target_file_info)) {
+            $mime_type = mime_content_type($target_file_info->getPathName());
+            $comma_pos = strpos($mime_type, ',');
+            if ($comma_pos) {
+                $mime_type = substr($mime_type, 0, $comma_pos);
+            }
+            if ($target_file_info->isDir()) {
+                $what = '+';
+                $count = 0;
+                /*foreach ($rdi->getChildren() as $child) {
+                    $count++;
+                }*/
+                $item_out['size'] = '-';//"$count item" . ($count !== 1 ? 's' : null);
+            } else {
+                $item_out['size'] = self::formatFilesize($target_file_info->getSize());
+                $what = (bool)preg_match('/^text\/|^application\//', $mime_type) ? '=' : '-';
+            }
+            $item_out['what'] = $what;
+            $item_out['type'] = $mime_type;
+            $item_out['mtime'] = $target_file_info->getMTime();
+            $item_out['mdate'] = date($format, $item_out['mtime']);
+
+            $perms = fileperms($target_file_info->getPathName());
+            $item_out['perms'] = substr(sprintf('%o', $perms), -4);
+            //$item_out['dir'] = trim(substr($target_file_info->getPath(), strlen(WORKSPACE) + 1), '/');
+            $item_out['dir'] = trim(substr($file_info->getPath(), strlen(WORKSPACE) + 1), '/');
+        }
+        return $item_out;
+    }
+
+
+    function scanDirectory(String $dir_path = '')
     {
         $files = scandir($dir_path == '' ? '.' : $dir_path);
         if ($files) {
@@ -84,17 +84,87 @@ trait Files
     function getRecursiveDirList()
     {
         $dir_list = General::listDirStructure(WORKSPACE, null, true, WORKSPACE);
-        $output = array(array('path' => '', 'title' => __('Workspace root')));
+        $output = [
+            ['path' => '', 'title' => __('Workspace root')]
+        ];
         foreach ($dir_list as $dir_path) {
-            $output[] = array('path' => trim($dir_path, '/'));
+            $output[] = ['path' => trim($dir_path, '/')];
         }
         return $output;
     }
 
-    function getNumFilesInDirectory($file_path)
+
+    function getFileInfoArray($file_path_abs)
+    {
+        $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
+        $file_info = new SplFileInfo($file_path_abs);
+        $item_out = [
+            'name' => $file_info->getFilename(),
+            'type' => '-',
+            'size' => '-',
+            'mdate' => '-'
+        ];
+        $target_file_info = null;
+        if ($file_info->isLink()) {
+            $target_file_path = $file_info->getRealPath();
+            if ($target_file_path === false) {
+                $item_out['link_target'] = '';
+            } else {
+                $target_file_info = new SplFileInfo($target_file_path);
+                if (strpos($target_file_path, WORKSPACE) !== 0) {
+                    $item_out['link_target'] = $target_file_path;
+                } else {
+                    $item_out['link_target'] = substr($target_file_path, strlen(WORKSPACE) + 1);
+                }
+            }
+        } else {
+            $target_file_info = $file_info;
+        }
+        if (isset($target_file_info)) {
+            $mime_type = mime_content_type($target_file_info->getPathName());
+            $comma_pos = strpos($mime_type, ',');
+            if ($comma_pos) {
+                $mime_type = substr($mime_type, 0, $comma_pos);
+            }
+            if ($target_file_info->isDir()) {
+                $what = '+';
+                $count = 0;
+                /*foreach ($rdi->getChildren() as $child) {
+                    $count++;
+                }*/
+                $item_out['size'] = '-';//"$count item" . ($count !== 1 ? 's' : null);
+            } else {
+                $item_out['size'] = self::formatFilesize($target_file_info->getSize());
+                $what = (bool)preg_match('/^text\/|^application\//', $mime_type) ? '=' : '-';
+            }
+            $item_out['what'] = $what;
+            $item_out['type'] = $mime_type;
+            $item_out['mtime'] = $target_file_info->getMTime();
+            $item_out['mdate'] = date($format, $item_out['mtime']);
+
+            $perms = fileperms($target_file_info->getPathName());
+            $item_out['perms'] = substr(sprintf('%o', $perms), -4);
+            $item_out['dir'] = trim(substr($target_file_info->getPath(), strlen(WORKSPACE)), '/');
+        }
+        return $item_out;
+    }
+
+
+    function getNumFilesInDirectory(String $file_path)
     {
         $child_names = $this->scanDirectory($file_path);
         $count = ($child_names !== false) ? count($child_names) : 0;
         return strval($count) . ' ' . (($count == 1) ? __('item') : __('items'));
+    }
+
+    static function formatFilesize(Int $size)
+    {
+        $levels = ['GiB' => 1024 * 1024 * 1024, 'MiB' => 1024 * 1024, 'KiB' => 1024];
+        foreach ($levels as $suffix => $threshold) {
+            if ($size >= $threshold) {
+                return strval(number_format($size / $threshold, 1)) . ' ' . $suffix;
+            }
+        }
+        return $size . ' bytes';
     }
 }

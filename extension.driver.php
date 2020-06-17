@@ -2,14 +2,12 @@
 
 require 'lib/defines.php';
 
-use Workspacer as WS;
-
 Class Extension_Workspacer extends Extension
 {
     public function __construct()
     {
         parent::__construct();
-        $this->settings = (object)Symphony::Configuration()->get(WS\ID);
+        $this->settings = (object)Symphony::Configuration()->get(WORKSPACER_ID);
     }
 
     public function install()
@@ -24,23 +22,23 @@ Class Extension_Workspacer extends Extension
 
     public function uninstall()
     {
-        Symphony::Configuration()->remove(WS\ID);
+        Symphony::Configuration()->remove(WORKSPACER_ID);
         Symphony::Configuration()->write();
     }
 
     function config()
     {
-        Symphony::Configuration()->setArray(
-            array(
-                WS\ID => array(
+        Symphony::Configuration()->setArray([WORKSPACER_ID => parse_ini_file(WORKSPACER_LIB . '/editor_default_settings.txt')], true);
+            /*[
+                WORKSPACER_ID => [
                     'font_family' => 'Monaco',
                     'font_size' => '8.4pt',
                     'line_height' => '148%',
                     'indentation_method' => 'tabs',
                     'indentation_width' => '4'
-                )
-            ), true
-        );
+                ]
+            ], true
+        );*/
         Symphony::Configuration()->write();
     }
 
@@ -49,15 +47,15 @@ Class Extension_Workspacer extends Extension
      */
     public function fetchNavigation()
     {
-        return array(
-            array(
+        return [
+            [
                 'location' => __('Blueprints'),
                 'name' => __('Workspace'),
                 'link' => 'blueprints/workspace/',
                 'relative' => false,
                 'visible' => 'yes'
-            )
-        );
+            ]
+        ];
     }
 
 
@@ -65,36 +63,36 @@ Class Extension_Workspacer extends Extension
 
     public function getSubscribedDelegates()
     {
-        return array(
-            array(
+        return [
+            [
                 'page' => '/backend/',
                 'delegate' => 'AdminPagePostCallback',
                 'callback' => 'postCallback'
-            ),
-            array(
+            ],
+            [
                 'page' => '/backend/',
                 'delegate' => 'AdminPagePreGenerate',
                 'callback' => 'adminPagePreGenerate'
-            ),
-            array(
+            ],
+            [
                 'page' => '/system/preferences/',
                 'delegate' => 'AddCustomPreferenceFieldsets',
                 'callback' => 'appendPreferences'
-            )/*,
-            array(
+            ]/*,
+            [
                 'page' => '/system/preferences/',
                 'delegate' => 'Save',
                 'callback' => 'savePreferences'
-            )*/
-        );
+            ]*/
+        ];
     }
 
-    public function postCallback($context)
+    public function postCallback(array $context)
     {
         $callback = $context['callback'];
         //echo "<pre>"; print_r($callback);echo "</pre>";
         if ($callback['driver'] == 'blueprintsworkspace') {
-            $callback['driver_location'] = WS\EXTENSION . '/content/content.blueprintsworkspace.php';
+            $callback['driver_location'] = WORKSPACER . '/content/content.blueprintsworkspace.php';
         }
         $context['callback'] = $callback;
         //echo "<br><br><pre>"; print_r($callback);echo "</pre>"; die;
@@ -103,69 +101,42 @@ Class Extension_Workspacer extends Extension
     /**
      * Modify admin pages.
      */
-    public function adminPagePreGenerate($context)
+    public function adminPagePreGenerate(array $context)
     {
-        $o_page = $context['oPage'];
+    //print_r($context); die;
+        //$o_page = $context['oPage'];
+        //var_dump($o_page->Contents); die;
+        /*if (!isset($o_page->Workspace)) {
+            return;
+        }*/
+
         $callback = Symphony::Engine()->getPageCallback();
         $driver = $callback['driver'];
-        if ($driver == "blueprintspages") {
-            $o_page->addStylesheetToHead(WS\ASSETS_URL . '/workspace.css');
-            $o_page->addStylesheetToHead(WS\ASSETS_URL . '/editor.css');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/CustomElements.min.js');
-            //$o_page->addScriptToHead(WS\ASSETS_URL . '/workspacer.js');
-            $o_page->addScriptToHead(WS\ASSETS_URL . '/TextSplitter.js');
+        if ($driver == 'blueprintspages') {
+            $o_page = $context['oPage'];
+            $o_page->addStylesheetToHead(WORKSPACER_ASSETS_URL . '/workspace.css');
+            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/code-area.js');
+            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/page-editor.js');
+            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
 
-            $o_page->Body->appendChild(
-                new XMLElement(
-                    'script',
-                    json_encode(array(
-                        'translations' => array(
-                            array('fieldName' => 'b_close', 'value' => __('Close')),
-                            array('fieldName' => 'b_create_file', 'value' => __('Create file')),
-                            array('fieldName' => 'b_save_changes', 'value' => __('Save Changes')),
-                            array('fieldName' => 'b_save_as', 'value' => __('Save As')),
-                            array('fieldName' => 't_new_file', 'value' => __('New file')),
-                            array('fieldName' => 't_loading', 'value' => __('Loading')),
-                            array('fieldName' => 't_failed_to_load', 'value' => __('Failed to load')),
-                            array('fieldName' => 't_creating_file', 'value' => __('Creating file')),
-                            array('fieldName' => 't_editing', 'value' => __('Editing')),
-                            array('fieldName' => 't_saving', 'value' => __('Saving')),
-                            array('fieldName' => 't_file_name', 'value' => __('File name')),
-                            array('fieldName' => 'm_undo', 'value' => __('Undo')),
-                            array('fieldName' => 'm_redo', 'value' => __('Redo')),
-                            array('fieldName' => 'm_cut', 'value' => __('Cut')),
-                            array('fieldName' => 'm_copy', 'value' => __('Copy')),
-                            array('fieldName' => 'm_delete', 'value' => __('Delete')),
-                            array('fieldName' => 'm_select_all', 'value' => __('Select all')),
-                            array('fieldName' => 'ta_insert', 'value' => __('insert')),
-                            array('fieldName' => 'ta_delete', 'value' => __('delete')),
-                            array('fieldName' => 'ta_cut', 'value' => __('cut')),
-                            array('fieldName' => 'ta_paste', 'value' => __('paste')),
-                        )
-                    )),
-                    array('type' => 'application/json', 'id' => 'workspacer-json')
-                )
-            );
-
-            $context = $callback['context'];
-            $action = $context[0];
+            $action = $callback['context'][0];
             if ($action == 'edit') {
-                $id = $context[1];
-                $template = PageManager::fetchPageByID($id);
-        //echo '<pre>'; print_r($template); echo '</pre>'; die;
+                $template = PageManager::fetchPageByID($callback['context'][1]);
+                $filename = $template['handle'] . '.xsl';
                 $ul = $o_page->Context->getChildByName('ul', 0);
                 $ul->prependChild(
                     new XMLElement(
                         'li',
                         new XMLElement(
-                            'a',
+                            'button',
                             __('Edit Page Template'),
-                            array(
+                            [
+                                'name' => 'edit-template',
+                                'type' => 'button',
                                 'title' => __('Edit page template'),
-                                'tabindex' => '0',
-                                'class' => 'button file',
-                                'data-href' => $template['handle'] . '.xsl'
-                            )
+                                //'class' => 'button file',
+                                'data-href' => $filename
+                            ]
                         )
                     )
                 );
@@ -179,12 +150,12 @@ Class Extension_Workspacer extends Extension
                             new XMLElement(
                                 'a',
                                 $value,
-                                array(
+                                [
                                     'title' => 'Edit ' . $value,
-                                    'tabindex' => 0,
+                                    'tabindex' => '-1',
                                     'class' => 'file',
                                     'data-href' => $value,
-                                )
+                                ]
                             )
                         );
                     }
@@ -193,104 +164,160 @@ Class Extension_Workspacer extends Extension
 
             // Editor box
 
-            $o_page->Head->appendChild(
+            //print_r($o_page->Context);die;//->Contents;die;
+            //$o_page->Contents->appendChild(new XMLElement('div', null, ['id' => 'mask')));
+            $this->settings = Symphony::Configuration()->get('workspacer');
+
+            $dialog = new XMLElement('dialog', null, ['id' => 'EditorBox']);
+            $header = new XMLElement('header');
+            $header->appendChild(new XMLElement('h1', __('Edit Page Template') . '<span class="filename"></span>'));
+            $header->appendChild(
                 new XMLElement(
-                    'script', json_encode($this->settings),
-                    array('type' => 'application/json', 'id' => 'editor-settings')
+                    'button', __('Close'), array('type' => 'button', 'name' => 'close')
                 )
             );
-            $o_page->Contents->appendChild(new XMLElement('div', null, array('id' => 'mask')));
-            $o_page->Contents->appendChild(new XMLElement(
-                'script',
+            $form = Widget::Form(SYMPHONY_URL . '/extension/workspacer/ajax/editor/', 'post');
+            $form->setAttribute('id', 'EditorForm');
+            $form->appendChild(XSRF::formToken());
+            $form->appendChild($header);
+            $form->appendChild(Widget::Input('fields[directory]', null, 'hidden'));
+            $form->appendChild(Widget::Input('fields[filename]', null, 'hidden'));
+            $status_line = new XMLElement('div', null, ['class' => 'status-line notice', 'hidden' => 'hidden']);
+            $form->appendChild($status_line);
+            $span = new XMLElement(
+                'span', '', [
+                    'class' => 'mode',
+                    'data-new' => __('New file'),
+                    'data-loading' => __('Loading'),
+                    'data-editing' => __('Editing'),
+                    'data-saving' => __('Saving')
+                ]
+            );
+            //$top_actions->appendChild($span->generate() . ': <span class="file-path"></span>');
+
+            $fieldset = new XMLElement(
+                'fieldset',
+                null,
+                [
+                    'name' => 'fs_editor',
+                    'class' => 'editor'
+                ]
+            );
+
+            $fieldset->appendChild(new XMLElement(
+                'code-area',
+                null,
+                [
+                    'name' => 'fields[contents]',
+                    'lang' => Symphony::Configuration()->get('lang', 'symphony'),
+                    'font-family' => $this->settings['font_family'],
+                    'font-size' => $this->settings['font_size'],
+                    'line-height' => $this->settings['line_height'],
+                    'indentation-method' => $this->settings['indentation_method'],
+                    'indentation-width' => $this->settings['indentation_width'],
+                    'autofocus' => 'autofocus'
+                ]
+            ));
+            $form->appendChild($fieldset);
+
+            $fieldset = new XMLElement(
+                'fieldset',
                 null,
                 array(
-                    'type' => 'text/javascript',
-                    'src' => WS\ASSETS_URL . '/workspacer.js',
+                    'class' => 'bottom-actions'
                 )
-            ));
-            $o_page->Contents->appendChild(new XMLElement(
-                'script',
-                null,
-                array(
-                    'type' => 'text/javascript',
-                    'src' => WS\ASSETS_URL . '/highlighters/highlight-xsl.js',
+            );
+
+            $fieldset->appendChild(
+                new XMLElement(
+                    'button',
+                    __('Save File'),
+                    [
+                        'class' => 'float-right',
+                        'name' => 'action[save]',
+                        'type' => 'submit',
+                        'accesskey' => 's'
+                    ]
                 )
-            ));
+            );
+            $form->appendChild($fieldset);
+            $dialog->appendChild($form);
+            $o_page->Contents->appendChild($dialog);
         }
     }
 
-    public function appendPreferences($context)
+    public function appendPreferences(array $context)
     {
         $mode = strtolower($this->settings->mode);
 
         $fieldset = new XMLElement(
             'fieldset',
             new XMLElement('legend', 'Workspacer'),
-            array('class' => 'settings')
+            ['class' => 'settings']
         );
 
-        $two_columns = new XMLElement('div', null, array('class' => 'two columns'));
+        $two_columns = new XMLElement('div', null, ['class' => 'two columns']);
         $two_columns->appendChild(
             Widget::Label(
                 __('Font Family'),
                 Widget::Input(
-                    'settings[' . WS\ID . '][font_family]', $this->settings->font_family
+                    'settings[' . WORKSPACER_ID . '][font_family]', $this->settings->font_family
                 ),
                 null, null,
-                array('class' => 'column')
+                ['class' => 'column']
             )
         );
         $two_columns->appendChild(
             Widget::Label(
                 __('Font Size'),
                 Widget::Input(
-                    'settings[' . WS\ID . '][font_size]', $this->settings->font_size
+                    'settings[' . WORKSPACER_ID . '][font_size]', $this->settings->font_size
                 ),
                 null, null,
-                array('class' => 'column')
+                ['class' => 'column']
             )
         );
         $fieldset->appendChild($two_columns);
 
-        $one_column = new XMLElement('div', null, array('class' => 'column'));
+        $one_column = new XMLElement('div', null, ['class' => 'column']);
         $one_column->appendChild(
             Widget::Label(
                 __('Line Height'),
                 Widget::Input(
-                    'settings[' . WS\ID . '][line_height]', $this->settings->line_height
+                    'settings[' . WORKSPACER_ID . '][line_height]', $this->settings->line_height
                 ),
                 null, null,
-                array('class' => 'column')
+                ['class' => 'column']
             )
         );
         $fieldset->appendChild($one_column);
 
-        $two_columns = new XMLElement('div', null, array('class' => 'two columns'));
+        $two_columns = new XMLElement('div', null, ['class' => 'two columns']);
         $two_columns->appendChild(
             Widget::Label(
                 __('Indentation Method'),
                 Widget::Select(
-                    'settings[' . WS\ID . '][indentation_method]',
-                    array(
-                        array('spaces', $this->settings->indentation_method == 'spaces', 'Spaces'),
-                        array('tabs', $this->settings->indentation_method == 'tabs', 'Tabs')
-                    )
+                    'settings[' . WORKSPACER_ID . '][indentation_method]',
+                    [
+                        ['spaces', $this->settings->indentation_method == 'spaces', 'Spaces'],
+                        ['tabs', $this->settings->indentation_method == 'tabs', 'Tabs']
+                    ]
                 ),
                 null, null,
-                array('class' => 'column')
+                ['class' => 'column']
             )
         );
         $two_columns->appendChild(
             Widget::Label(
                 __('Indentation/Tab Width'),
                 Widget::Input(
-                    'settings[' . WS\ID . '][indentation_width]',
+                    'settings[' . WORKSPACER_ID . '][indentation_width]',
                     $this->settings->indentation_width,
                     'number',
-                    array('min' => '1')
+                    ['min' => '1']
                 ),
                 null, null,
-                array('class' => 'column')
+                ['class' => 'column']
             )
         );
         $fieldset->appendChild($two_columns);

@@ -1,12 +1,16 @@
 <?php
 
-namespace Workspacer;
+define('WORKSPACER_ID', 'workspacer');
+define('WORKSPACER', EXTENSIONS . '/' . WORKSPACER_ID);
+define('WORKSPACER_ASSETS_URL', \URL . '/extensions/' . WORKSPACER_ID . '/assets');
+define('WORKSPACER_LIB', WORKSPACER . '/lib');
 
-function define_here($name, $value)
+function wm2_workspace_rel_path(string $file_path_abs)
 {
-    define("Workspacer\\$name", $value);
+    $cut_point = strlen(WORKSPACE);
+    if (substr($file_path_abs, 0, $cut_point) == WORKSPACE) {
+        return substr($file_path_abs, $cut_point);
+    } else {
+        return false;
+    }
 }
-
-define_here('ID', 'workspacer');
-define_here('EXTENSION', \EXTENSIONS . '/' . ID);
-define_here('ASSETS_URL', \URL . '/extensions/' . ID . '/assets');
