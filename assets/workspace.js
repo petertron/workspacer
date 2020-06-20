@@ -99,15 +99,18 @@
         // Editor box.
 
         EditorForm = document.forms.EditorForm;
+        EditorForm._dialog = EditorForm.closest('dialog');
+        EditorForm._status = EditorForm.querySelector('.status-line');
+        $(EditorForm._status).symphonyNotify();
         EditorForm.getVal = getValue;
         EditorForm.setVal = setValue;
         EditorForm.open = editorFormOpen;
         EditorForm.setView = editorFormSetView;
         EditorForm.setStatus = editorFormSetStatus;
+        EditorForm.loadFile = editorFormLoadFile;
         EditorForm.addEventListener('click', editorFormClickHandler);
         EditorForm.onsubmit = editorFormOnSubmit;
 
-        EditorForm.loadFile = editorFormLoadFile;
 
         CodeArea = document.querySelector('code-area');
         CodeArea.addEventListener('save', editorFormSaveEvent.bind(EditorForm));
@@ -769,8 +772,6 @@
 
     function editorFormOpen(dir = '', filename = '')
     {
-        this._dialog = this.closest('dialog');
-        this._notice = this.querySelector('.notice');
         this.setVal('fields[directory-last]', dir);
         this.setVal('fields[directory]', dir);
         this.setVal('fields[filename-last]', filename);
@@ -781,28 +782,17 @@
         this._dialog.showModal();
         if (filename) {
             this.loadFile(dir, filename);
+        } else {
+            this.setStatus('New file');
         }
         this['fields[contents]'].focus();
     }
 
 
-    function editorFormSetStatus(text, type)
+    function editorFormSetStatus(text, type = 'protected')
     {
-        let notice = this._notice;
-        notice.textContent = text;
-        let notice_types = ['doing', 'success', 'error'];
-        for (let notice_type of notice_types) {
-            if (notice_type == type) {
-                if (!notice.classList.contains(notice_type)) {
-                    notice.classList.add(notice_type);
-                }
-            } else {
-                if (notice.classList.contains(notice_type)) {
-                    notice.classList.remove(notice_type);
-                }
-            }
-        }
-        notice.hidden = false;
+        $(this._status).find('div').empty();
+        $(this._status).trigger('attach.notify', [text, type]);
     }
 
 
@@ -834,7 +824,6 @@
             heading.innerHTML = `Edit File <span>${file_path}</span>`;
         } else {
             heading.textContent = 'New File';
-            this.querySelector('div.status-line').hidden = true;
         }
     }
 
@@ -847,7 +836,7 @@
     */
     function editorFormLoadFile(dir, filename)
     {
-        this.setStatus('Loading', 'doing');
+        this.setStatus('Loading');
         let url_obj = requestUrlObject(
             this.action, {file_path: filePathJoin(dir, filename)}
         );
@@ -860,7 +849,7 @@
             this.setVal('fields[directory]', dir);
             this.setVal('fields[filename]', filename);
             this.setVal('fields[contents]', data.text);
-            this.setStatus('File loaded', 'doing');
+            this.setStatus('File loaded', 'success');
             //CodeArea.enabled = true;
         })
         .catch(function (error) {
@@ -920,10 +909,13 @@
         })
         .then(response => response.json())
         .then(data => {
+            if (data.alert) {
+                this.setStatus(data.alert.message, data.alert.type);
+            }
+            data = data.file;
             this.setVal(['fields[filename-last]'], data.name);
             this.setVal(['fields[directory-last]'], data.dir);
             this.setView('main'); // Necessary if filename changes.
-            this.setStatus('File saved');
             let tr = Directory.findFile(data.dir, data.name);
             if (tr) {
                 let ds = tr.dataset;

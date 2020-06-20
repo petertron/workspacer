@@ -33,7 +33,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
             );
         }*/
 
-        $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/code-area.js');
+        $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
         $entries = $this->getDirectoryEntries();
@@ -174,7 +174,6 @@ class contentBlueprintsWorkspace extends AdministrationPage
             new XMLElement('button', __('Create Folders'), array('name' => 'create', 'type' => 'submit', 'class' => 'float-right'))
         );
         $footer->appendChild(
-            //new XMLElement('button', __('Add Directory'), array('class' => 'float-right'))
             new XMLElement('button', '+', array('name' => 'add', 'type' => 'button', 'class' => 'float-right'))
         );
         $form->appendChild($footer);
@@ -264,31 +263,20 @@ class contentBlueprintsWorkspace extends AdministrationPage
 
         $dialog = new XMLElement('dialog', null, ['id' => 'EditorBox']);
         $header = new XMLElement('header');
+        $form = Widget::Form(SYMPHONY_URL . '/extension/workspacer/ajax/editor/', 'post');
+        $form->setAttribute('id', 'EditorForm');
+        $form->appendChild(XSRF::formToken());
+        $form->appendChild(Widget::Input('fields[directory-last]', null, 'hidden'));
+        $form->appendChild(Widget::Input('fields[filename-last]', null, 'hidden'));
         $header->appendChild(new XMLElement('h1'));
         $header->appendChild(
             new XMLElement(
                 'button', __('Close'), array('type' => 'button', 'name' => 'close')
             )
         );
-        $form = Widget::Form(SYMPHONY_URL . '/extension/workspacer/ajax/editor/', 'post');
-        $form->setAttribute('id', 'EditorForm');
-        $form->appendChild(XSRF::formToken());
+        $header->appendChild(new XMLElement('div', null, ['class' => 'status-line']));
         $form->appendChild($header);
-        $form->appendChild(Widget::Input('fields[directory-last]', null, 'hidden'));
-        $form->appendChild(Widget::Input('fields[filename-last]', null, 'hidden'));
-        $status_line = new XMLElement('div', null, ['class' => 'status-line notice', 'hidden' => 'hidden']);
-        $form->appendChild($status_line);
         $dialog->appendChild($form);
-        $span = new XMLElement(
-            'span', '', [
-                'class' => 'mode',
-                'data-new' => __('New file'),
-                'data-loading' => __('Loading'),
-                'data-editing' => __('Editing'),
-                'data-saving' => __('Saving')
-            ]
-        );
-        //$top_actions->appendChild($span->generate() . ': <span class="file-path"></span>');
 
         $fieldset = new XMLElement(
             'fieldset',
@@ -347,18 +335,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 'class' => 'bottom-actions edit'
             )
         );
-        /*$fieldset->appendChild(
-            new XMLElement(
-                'button',
-                __('Delete'),
-                [
-                    'id' => 'actionDelete',
-                    'class' => 'edit button confirm delete',
-                    'name' => 'action[delete]',
-                    'data-message' => __("Are you sure you want to delete the selected files?")
-                ]
-            )
-        );*/
+
         $fieldset->appendChild(
             new XMLElement(
                 'button',
@@ -611,65 +588,3 @@ class contentBlueprintsWorkspace extends AdministrationPage
         return $obj;
     }
 }
-/*
-        $label = Widget::Label(
-            __('New Directories<i>Put each directory name on a separate line</i>')
-        );
-        $label->appendChild(Widget::Textarea('dir_names', 3, 80));
-        $label->appendChild(
-            new XMLElement(
-                'button',
-                __('Create'),
-                ['class' => 'button', 'type' => 'button', 'name' => 'create_dirs')
-            )
-        );
-        $label->appendChild(
-            new XMLElement(
-                'button',
-                __('Cancel'),
-                ['class' => 'button', 'type' => 'button', 'name' => 'cancel_dirs')
-            )
-        );
-        $template->appendChild(
-            Widget::Table(
-                Widget::TableHead(
-                    [
-                        [
-                            '<a><span>' . __('Name') . '</span></a>',
-                            'col',
-                            ['id' => 'field-name', 'class' => 'field-name active')
-                        ),// 2191, 2193
-                        [
-                            '<a><span>' . __('Description') . '</span></a>',
-                            'col',
-                            null
-                        ),
-                        [
-                            '<a><span>' . __('Size') . '</span></a>',
-                            'col'
-                        ),
-                        [
-                            '<a><span>' . __('Last Modified') . '</span></a>',
-                            'col',
-                            ['class' => 'field-date')
-                        )
-                    )
-                ),
-                null,
-                new XMLElement('tbody', null, [)),
-                'selectable',
-                'file_list',
-                ['role' => 'directory', 'data-interactive' => 'data-interactive')
-            )
-        );
-        $this->Body->appendChild($template);
-
-        $template = new XMLElement('template', null, ['id' => 'dir-row-template'));
-        $tr = new XMLElement('tr');
-        $tr->appendChild(
-            new XMLElement(
-                'td',
-                '<a></a><label class="accessible" for=""></label><input type="checkbox" value="on" id="" />'
-            )
-        );
-*/

@@ -17,6 +17,8 @@
         // Editor box.
         EditorBox = document.getElementById('EditorBox');
         EditorBox._form = EditorBox.querySelector('form');
+        EditorBox._status = EditorBox.querySelector('.status-line');
+        $(EditorBox._status).symphonyNotify();
         EditorBox.getVal = getValue;
         EditorBox.setVal = setValue;
         EditorBox.display = editorBoxOpen;
@@ -48,7 +50,6 @@
     function editorBoxOpen(dir, filename = '')
     {
         if (!filename) return;
-        this._notice = this.querySelector('.notice');
         this.querySelector('h1 span').textContent = filename;
         this.setVal('fields[directory]', dir);
         this.setVal('fields[filename]', filename);
@@ -60,25 +61,11 @@
     }
 
 
-    function editorBoxSetStatus(text, type)
+    function editorBoxSetStatus(text, type = 'protected')
     {
-        let notice = this._notice;
-        notice.textContent = text;
-        let notice_types = ['doing', 'success', 'error'];
-        for (let notice_type of notice_types) {
-            if (notice_type == type) {
-                if (!notice.classList.contains(notice_type)) {
-                    notice.classList.add(notice_type);
-                }
-            } else {
-                if (notice.classList.contains(notice_type)) {
-                    notice.classList.remove(notice_type);
-                }
-            }
-        }
-        notice.hidden = false;
+        $(this._status).find('div').empty();
+        $(this._status).trigger('attach.notify', [text, type]);
     }
-
 
 
     /**
@@ -89,7 +76,7 @@
      */
     function editorBoxLoadFile(dir, filename)
     {
-        this.setStatus('Loading', 'doing');
+        this.setStatus('Loading file');
         let url_obj = requestUrlObject(
             this._form.action, {file_path: filePathJoin(dir, filename)}
         );
@@ -100,7 +87,7 @@
             this.setVal('fields[directory]', dir);
             this.setVal('fields[filename]', filename);
             this.setVal('fields[contents]', data.text);
-            this.setStatus('File loaded', 'doing');
+            this.setStatus('File loaded', 'success');
             //CodeArea.enabled = true;
         })
         .catch(function (error) {
@@ -125,7 +112,7 @@
         let form_data = new FormData(this);
         form_data.set('fields[contents]', this['fields[contents]'].value);
         form_data.set('action[save]', 'yes');
-        EditorBox.setStatus('Saving');
+        EditorBox.setStatus('Saving file');
         this['fields[contents]'].focus();
         fetch(this.action, {
             method: 'POST',
@@ -133,7 +120,9 @@
         })
         .then(response => response.json())
         .then(data => {
-            EditorBox.setStatus('File saved');
+            if (data.alert) {
+                EditorBox.setStatus(data.alert.message, data.alert.type);
+            }
         })
         .catch(function (error) {
             console.error('Error:', error);

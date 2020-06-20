@@ -115,7 +115,7 @@ Class Extension_Workspacer extends Extension
         if ($driver == 'blueprintspages') {
             $o_page = $context['oPage'];
             $o_page->addStylesheetToHead(WORKSPACER_ASSETS_URL . '/workspace.css');
-            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/code-area.js');
+            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/page-editor.js');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
 
@@ -165,35 +165,28 @@ Class Extension_Workspacer extends Extension
             // Editor box
 
             //print_r($o_page->Context);die;//->Contents;die;
-            //$o_page->Contents->appendChild(new XMLElement('div', null, ['id' => 'mask')));
             $this->settings = Symphony::Configuration()->get('workspacer');
 
             $dialog = new XMLElement('dialog', null, ['id' => 'EditorBox']);
+
+            $form = Widget::Form(SYMPHONY_URL . '/extension/workspacer/ajax/editor/', 'post');
+            $form->setAttribute('id', 'EditorForm');
+            $form->appendChild(XSRF::formToken());
+            $form->appendChild(Widget::Input('fields[directory]', null, 'hidden'));
+            $form->appendChild(Widget::Input('fields[filename]', null, 'hidden'));
+
             $header = new XMLElement('header');
-            $header->appendChild(new XMLElement('h1', __('Edit Page Template') . '<span class="filename"></span>'));
-            $header->appendChild(
+            $div = new XMLElement('div', null, ['class' => 'headline']);
+            $div->appendChild(new XMLElement('h1', __('Edit Page Template') . '<span class="filename"></span>'));
+            $div->appendChild(
                 new XMLElement(
                     'button', __('Close'), array('type' => 'button', 'name' => 'close')
                 )
             );
-            $form = Widget::Form(SYMPHONY_URL . '/extension/workspacer/ajax/editor/', 'post');
-            $form->setAttribute('id', 'EditorForm');
-            $form->appendChild(XSRF::formToken());
+            $header->appendChild($div);
+            $status_line = new XMLElement('div', null, ['class' => 'status-line']);
+            $header->appendChild($status_line);
             $form->appendChild($header);
-            $form->appendChild(Widget::Input('fields[directory]', null, 'hidden'));
-            $form->appendChild(Widget::Input('fields[filename]', null, 'hidden'));
-            $status_line = new XMLElement('div', null, ['class' => 'status-line notice', 'hidden' => 'hidden']);
-            $form->appendChild($status_line);
-            $span = new XMLElement(
-                'span', '', [
-                    'class' => 'mode',
-                    'data-new' => __('New file'),
-                    'data-loading' => __('Loading'),
-                    'data-editing' => __('Editing'),
-                    'data-saving' => __('Saving')
-                ]
-            );
-            //$top_actions->appendChild($span->generate() . ': <span class="file-path"></span>');
 
             $fieldset = new XMLElement(
                 'fieldset',

@@ -33,15 +33,6 @@ tbody a.dir {
     width: 30rem;
 }
 
-/*select.directory-selector {
-    appearance: none;
-    -moz-appearance: none;
-    width: 32rem;
-    height: 2.2rem;
-    border: 1px solid rgba(0, 0, 0, .25);
-    margin: 0;
-}*/
-
 dialog {
     box-sizing: border-box;
     border: 1px solid rgba(0, 0, 0, .25);
@@ -52,9 +43,12 @@ dialog {
 }
 
 dialog header {
-    position: relative;
     box-sizing: border-box;
-    height: 2.6rem;
+    margin: 0 0 1rem 0;
+}
+
+dialog header div.headline {
+    margin-bottom: .26rem;
 }
 
 dialog header h1 {
@@ -103,11 +97,6 @@ dialog header button {
 #MoveCopyDeleteBox, #RenameBox {
     width: 70%;
     min-width: 200px;
-}
-
-dialog header {
-    padding: 0;
-    margin: 0 0 1rem 0;
 }
 
 dialog .context {
@@ -180,9 +169,17 @@ div.new-files fieldset button {
     margin: 0;
 }
 
-label i a.remove {
-    margin: 0;
-    color: #E0A000;
+/*a.upload {
+    color: #009018;
+}
+*/
+/* label i a.remove { */
+a.remove {
+    color: #D87000;
+}
+
+a.left-margin {
+    margin-left: .8rem;
 }
 
 fieldset.bottom-actions:disabled {
@@ -193,12 +190,11 @@ fieldset.bottom-actions:disabled {
     width: 96.8%;
     height: 94.4%;
     background-color: white;
-    padding: 1.2rem;
+    padding: 1.24rem;
     overflow: hidden;
 }
 
 #EditorBox form {
-    clear: both;
     height: 100%;
     overflow: hidden;
     display: flex;
@@ -209,15 +205,7 @@ fieldset.bottom-actions:disabled {
 #EditorBox header {
     flex: none;
     box-sizing: border-box;
-    margin: 0 0 .84rem 0;
-}
-
-#EditorBox header div {
-    float: left;
-}
-
-#EditorBox header label {
-    display: inline;
+    margin: 0 0 .7rem 0;
 }
 
 #EditorBox h1 span {
@@ -226,8 +214,18 @@ fieldset.bottom-actions:disabled {
 }
 
 #EditorBox .status-line {
-    margin-bottom: 1rem;
-    padding: 0.4rem 1rem 0.3rem 1rem;
+    clear: both;
+    float: left;
+    width: 100%;
+    margin: .92rem 0 0 0;
+}
+
+#EditorBox .notifier {
+    border-bottom: none;
+}
+
+#EditorBox .notifier p {
+    padding-left: .8rem;
 }
 
 #EditorBox fieldset.editor {
@@ -279,6 +277,3 @@ fieldset.bottom-actions {
     margin: .84rem 0 0 0;
 }
 
-.progress {
-    cursor: progress;
-}

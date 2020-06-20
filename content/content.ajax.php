@@ -13,7 +13,7 @@ class contentExtensionWorkspacerAjax
 
     public function __construct()
     {
-        $this->_output = [];
+        $this->_output = ['alert' => []];
         $this->error_occurred = false;
     }
 
@@ -26,18 +26,12 @@ class contentExtensionWorkspacerAjax
         }
     }
 
-    function pageAlert($msg, $type) {
-        if (!isset($this->_output['alert_msg'])) {
-            $this->_output['alert_msg'] = $msg;
-            $this->_output['alert_type'] = $type;
-        }
+    function alert($message, $type) {
+        $this->_output['alert'] = ['message' => $message, 'type' => $type];
     }
 
     public function __ajaxManage()
     {
-        /*foreach ($_SERVER as $k => $v) {
-            Symphony::Log()->writeToLog("$k: $v\n");
-        }
         /*if (!empty($_POST)) {
             //Symphony::Log()->writeToLog(var_export($_POST));
             foreach ($_POST['file'] as $k => $v) {
@@ -201,32 +195,28 @@ class contentExtensionWorkspacerAjax
     public function __ajaxEditor()
     {
         if (isset($_GET['file_path'])) {
-            # Symphony::Log()->writeToLog("File path: {$_GET['file_path']}\n");
             $text = file_get_contents(WORKSPACE . '/' . $_GET['file_path']);
             $this->_output['text'] = $text;
         } elseif (isset($_POST['action'])) {
             $action = array_keys($_POST['action'])[0];
             $fields = $_POST['fields'];
             $file_path_abs = WORKSPACE . '/' . $this->filePathJoin($fields['directory'], $fields['filename']);
-            switch ($action) {
-                case 'save-as':
-                    if (file_exists($file_path_abs)) {
-                        $this->alert('File already exists.');
-                    } else {
-                        General::writeFile($file_path_abs, $fields['contents']);
-                        //$this->outputFileLists2();
-                    }
-                    break;
-                case 'save':
-                    #Symphony::Log()->writeToLog("ABS $file_path_abs\n");
-                    General::writeFile($file_path_abs, $fields['contents']);
-                    /*if ($file_data['body_id'] != 'blueprints-pages') {
-                        $this->outputFileLists2();
-                    }*/
-                    break;
+            $save_file = true;
+            if ($action == 'save-as') {
+                if (file_exists($file_path_abs)) {
+                    $this->alert('File already exists.', 'error');
+                    $save_file = false;
+                }
             }
-            $results = $this->getDirectoryEntry(new SPLFileInfo($file_path_abs));
-            $this->_output = $results;
+            if ($save_file) {
+                if (General::writeFile($file_path_abs, $fields['contents'])) {
+                    $this->alert(__('File saved at ') . Widget::Time()->generate(), 'success');
+                } else {
+                    $this->alert(__('File could not be saved.'), 'error');
+                }
+            }
+            $info = $this->getDirectoryEntry(new SPLFileInfo($file_path_abs));
+            $this->_output['file'] = $info;
         }
     }
 
@@ -284,52 +274,4 @@ class contentExtensionWorkspacerAjax
     function outputDirList() {
         $this->_output['directories'] = $this->getRecursiveDirList();
     }
-
-    function alert($content)
-    {
-        $this->_output['alert'] = $content;
-    }
 }
-/*
-        $path_abs = WORKSPACE;
-
-        $this->path_abs = $path_abs;
-        } elseif (isset($_POST['file'])) {
-            $file_data = $_POST['file'];
-            switch ($file_data['action']) {
-                case 'create':
-                    $file_path_abs = $this->getWorkspaceFullPath($_POST['file_path']);
-                    if (file_exists($file_path_abs)) {
-                        $this->alert('File already exists.');
-                    } else {
-                        General::writeFile($file_path_abs, $_POST['contents']);
-                        $this->outputFileLists2();
-                    }
-                    break;
-                case 'save':
-                    $file_path_abs = $this->getWorkspaceFullPath($file_data['name']);
-                    Symphony::Log()->writeToLog("ABS $file_path_abs\n");
-                    General::writeFile($file_path_abs, $file_data['body']);
-                    /*if ($file_data['body_id'] != 'blueprints-pages') {
-                        $this->outputFileLists2();
-                    }
-                    break;
-            }
-        #}
-
-                            /*case 'create_dirs':
-                        $items = $_POST['items'];
-                        $dir_path_abs = $this->getWorkspaceFullPath($_POST['dir_path']);
-                        if (is_array($items) && !empty($items)) {
-                            foreach ($items as $new_dir_name) {
-                                if ($new_dir_name) {
-                                    $file_path_abs = $dir_path_abs . '/' . $new_dir_name;
-                                    General::realiseDirectory($file_path_abs);
-                                }
-                            }
-                            $this->outputDirList();
-                            $this->outputFileLists2();
-                        }
-                        break;
-                }*/
-
