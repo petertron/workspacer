@@ -10,10 +10,14 @@
         <author>
             <name github="petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
             <email>peter.s@mail.uk</email>
-            <website>https://il.ink/peter.s</website>
+            <website>http://peter.is-best.net</website>
         </author>
     </authors>
     <releases>
+        <release version="0.8.0" data="2020-07-02" min="2.5.0" max="2.8.0">
+            - CSS syntax highlighting added.
+            - Small enhancements made.
+        </release>
         <release version="0.7.0" date="2020-06-17" min="2.5.0" max="2.7.99">
             - A significant redesign.
         </release>

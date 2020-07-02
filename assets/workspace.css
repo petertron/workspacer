@@ -89,14 +89,19 @@ dialog header button {
     height: 2.6rem;
     padding-top: .85rem;
 }
-/*
-#NewDirectoriesBox button.float-right {
-    float: right;
-}
-*/
+
 #MoveCopyDeleteBox, #RenameBox {
-    width: 70%;
+    width: 60%;
     min-width: 200px;
+}
+
+#MoveCopyDeleteBox header, #RenameBox header {
+    overflow: hidden;
+}
+
+#MoveCopyDeleteBox fieldset, #RenameBox fieldset {
+    clear: both;
+    padding: 0;
 }
 
 dialog .context {
@@ -104,9 +109,6 @@ dialog .context {
 	clear: both;
 	min-height: 3.8rem;
 	margin: 0;
-	/*padding: 2.5rem 1.8rem 0;*/
-	/*color: #000;
-	background-color: #f4f4f4;*/
 }
 
 dialog .context:after {
@@ -217,7 +219,7 @@ fieldset.bottom-actions:disabled {
     clear: both;
     float: left;
     width: 100%;
-    margin: .92rem 0 0 0;
+    margin: .84rem 0 0 0;
 }
 
 #EditorBox .notifier {
@@ -277,3 +279,13 @@ fieldset.bottom-actions {
     margin: .84rem 0 0 0;
 }
 
+div.status-line.xfer p.protected {
+    color: #406D78;
+    background-color: #96C0DC;
+}
+
+div.save-error {
+    margin-bottom: .9rem;
+    color: #B80C00;
+    text-align: center;
+}

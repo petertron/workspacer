@@ -103,20 +103,13 @@ Class Extension_Workspacer extends Extension
      */
     public function adminPagePreGenerate(array $context)
     {
-    //print_r($context); die;
-        //$o_page = $context['oPage'];
-        //var_dump($o_page->Contents); die;
-        /*if (!isset($o_page->Workspace)) {
-            return;
-        }*/
-
+        $o_page = $context['oPage'];
         $callback = Symphony::Engine()->getPageCallback();
         $driver = $callback['driver'];
-        if ($driver == 'blueprintspages') {
-            $o_page = $context['oPage'];
+        if ($driver == 'blueprintspages' && isset($o_page->Contents)) {
             $o_page->addStylesheetToHead(WORKSPACER_ASSETS_URL . '/workspace.css');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
-            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/page-editor.js');
+            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
 
             $action = $callback['context'][0];
@@ -134,7 +127,6 @@ Class Extension_Workspacer extends Extension
                                 'name' => 'edit-template',
                                 'type' => 'button',
                                 'title' => __('Edit page template'),
-                                //'class' => 'button file',
                                 'data-href' => $filename
                             ]
                         )

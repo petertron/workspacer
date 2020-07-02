@@ -36,6 +36,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
+        $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-css.js');
         $entries = $this->getDirectoryEntries();
         $this->addElementToHead(
             new XMLElement('script', json_encode($entries), ['id' => 'workspaceFiles'])
@@ -198,12 +199,17 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 new XMLElement('h1', '<span></span> ' . __('Selected Files'))
             )
         );
-        $div = new XMLElement('div', null, ['class' => 'selector-box']);
+        /*$div = new XMLElement('div', null, ['class' => 'selector-box']);
         $div->appendChild(new XMLElement('p', __('Destination:'), ['class' => 'label']));
         $div->appendChild(
             self::directorySelector('dest-dir', 'directorySelector2', 'mainForm')
         );
-        $dialog->appendChild($div);
+        $dialog->appendChild($div);*/
+
+        $div = new XMLElement('div', null, ['class' => 'selector-box']);
+        $selector = self::directorySelector('dest-dir', 'directorySelector2', 'mainForm');
+        $label = Widget::Label(__('Destination:'), $selector);
+        $dialog->appendChild(new XMLElement('fieldset', $label, array('form' => 'mainForm')));
 
         $div = new XMLElement('div');
         $div->appendChild(
@@ -239,7 +245,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
         );
         $input = Widget::Input('fields[filename-new]', null, 'text', array('form' => 'mainForm'));
         $label = Widget::Label(__('New filename'), $input);
-        $dialog->appendChild($label);
+        $dialog->appendChild(new XMLElement('fieldset', $label, array('form' => 'mainForm')));
 
         $form = self::DialogForm();
         $form->appendChild(
@@ -393,6 +399,7 @@ class contentBlueprintsWorkspace extends AdministrationPage
             )
         );
         $fieldset->appendChild($flex_row);
+        $fieldset->appendChild(new XMLElement('div', null, array('class' => 'save-error')));
 
 
         $fieldset->appendChild(

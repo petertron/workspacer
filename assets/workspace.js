@@ -10,7 +10,7 @@
         NewDirectoriesBox,
         UploadForm,
         HiddenFileInput,
-        EditorForm,
+        EditorBox,
         CodeArea;
 
     Symphony.View.add('/blueprints/workspace/', function ()
@@ -95,26 +95,27 @@
         UploadForm.addEventListener('change', uploadFormOnChange);
         HiddenFileInput = UploadForm.querySelector('input[type="file"]');
 
-
         // Editor box.
+        registerEditorBox();
 
-        EditorForm = document.forms.EditorForm;
-        EditorForm._dialog = EditorForm.closest('dialog');
-        EditorForm._status = EditorForm.querySelector('.status-line');
-        $(EditorForm._status).symphonyNotify();
-        EditorForm.getVal = getValue;
-        EditorForm.setVal = setValue;
-        EditorForm.open = editorFormOpen;
-        EditorForm.setView = editorFormSetView;
-        EditorForm.setStatus = editorFormSetStatus;
-        EditorForm.loadFile = editorFormLoadFile;
-        EditorForm.addEventListener('click', editorFormClickHandler);
-        EditorForm.onsubmit = editorFormOnSubmit;
+        $(document).on('fileSaved', onFileSaved);
+    });
 
 
-        CodeArea = document.querySelector('code-area');
-        CodeArea.addEventListener('save', editorFormSaveEvent.bind(EditorForm));
+    Symphony.View.add('/blueprints/pages/:action:/:id:/:status:', function (action, id, status)
+    {
+        // Editor box.
+        registerEditorBox();
 
+        if (action == 'edit') {
+            $('button[name="edit-template"]').click(function (event) {
+                EditorBox.display('pages', event.target.dataset.href);
+            });
+        } else {
+            $('table').on('click', 'a.file', function (event) {
+                EditorBox.display('pages', event.target.dataset.href);
+            });
+        }
     });
 
 
@@ -163,7 +164,8 @@
             return;
 
         this.querySelector('h1 span').textContent = this.dataset[action];
-        this.querySelector('div.selector-box').hidden = (action == 'delete');
+        //this.querySelector('div.selector-box').hidden = (action == 'delete');
+        this.querySelector('fieldset').hidden = (action == 'delete');
     }
 
 
@@ -276,6 +278,10 @@
         return (found.length > 0) ? found[0] : null;
     }
 
+    function fileExists(dir, filename)
+    {
+        return Directory.findFile(dir, filename) ? true : false;
+    }
 
     function contextDirectorySelectorGoTo(where)
     {
@@ -356,7 +362,7 @@
                     Form.directorySelector.goTo('+');
                     break;
                 case 'newFile':
-                    EditorForm.open(Form.directorySelector.value);
+                    EditorBox.display(Form.directorySelector.value);
                     break;
                 case 'newDirectories':
                     NewDirectoriesBox.display();
@@ -453,7 +459,7 @@
                     dir = dir_current;
                     filename = tr.dataset.name;
                 }
-                EditorForm.open(dir, filename);
+                EditorBox.display(dir, filename);
             } else if (anchor.classList.contains('dir')) {
                 let new_dir;
                 if (anchor.classList.contains('linked')) {
@@ -770,57 +776,98 @@
 
     // Editor box.
 
-    function editorFormOpen(dir = '', filename = '')
+    function registerEditorBox()
     {
-        this.setVal('fields[directory-last]', dir);
-        this.setVal('fields[directory]', dir);
-        this.setVal('fields[filename-last]', filename);
-        this.setVal('fields[filename]', filename);
-        this.setVal('fields[contents]', null);
+        EditorBox = document.getElementById('EditorBox');
+        EditorBox._form = EditorBox.querySelector('form');
+        EditorBox._status = EditorBox.querySelector('.status-line');
+        EditorBox._save_error = EditorBox.querySelector('.save-error');
+        $(EditorBox._status).symphonyNotify();
+        EditorBox.getVal = getValue;
+        EditorBox.setVal = setValue;
+        EditorBox.getField = getField;
+        EditorBox.setField = setField;
+        EditorBox.display = editorBoxOpen;
+        EditorBox.setView = editorBoxSetView;
+        EditorBox.setXfer = editorBoxSetXfer;
+        EditorBox.clearXfer = editorBoxClearXfer;
+        EditorBox.setStatus = editorBoxSetStatus;
+        EditorBox.loadFile = editorBoxLoadFile;
+        EditorBox.addEventListener('click', editorBoxClickHandler);
+        EditorBox._form.onsubmit = editorBoxOnSubmit.bind(EditorBox);
+        CodeArea = document.querySelector('code-area');
+        CodeArea.addEventListener('save', editorBoxSaveEvent.bind(EditorBox));
+    }
 
-        this.setView('main');
-        this._dialog.showModal();
+    function editorBoxOpen(dir = '', filename = '')
+    {
+        if (document.body.id == 'blueprints-workspace') {
+            this.setVal('fields[directory-last]', dir);
+            this.setVal('fields[filename-last]', filename);
+            this.setView('main');
+        } else {
+            this.querySelector('h1 span').textContent = filename;
+        }
+        this.setVal('fields[directory]', dir);
+        this.setVal('fields[filename]', filename);
+        this.setField('contents', null);
+
+        this.clearXfer();
+        this.showModal();
         if (filename) {
             this.loadFile(dir, filename);
         } else {
             this.setStatus('New file');
         }
-        this['fields[contents]'].focus();
+        this._form['fields[contents]'].focus();
     }
 
 
-    function editorFormSetStatus(text, type = 'protected')
+    function editorBoxSetStatus(text, type = 'protected')
     {
         $(this._status).find('div').empty();
         $(this._status).trigger('attach.notify', [text, type]);
     }
 
-
-    function editorFormSetView(view)
+    function editorBoxSetXfer()
     {
-        let filename_last = this.getVal('fields[filename-last]');
+        this._status.classList.add('xfer');
+    }
+
+    function editorBoxClearXfer()
+    {
+        this._status.classList.remove('xfer');
+    }
+
+    function editorBoxSetView(view)
+    {
+        if (document.body.id == 'blueprints-pages') return;
+        let filename_last = this.getField('filename-last');
         if (view == 'main') {
-            this.fs_saveAs.hidden = true;
-            this.fs_editor.hidden = false;
+            //this._status.hidden = false;
+            this._form.fs_saveAs.hidden = true;
+            this._form.fs_editor.hidden = false;
             if (filename_last) {
-                this.fs_bottomButtonsNew.hidden = true;
-                this.fs_bottomButtonsEdit.hidden = false;
+                this._form.fs_bottomButtonsNew.hidden = true;
+                this._form.fs_bottomButtonsEdit.hidden = false;
             } else {
-                this.fs_bottomButtonsNew.hidden = false;
-                this.fs_bottomButtonsEdit.hidden = true;
+                this._form.fs_bottomButtonsNew.hidden = false;
+                this._form.fs_bottomButtonsEdit.hidden = true;
             }
         } else if (view == 'save-as') {
-            this.fs_editor.hidden = true;
-            this.fs_bottomButtonsNew.hidden = true;
-            this.fs_bottomButtonsEdit.hidden = true;
-            this.fs_saveAs.hidden = false;
-            this['fields[filename]'].focus();
-            this['fields[filename]'].select();
+            //this._status.hidden = true;
+            this._save_error.hidden = true;
+            this._form.fs_editor.hidden = true;
+            this._form.fs_bottomButtonsNew.hidden = true;
+            this._form.fs_bottomButtonsEdit.hidden = true;
+            this._form.fs_saveAs.hidden = false;
+            this._form['fields[filename]'].focus();
+            this._form['fields[filename]'].select();
         }
         let heading = this.querySelector('h1');
         //let filename = this.getVal('fields[filename-last]');
         if (filename_last) {
-            let file_path = filePathJoin(this.getVal('fields[directory-last]'), filename_last);
+            let file_path = filePathJoin(this.getField('directory-last'), filename_last);
             heading.innerHTML = `Edit File <span>${file_path}</span>`;
         } else {
             heading.textContent = 'New File';
@@ -829,59 +876,70 @@
 
 
     /**
-    * Load file.
-    *
-    * @param object event
-    *   Event data.
-    */
-    function editorFormLoadFile(dir, filename)
+     * Load file.
+     *
+     * @param object event
+     *   Event data.
+     */
+    function editorBoxLoadFile(dir, filename)
     {
-        this.setStatus('Loading');
-        let url_obj = requestUrlObject(
-            this.action, {file_path: filePathJoin(dir, filename)}
-        );
-        fetch(url_obj, {method: 'GET'})
-        .then(response => response.json())
-        .then(data => {
+        const self = this;
+        self.setXfer();
+        self.setStatus('Contacting server');
+        let req = new XMLHttpRequest();
+        req.open('GET', this._form.action + '?file_path=' + filePathJoin(dir, filename), true);
+        req.onprogress = (event) => {
+            let message = 'Downloading';
+            if (event.total) {
+                let percentage = event.loaded / event.total * 100;
+                percentage = pecentage > 100 ? 100 : percentage;
+                message += ` ${percentage}%`;
+            }
+            self.setStatus(message);
+        };
+        req.onload = () => {
+            let data = JSON.parse(req.responseText);
             CodeArea.filename = filename;
-            this.setVal('fields[directory-last]', dir);
-            this.setVal('fields[filename-last]', filename);
-            this.setVal('fields[directory]', dir);
-            this.setVal('fields[filename]', filename);
-            this.setVal('fields[contents]', data.text);
-            this.setStatus('File loaded', 'success');
+            self.setVal('fields[directory]', dir);
+            self.setVal('fields[filename]', filename);
+            self.setVal('fields[contents]', data.text);
+            self.setStatus('File loaded', 'success');
             //CodeArea.enabled = true;
-        })
-        .catch(function (error) {
-            console.log(error);
-            //alert("Err: " + error.name + ', ' + error.message);
-        })
+        }
+        req.onerror = () => {
+            self.setStatus('Could not load file', 'error');
+        }
+        req.onloadend = () => {
+            EditorBox.clearXfer();
+        }
+
+        req.send();
     }
 
-    function editorFormClickHandler(event)
+    function editorBoxClickHandler(event)
     {
-        if (event.target.nodeName == 'BUTTON') {
+        if (event.target instanceof HTMLButtonElement) {
             let button = event.target;
             switch (button.name) {
                 case 'close':
-                    this._dialog.close();
+                    this.close();
                     break;
                 case 'pre-action[create]':
                 case 'pre-action[save-as]':
                     this.setView('save-as');
-                    this['fields[filename]'].focus();
-                    this['fields[filename]'].select();
+                    this._form['fields[filename]'].focus();
+                    this._form['fields[filename]'].select();
                     break;
                 case 'cancel-action[save-as]':
                     this.setView('main');
-                    this.setVal('fields[directory]', this.getVal('fields[directory-last]'));
-                    this.setVal('fields[filename]', this.getVal('fields[filename-last]'));
+                    this.setField('directory', this.getField('directory-last'));
+                    this.setField('filename', this.getField('filename-last'));
                     break;
             }
         }
     }
 
-    function editorFormOnSubmit(event)
+    function editorBoxOnSubmit(event)
     {
         event.preventDefault();
         let action;
@@ -893,60 +951,90 @@
         } else {
             action = 'action[save]';
         }
-        let form_data = new FormData(this);
-        form_data.set('fields[contents]', this.getVal('fields[contents]'));
-        form_data.set(action, 'yes');
-        //form_data.append('body_id', document.body.id);
-        this.setStatus('Saving');
         if (action == 'action[save-as]') {
-            this.setView('main');
+            // Check whether file exists already.
+            let dir = this.getVal('fields[directory]');
+            let filename = this.getVal('fields[filename]');
+            if (!filename) {
+                this._save_error.textContent = 'Filename is empty';
+                this._save_error.hidden = false;
+                return;
+            }
+            if (fileExists(dir, filename)) {
+                this._save_error.textContent = 'File already exists';
+                this._save_error.hidden = false;
+                return;
+            }
         }
-        this['fields[contents]'].focus();
-        this.setStatus('Saving');
-        fetch(EditorForm.action, {
-            method: 'POST',
-            body: form_data
-        })
-        .then(response => response.json())
-        .then(data => {
+        this.setView('main');
+        let form_data = new FormData(this._form);
+        form_data.set('fields[contents]', this.getField('contents'));
+        form_data.set(action, 'yes');
+        this._form['fields[contents]'].focus();
+        this.setXfer();
+        this.setStatus('Contacting server');
+        let req = new XMLHttpRequest();
+        req.open('POST', this._form.action, true);
+        req.upload.onprogress = (event) => {
+            let message = 'Uploading';
+            if (event.total) {
+                let percentage = event.loaded / event.total * 100;
+                percentage = (percentage > 100) ? 100 : percentage;
+                message += ` ${percentage}%`;
+            }
+            EditorBox.setStatus(message);
+        }
+        req.onload = () => {
+            let data = JSON.parse(req.responseText);
             if (data.alert) {
-                this.setStatus(data.alert.message, data.alert.type);
+                EditorBox.setStatus(data.alert.message, data.alert.type);
+                if (document.body.id == 'blueprints-workspace') {
+                    data = data.file;
+                    this.setField(['directory-last'], data.dir);
+                    this.setField(['filename-last'], data.name);
+                    this.setView('main'); // Necessary if filename changes.
+                    $(document).trigger('fileSaved', [data]);
+                }
             }
-            data = data.file;
-            this.setVal(['fields[filename-last]'], data.name);
-            this.setVal(['fields[directory-last]'], data.dir);
-            this.setView('main'); // Necessary if filename changes.
-            let tr = Directory.findFile(data.dir, data.name);
-            if (tr) {
-                let ds = tr.dataset;
-                ds.dir = data.dir;
-                ds.name = data.name;
-                ds.what = data.what
-                ds.type = data.type;
-                ds.size = data.size;
-                ds.perms = data.perms;
-                ds.mdate = data.mdate;
-                renderTR(tr);
-            } else {
-                Directory.addFile(data.dir, data.name, data.what, data.type, null, data.size, data.perms, data.mtime, data.mdate);
-                Directory.update();
-            }
-        })
-        .catch(function (error) {
-            console.error('Error:', error);
-        });
+        };
+        req.onerror = (event) => {
+            console.error('Error:', event.error);
+        };
+        req.onloadend = () => {
+            EditorBox.clearXfer();
+        }
+        req.send(form_data);
     };
 
 
-    function editorFormSaveEvent()
+    function editorBoxSaveEvent()
     {
-        if (this.fs_bottomButtonsEdit.hidden) {
+        if (document.body.id == 'blueprints-workspace' && this._form.fs_bottomButtonsEdit.hidden) {
             this.setView('save-as');
         } else {
-            this.dispatchEvent(new Event('submit'));
+            this._form.dispatchEvent(new Event('submit'));
         }
     }
 
+    // Update directory after file is saved.
+    function onFileSaved(event, data)
+    {
+        let tr = Directory.findFile(data.dir, data.name);
+        if (tr) {
+            let ds = tr.dataset;
+            ds.dir = data.dir;
+            ds.name = data.name;
+            ds.what = data.what
+            ds.type = data.type;
+            ds.size = data.size;
+            ds.perms = data.perms;
+            ds.mdate = data.mdate;
+            renderTR(tr);
+        } else {
+            Directory.addFile(data.dir, data.name, data.what, data.type, null, data.size, data.perms, data.mtime, data.mdate);
+            Directory.update();
+        }
+    }
 
     function serialize(form_element)
     {
@@ -1020,12 +1108,22 @@
 
     function getValue(name)
     {
-        return this[name].value;
+        return this._form[name].value;
     }
 
     function setValue(name, value)
     {
-        this[name].value = value;
+        this._form[name].value = value;
+    }
+
+    function getField(name)
+    {
+        return this._form[`fields[${name}]`].value;
+    }
+
+    function setField(name, value)
+    {
+        this._form[`fields[${name}]`].value = value;
     }
 
 })(window.jQuery, window.Symphony);

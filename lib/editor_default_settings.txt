@@ -1,5 +1,5 @@
-font_family = Monaco
-font_size = 8.4pt
-line_height = 148%
+font_family = "Monaco, monospace"
+font_size = 8pt
+line_height = 150%
 indentation_method = tabs
 indentation_width = 4
