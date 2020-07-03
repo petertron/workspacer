@@ -14,7 +14,7 @@
         </author>
     </authors>
     <releases>
-        <release version="0.8.0" data="2020-07-02" min="2.5.0" max="2.8.0">
+        <release version="0.8.0" date="2020-07-02" min="2.5.0" max="2.8.0">
             - CSS syntax highlighting added.
             - Small enhancements made.
         </release>
