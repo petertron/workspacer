@@ -2,7 +2,7 @@
 
 require 'lib/defines.php';
 
-Class Extension_Workspacer extends Extension
+class Extension_Workspacer extends Extension
 {
     public function __construct()
     {
@@ -65,6 +65,11 @@ Class Extension_Workspacer extends Extension
     {
         return [
             [
+                'page' => '/all/',
+                'delegate' => 'ModifySymphonyLauncher',
+                'callback' => 'classAutoloading'
+            ],
+            [
                 'page' => '/backend/',
                 'delegate' => 'AdminPagePostCallback',
                 'callback' => 'postCallback'
@@ -85,6 +90,12 @@ Class Extension_Workspacer extends Extension
                 'callback' => 'savePreferences'
             ]*/
         ];
+    }
+
+    public function classAutoloading(array $context)
+    {
+        $loader = require DOCROOT . '/vendor/autoload.php';
+        $loader->addClassMap(['contentBlueprintsWorkspace' => WORKSPACER . '/content/content.blueprintsworkspace.php']);
     }
 
     public function postCallback(array $context)
@@ -112,7 +123,7 @@ Class Extension_Workspacer extends Extension
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
 
-            $action = $callback['context'][0];
+            $action = isset($callback['context'][0]) ? $callback['context'][0] : null;
             if ($action == 'edit') {
                 $template = PageManager::fetchPageByID($callback['context'][1]);
                 $filename = $template['handle'] . '.xsl';
@@ -233,7 +244,7 @@ Class Extension_Workspacer extends Extension
 
     public function appendPreferences(array $context)
     {
-        $mode = strtolower($this->settings->mode);
+        //$mode = strtolower($this->settings->mode);
 
         $fieldset = new XMLElement(
             'fieldset',

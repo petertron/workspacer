@@ -14,6 +14,10 @@
         </author>
     </authors>
     <releases>
+        <release version="0.8.1" date="2020-12-08" min="2.5.0" max="3.x.x">
+            - Modification for Symphony 3.
+            - Mark Symphony 3 compatibility.
+        </release>
         <release version="0.8.0" date="2020-07-02" min="2.5.0" max="2.8.0">
             - CSS syntax highlighting added.
             - Small enhancements made.
