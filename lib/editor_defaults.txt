@@ -1,5 +1,5 @@
 font_family = "Monaco, monospace"
-font_size = 8pt
+font_size = 10pt
 line_height = 150%
 indentation_method = tabs
 indentation_width = 4

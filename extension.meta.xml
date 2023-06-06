@@ -10,10 +10,13 @@
         <author>
             <name github="petertron" symphony="Petertron" twitter="TweeterPeterS">Peter Skirenko</name>
             <email>peter.s@mail.uk</email>
-            <website>http://peter.is-best.net</website>
+            <website></website>
         </author>
     </authors>
     <releases>
+        <release version="0.9.0" date="2023-06-05" min="2.5.0" max="3.x.x">
+            - Add the ability to ignore certain directories in the workspace.
+        </release>
         <release version="0.8.1" date="2020-12-08" min="2.5.0" max="3.x.x">
             - Modification for Symphony 3.
             - Mark Symphony 3 compatibility.

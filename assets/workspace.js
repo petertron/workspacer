@@ -892,7 +892,7 @@
             let message = 'Downloading';
             if (event.total) {
                 let percentage = event.loaded / event.total * 100;
-                percentage = pecentage > 100 ? 100 : percentage;
+                percentage = percentage > 100 ? 100 : percentage;
                 message += ` ${percentage}%`;
             }
             self.setStatus(message);
@@ -1118,11 +1118,15 @@
 
     function getField(name)
     {
-        return this._form[`fields[${name}]`].value;
+        //alert(`Get: ${name}`);
+        return this._form[`fields[${name}]`].value ?? false;
     }
 
     function setField(name, value)
     {
+        if (this.getField(name) === false) {
+            alert(`False: ${name}`);
+        }
         this._form[`fields[${name}]`].value = value;
     }
 

@@ -32,111 +32,102 @@ class contentExtensionWorkspacerAjax
 
     public function __ajaxManage()
     {
-        /*if (!empty($_POST)) {
-            //Symphony::Log()->writeToLog(var_export($_POST));
-            foreach ($_POST['file'] as $k => $v) {
-                Symphony::Log()->writeToLog("$k: $v\n");
-            }
-        }*/
-        if (isset($_POST['action'])) {
-            //$action = array_keys($_POST['action'])[0];
-            if ($_POST['action'] == 'apply' && is_array($_POST['items'])) {
-                $source_dir = $_POST['source-dir'];
-                $dest_dir = $_POST['dest-dir'];
-                $source_dir_abs = $this->filePathJoin(WORKSPACE, $source_dir);
-                $dest_dir_abs = $this->filePathJoin(WORKSPACE, $dest_dir);
-                $operation = $_POST['with-selected'];
-                $checked = array_keys($_POST['items']);
-                $results = array(
-                    'source_dir' => $source_dir,
-                    'dest_dir' => $dest_dir,
-                    'action' => $operation,
-                    'files' => array()
-                );
-                switch ($operation) {
-                    case 'delete':
-                        foreach ($checked as $filename) {
-                            $file_path_abs = $source_dir_abs . '/' . $filename;
-                            $success = true;
-                            if (is_dir($file_path_abs)) {
-                                try {
-                                    rmdir($file_path_abs);
-                                } catch (Exception $ex) {
-                                    $file_path = $this->getWorkspaceRelativePath($file_path_abs);
-                                    $this->pageAlert(
-                                        __('Failed to delete %s.', ['<code>' . $file_path . '</code>'])
-                                        . ' ' . __('Directory %s is not empty or permissions are wrong.', ['<code>' . $file_path . '</code>']), Alert::ERROR
-                                    );
-                                    $success = false;
-                                }
-                            } elseif (!General::deleteFile($file_path_abs)) {
+        if (!isset($_POST['action'])) return;
+        if ($_POST['action'] == 'apply' && is_array($_POST['items'])) {
+            $source_dir = $_POST['source-dir'];
+            $dest_dir = $_POST['dest-dir'];
+            $source_dir_abs = $this->filePathJoin(WORKSPACE, $source_dir);
+            $dest_dir_abs = $this->filePathJoin(WORKSPACE, $dest_dir);
+            $operation = $_POST['with-selected'];
+            $checked = array_keys($_POST['items']);
+            $results = array(
+                'source_dir' => $source_dir,
+                'dest_dir' => $dest_dir,
+                'action' => $operation,
+                'files' => array()
+            );
+            switch ($operation) {
+                case 'delete':
+                    foreach ($checked as $filename) {
+                        $file_path_abs = $source_dir_abs . '/' . $filename;
+                        $success = true;
+                        if (is_dir($file_path_abs)) {
+                            try {
+                                rmdir($file_path_abs);
+                            } catch (Exception $ex) {
                                 $file_path = $this->getWorkspaceRelativePath($file_path_abs);
                                 $this->pageAlert(
                                     __('Failed to delete %s.', ['<code>' . $file_path . '</code>'])
-                                    . ' ' . __('Please check permissions on %s.', ['<code>/workspace/' . '' . '/' . $file_path . '</code>'])
-                                    , Alert::ERROR
+                                    . ' ' . __('Directory %s is not empty or permissions are wrong.', ['<code>' . $file_path . '</code>']), Alert::ERROR
                                 );
                                 $success = false;
                             }
-                            $results['files'][$filename] = $success;
-                        }
-                        break;
-                    case 'move':
-                        foreach ($checked as $filename) {
-                            $source_path_abs = $source_dir_abs . '/' . $filename;
-                            $dest_path_abs = $dest_dir_abs . '/' . $filename;
-                            //Symphony::Log()->pushToLog("S: $source, D: $destination", E_NOTICE, true);
+                        } elseif (!General::deleteFile($file_path_abs)) {
+                            $file_path = $this->getWorkspaceRelativePath($file_path_abs);
+                            $this->pageAlert(
+                                __('Failed to delete %s.', ['<code>' . $file_path . '</code>'])
+                                . ' ' . __('Please check permissions on %s.', ['<code>/workspace/' . '' . '/' . $file_path . '</code>'])
+                                , Alert::ERROR
+                            );
                             $success = false;
-                            if ($dest_path_abs != $source_path_abs) {
-                                if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
-                                    $success = rename($source_path_abs, $dest_path_abs);
-                                }
-                            }
-                            $results['files'][$filename] = $success;
                         }
-                        break;
-                    case 'copy':
-                        foreach ($checked as $filename) {
-                            $source_path_abs = $source_dir_abs . '/' . $filename;
-                            $dest_path_abs = $dest_dir_abs . '/' . $filename;
-                            $success = false;
-                            if ($dest_path_abs != $source_path_abs) {
-                                if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
-                                    $success = copy($source_path_abs, $dest_path_abs);
-                                }
+                        $results['files'][$filename] = $success;
+                    }
+                    break;
+                case 'move':
+                    foreach ($checked as $filename) {
+                        $source_path_abs = $source_dir_abs . '/' . $filename;
+                        $dest_path_abs = $dest_dir_abs . '/' . $filename;
+                        $success = false;
+                        if ($dest_path_abs != $source_path_abs) {
+                            if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
+                                $success = rename($source_path_abs, $dest_path_abs);
                             }
-                            $results['files'][$filename] = $success;
                         }
-                        break;
-                    case 'rename':
-                        $filename_new = $_POST['fields']['filename-new'];
-                        $multi = (count($checked) > 1);
-                        foreach ($checked as $n => $filename) {
-                            //Symphony::Log()->writeToLog('FN: '.$filename_new);
-                            $filename_new_1 = $filename_new;
-                            if ($multi) {
-                                $ext = null;
-                                $dot_pos = strrpos($filename_new_1, '.');
-                                if ($dot_pos !== false) {
-                                    $ext = substr($filename_new_1, $dot_pos);
-                                    $filename_new_1 = substr($filename_new_1, 0, $dot_pos);
-                                }
-                                $filename_new_1 .= '-' . strval($n + 1) . $ext;
+                        $results['files'][$filename] = $success;
+                    }
+                    break;
+                case 'copy':
+                    foreach ($checked as $filename) {
+                        $source_path_abs = $source_dir_abs . '/' . $filename;
+                        $dest_path_abs = $dest_dir_abs . '/' . $filename;
+                        $success = false;
+                        if ($dest_path_abs != $source_path_abs) {
+                            if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
+                                $success = copy($source_path_abs, $dest_path_abs);
                             }
-                            $source_path_abs = $source_dir_abs . '/' . $filename;
-                            $dest_path_abs = $source_dir_abs . '/' . $filename_new_1;
-                            $success = false;
-                            if ($dest_path_abs != $source_path_abs) {
-                                if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
-                                    $success = rename($source_path_abs, $dest_path_abs);
-                                }
-                            }
-                            $results['files'][$filename] = $filename_new_1;
                         }
-                        break;
-                }
-                $this->_output = $results;
+                        $results['files'][$filename] = $success;
+                    }
+                    break;
+                case 'rename':
+                    $filename_new = $_POST['fields']['filename-new'];
+                    $multi = (count($checked) > 1);
+                    foreach ($checked as $n => $filename) {
+                        //Symphony::Log()->writeToLog('FN: '.$filename_new);
+                        $filename_new_1 = $filename_new;
+                        if ($multi) {
+                            $ext = null;
+                            $dot_pos = strrpos($filename_new_1, '.');
+                            if ($dot_pos !== false) {
+                                $ext = substr($filename_new_1, $dot_pos);
+                                $filename_new_1 = substr($filename_new_1, 0, $dot_pos);
+                            }
+                            $filename_new_1 .= '-' . strval($n + 1) . $ext;
+                        }
+                        $source_path_abs = $source_dir_abs . '/' . $filename;
+                        $dest_path_abs = $source_dir_abs . '/' . $filename_new_1;
+                        $success = false;
+                        if ($dest_path_abs != $source_path_abs) {
+                            if (file_exists($source_path_abs) && !file_exists($dest_path_abs)) {
+                                $success = rename($source_path_abs, $dest_path_abs);
+                            }
+                        }
+                        $results['files'][$filename] = $filename_new_1;
+                    }
+                    break;
             }
+            $this->_output = $results;
         }
     }
 

@@ -17,27 +17,17 @@ class contentBlueprintsWorkspace extends AdministrationPage
     public function __viewIndex()
     {
         $this->addStylesheetToHead(WORKSPACER_ASSETS_URL . '/workspace.css');
-        /*foreach (glob(WORKSPACER . '/assets/highlighters/highlight-*.js') as $file) {
-            $filename = pathinfo($file, PATHINFO_FILENAME);
-            $this->addElementToHead(
-                new XMLElement(
-                    'link',
-                    null,
-                    [
-                        'rel' => 'prefetch',
-                        'href' => WORKSPACER_ASSETS_URL . '/highlighters/' . basename($file),
-                        'as' => 'script',
-                        'data-highlighter' => substr($filename, strpos($filename, '-') + 1)
-                    ]
-                )
-            );
-        }*/
-
-        $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
+        $this->addElementToHead(
+            new XMLElement('script', null,
+                ['src' => WORKSPACER_ASSETS_URL . '/codearea/main.js', 'type' => 'module']
+            )
+        );
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
         $this->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-css.js');
-        $entries = $this->getDirectoryEntries();
+        $excludes = Symphony::Configuration()->get('exclude', 'workspacer');
+        $excludes = str_getcsv(preg_replace('/\s*,\s*/', ',', trim($excludes)));
+        $entries = $this->getDirectoryEntries(null, $excludes);
         $this->addElementToHead(
             new XMLElement('script', json_encode($entries), ['id' => 'workspaceFiles'])
         );
@@ -52,7 +42,14 @@ class contentBlueprintsWorkspace extends AdministrationPage
             self::directorySelector('source-dir', 'directorySelector', 'mainForm')
         );
         $this->insertAction(
-            new XMLElement('button', '↑', ['name' => 'parent-directory', 'type' => 'button', 'title' => __('Go to parent directory')])
+            new XMLElement(
+                'button', '↑',
+                [
+                    'name' => 'parent-directory',
+                    'type' => 'button',
+                    'title' => __('Go to parent directory')
+                ]
+            )
         );
         /*$this->insertAction(
             new XMLElement('button', '←', ['name' => 'history-backwards', 'type' => 'button'])
@@ -199,12 +196,6 @@ class contentBlueprintsWorkspace extends AdministrationPage
                 new XMLElement('h1', '<span></span> ' . __('Selected Files'))
             )
         );
-        /*$div = new XMLElement('div', null, ['class' => 'selector-box']);
-        $div->appendChild(new XMLElement('p', __('Destination:'), ['class' => 'label']));
-        $div->appendChild(
-            self::directorySelector('dest-dir', 'directorySelector2', 'mainForm')
-        );
-        $dialog->appendChild($div);*/
 
         $div = new XMLElement('div', null, ['class' => 'selector-box']);
         $selector = self::directorySelector('dest-dir', 'directorySelector2', 'mainForm');
@@ -227,7 +218,6 @@ class contentBlueprintsWorkspace extends AdministrationPage
         $div->appendChild(new XMLElement('button', __('Cancel'), ['type' => 'button', 'value' => 'cancel', 'class' => 'leftmost']));
         $dialog->appendChild($div);
         $this->Body->appendChild($dialog);
-
 
         // Rename dialog box.
 
@@ -556,12 +546,17 @@ class contentBlueprintsWorkspace extends AdministrationPage
      * @param string $select_id
      *  ID attribute for 'select' element.
      */
-    static function directorySelector(String $name = null, String $select_id, String $form_id = null)
-    {
+    static function directorySelector(
+        string $name = null,
+        string $select_id,
+        string $form_id = null
+    ) {
         $apply = new XMLElement('fieldset', null, ['class' => 'apply directory-selector']);
         $div = new XMLElement('div');
         $apply->appendChild($div);
-        $div->appendChild(Widget::Label(__('Directory'), null, 'accessible', null, ['for' => $select_id])); //, 'class' => 'apply-label-left']));
+        $div->appendChild(Widget::Label(
+            __('Directory'), null, 'accessible', null, ['for' => $select_id])
+        ); //, 'class' => 'apply-label-left']));
         $select = new XMLElement(
             'select',
             null,

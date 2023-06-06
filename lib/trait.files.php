@@ -2,21 +2,35 @@
 
 trait Files
 {
-    function getDirectoryEntries(string $dir_path = null)
+    /**
+     * Recursively fetch file information.
+     */
+    function getDirectoryEntries(string $dir_path = null, array $excludes = null)
     {
         $dir_path_abs = WORKSPACE . ($dir_path ? '/' . $dir_path : null);
-        $rdi = new RecursiveDirectoryIterator($dir_path_abs,  RecursiveDirectoryIterator::SKIP_DOTS);
-        $iterator = new RecursiveIteratorIterator($rdi, RecursiveIteratorIterator::SELF_FIRST);
+        $rdi = new RecursiveDirectoryIterator(
+            $dir_path_abs,  RecursiveDirectoryIterator::SKIP_DOTS
+        );
+        $iterator = new RecursiveIteratorIterator(
+            $rdi, RecursiveIteratorIterator::SELF_FIRST
+        );
         $return = [];
         foreach ($iterator as $file_info) {
-            $return[] = $this->getDirectoryEntry($file_info);
+            $entry = $this->getDirectoryEntry($file_info, $excludes);
+            if (!is_null($entry)) {
+                $return[] = $entry;
+            }
         }
 
         return $return;
     }
 
-    function getDirectoryEntry($file_info)
+    function getDirectoryEntry($file_info, array $excludes = null)
     {
+        if (is_array($excludes) && $file_info->isDir()) {
+            $ws_local_path = substr($file_info->getPathName(), strlen(WORKSPACE) + 1);
+            if (in_array($ws_local_path, $excludes)) return;
+        }
         $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
         $item_out = [
             'name' => $file_info->getFilename(),
@@ -96,7 +110,8 @@ trait Files
 
     function getFileInfoArray($file_path_abs)
     {
-        $format = Symphony::Configuration()->get('date_format', 'region') . ' ' . Symphony::Configuration()->get('time_format', 'region');
+        $format = Symphony::Configuration()->get('date_format', 'region') .
+            ' ' . Symphony::Configuration()->get('time_format', 'region');
         $file_info = new SplFileInfo($file_path_abs);
         $item_out = [
             'name' => $file_info->getFilename(),

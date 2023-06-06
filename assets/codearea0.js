@@ -56,10 +56,9 @@
 
     class Insert
     {
-        constructor(editor, title, cumulative = true)
+        constructor (editor, title, cumulative = true)
         {
             this.editor = editor;
-            this.title = title
             let sel_range = editor.getSelectionRange();
             this.old_text = sel_range.toString();
             if (this.old_text) {
@@ -92,7 +91,7 @@
             editor.timeoutStart();
         }
 
-        static perform(editor, new_text = null, title = 'insert', cumulative_allowed = true)
+        static create(editor, new_text = null, title = 'insert', cumulative_allowed = true)
         {
             if (!new_text) return false;
             let instance = null;
@@ -129,12 +128,11 @@
         constructor (editor, title, cumulative = true)
         {
             this.editor = editor;
-            this.title = title;
             this.removed_text = '';
             this.cumulative = cumulative;
         }
 
-        static perform(editor, title = 'delete', cumulative_allowed = true)
+        static create(editor, title = 'delete', cumulative_allowed = true)
         {
             let selection = editor.getSelection();
             if (selection.getRangeAt(0).collapsed) {
@@ -188,12 +186,11 @@
         constructor (editor, title, cumulative = true)
         {
             this.editor = editor;
-            this.title = title;
             this.removed_text = '';
             this.cumulative = cumulative;
         }
 
-        static perform(editor, title = 'delete', cumulative_allowed = true)
+        static create(editor, title = 'delete', cumulative_allowed = true)
         {
             let selection = editor.getSelection();
             if (selection.getRangeAt(0).collapsed) {
@@ -241,52 +238,6 @@
             this.editor.setEditorRender([{start: this.position + this.removed_text.length, end: null}]);
         }
     }
-
-    class Cut
-    {
-        constructor (editor, title)
-        {
-            this.editor = editor;
-            this.title = title;
-            this.removed_text = '';
-        }
-
-        static perform(editor, title = 'cut')
-        {
-            let selection = editor.getSelection();
-            if (selection.getRangeAt(0).collapsed) {
-                return false;
-            }
-            let instance = new Cut(editor, title);
-            editor.undoStackPush(instance);
-            instance.doIt();
-            editor.setEditorRender([{start: instance.position, end: null}]);
-            return true;
-        }
-
-        doIt()
-        {
-            let selection = this.editor.getSelection();
-            this.removed_text = selection.toString() + this.removed_text;
-            selection.deleteFromDocument();
-            this.position = this.editor.getRangeBeforeSelection().toString().length;
-        }
-
-        undo()
-        {
-            this.editor.replaceText(this.position, 0, this.removed_text);
-            this.editor.setEditorRender(
-                [{start: this.position + this.removed_text.length, end: null}]
-            );
-        }
-
-        redo()
-        {
-            this.editor.replaceText(this.position, this.removed_text.length, "");
-            this.editor.setEditorRender([{start: this.position, end: null}]);
-        }
-    }
-
 
     const KEY = {
         UP_ARROW: 38,
@@ -384,32 +335,30 @@
 
             let styles = document.createElement('style');
             styles.textContent =
-`context-menu {
-    position: fixed;
-    display: block;
-    appearance: menulist;
-    background-color: white;
-    border: 1px solid rgba(0, 0, 0, .40);
-    outline: none;
-}
-context-menu button {
-    display: block;
-    padding: .4rem .5rem;
-    width: 100%;
-    -moz-appearance: menulist-button;
-    -moz-appearance: list;
-    /*-moz-appearance: inherit;*/
-    border-radius: 0;
-    border: none;
-    background-color: inherit;
-    text-align: left;
-    outline: none;
-}
-context-menu button:hover {
-    color: white;
-    background-color: #668abe;
-}
-`;
+            `context-menu {
+            position: fixed;
+            display: block;
+            appearance: auto;
+            -moz-appearance: contextmenu;
+            -webkit-appearance: menulist;
+            background-color: white;
+            border: 1px solid rgba(0, 0, 0, .40);
+            outline: none;
+        }
+        context-menu button {
+            display: block;
+            padding: .5rem;
+            width: 100%;
+            /*-webkit-appearance: menulist-button;
+            -moz-appearance: list;
+            -moz-appearance: inherit;*/
+            border-radius: 0;
+            border: none;
+            background-color: inherit;
+            text-align: left;
+            outline: none;
+        }
+        `;
             this.appendChild(styles);
 
             this.open = false;
@@ -469,7 +418,7 @@ context-menu button:hover {
                 if (button.disabled) {
                     event.stopPropagation();
                 } else {
-                    this.dispatchEvent(new CustomEvent('menuaction', {bubbles: true, detail: {action: button.name}}));
+                    this.dispatchEvent(new CustomEvent('menu_action', {bubbles: true, detail: {action: button.name}}));
                     //this.visible = false;
                 }
             };
@@ -574,6 +523,10 @@ context-menu button:hover {
         {
             return this.I.undo_stack.getLastItem();
         }
+
+        //line_beginnings = [];
+        //menu_items_enabled = [];
+
 
         constructor()
         {
@@ -708,7 +661,7 @@ context-menu {
             editArea.addEventListener('keyup', this.editAreaOnKeyUp.bind(this));
             editArea.addEventListener('cut', this.editAreaOnCut.bind(this));
             editArea.addEventListener('paste', this.editAreaOnPaste.bind(this));
-            editArea.addEventListener('contextmenu', this.editorOnContextMenu.bind(this));
+            //editArea.addEventListener('contextmenu', this.editorOnContextMenu.bind(this));
 
             //if(([8, 13, 32, 45, 46].indexOf(key) != -1) or (key >= 48 && key <= 90) or (key >= 163 && key <= 222))
 
@@ -721,34 +674,28 @@ context-menu {
 
             menu.addItem('undo', 'Undo');
             menu.addItem('redo', 'Redo');
-            menu.addItem('cut', 'Cut to local clipboard');
-            menu.addItem('copy', 'Copy to local clipboard');
-            menu.addItem("paste", "Paste from local clipboard");
+            menu.addItem('cut', 'Cut');
+            menu.addItem('copy', 'Copy');
+            menu.addItem("paste", "Paste");
             menu.addItem('delete', 'Delete');
             menu.addItem('selectAll', 'Select all');
             menu.top = 10;
 
             menu.left = 10;
             menu.open = false;
-            menu.addEventListener('menuaction', this.editorOnMenuAction.bind(this));
+            menu.addEventListener('menu_action', this.editorOnMenuAction.bind(this));
             menu.addEventListener('blur', this.menuOnFocusOut.bind(this));
             //menu.addEventListener('keydown', this.menuOnKeyDown.bind(this));
 
             container.appendChild(menu);
             this._menu = menu;
 
-            /*editArea.addEventListener('rightclick', function (event) {
-                event.preventDefault();
-                alert("weeth");
-                this._menu.visible = true;
-            });*/
-            //this.addeventListener('rightclick')
             this.dispatchEvent(new Event('codeeditorready', {bubbles: true}));
         }
 
         attributeChangedCallback(name, old_value, new_value)
         {
-                //console.log(name);
+                console.log(name);
             switch (name) {
                 case "font_family":
                     this.I.lineNumbers.style.fontFamily = new_value;
@@ -783,6 +730,29 @@ context-menu {
         formStateRestoreCallback(state, mode) {
             //
         }
+
+
+        // Event handlers.
+
+        /*onSelectionChange(event)
+        {
+            let edit_area = this.I.editArea;
+            let selection = window.getSelection();
+            if (!selection.isCollapsed) {
+                //let anchor_pos = selection.anchorNode.compareDocumentPosition(this);
+                let anchor_pos = this.compareDocumentPosition(selection.anchorNode);
+                let focus_pos = this.compareDocumentPosition(selection.focusNode);
+                //let focus_pos = selection.focusNode.compareDocumentPosition(this);
+                //console.log(anchor_pos, focus_pos);
+                if (anchor_pos & Node.DOCUMENT_POSITION_PRECEDING + Node.DOCUMENT_POSITION_FOLLOWING) {
+                    if (focus_pos == 0) {// || (focus_pos & Node.DOCUMENT_POSITION_CONTAINS)) {
+                        //selection.extend(this.I.last_focus_node, 0);
+                    } else {
+                        this.I.last_focus_node = selection.focusNode;
+                    }
+                }
+            }
+        }*/
 
         /*
          * Edit area focus event.
@@ -868,7 +838,7 @@ context-menu {
             if (key == 8) {
                 // Delete
                 event.preventDefault();
-                Delete.perform(this);
+                Delete.create(this);
             } else if (key == 9) {
                 // Tab character
                 event.preventDefault();
@@ -898,16 +868,16 @@ context-menu {
                     for (let i = 0; i < (ind_width - (count % ind_width)); i++) {
                         spaces += " ";
                     }
-                    Insert.perform(this, spaces);
+                    Insert.create(this, spaces);
                 } else {
-                    Insert.perform(this, "\t");
+                    Insert.create(this, "\t");
                 }
             } else if (key == 13) {
                 event.preventDefault();
-                Insert.perform(this, "\n", false);
+                Insert.create(this, "\n", false);
             } else if (key == 46) {
                 event.preventDefault();
-                ForwardDelete.perform(this);
+                ForwardDelete.create(this);
                 //this.timeoutStart();
             }
         }
@@ -927,7 +897,7 @@ context-menu {
                     event.preventDefault();
                 } else if (key == "." || key == ">") {
                     event.preventDefault();
-                    //Indent.perform(this);
+                    //Indent.create(this);
                 } else if (key.toLowerCase() == "a") {
                     event.preventDefault();
                     this.selectAll();
@@ -938,7 +908,7 @@ context-menu {
             if (event.charCode < 32) {
                 return;
             }
-            Insert.perform(this, key);
+            Insert.create(this, key);
             event.preventDefault();
         }
 
@@ -965,7 +935,7 @@ context-menu {
             let sel_range = this.getSelectionRange();
             if (!sel_range.collapsed) {
                 document.execCommand("copy");
-                Cut.perform(this, "cut");
+                Delete.create(this, "cut", false);
             }
         }
 
@@ -977,7 +947,7 @@ context-menu {
             event.preventDefault();
             let new_text = event.clipboardData.getData('text');
             if (new_text.length > 0) {
-                Insert.perform(this, new_text, "paste");
+                Insert.create(this, new_text, "paste");
             }
         }
 
@@ -998,6 +968,7 @@ context-menu {
                 }
             } else {
                 // Set enabled items.
+                //let items_enabledthis.I.redo_stack = [];
                 let items_enabled = [];
                 if (this.undoStackHasItems) {
                     this._menu.setItemLabel("undo", `Undo ${this.I.undo_stack.getLastItem().title}`);
@@ -1041,7 +1012,7 @@ context-menu {
             }
         }
 
-        editorOnMenuAction(event)
+        editorOnMenuAction()
         {
             this._menu.open = false;
             this.I.editArea.focus();
@@ -1054,10 +1025,10 @@ context-menu {
                     window.setTimeout(this.redo.bind(this), 0);
                     break;
                 case "cut":
-                    Cut.perform(this);
+                    document.execCommand('cut');
                     break;
                 case "copy":
-                    //document.execCommand('copy');
+                    document.execCommand('copy');
                     break;
                 case "paste":
                     this.I.editArea.focus();
@@ -1085,7 +1056,42 @@ context-menu {
                 span = (node.nodeName == 'SPAN') ? node : node.closest('span');
             }
         }
-
+    /*
+        menu_onkeydown(event)
+        {
+            event.preventDefault();
+            let key_code = event.keyCode;
+            if (key_code == 27) {
+                this.I.editArea.focus();
+                this.visible = false;
+                return;
+            }
+            if (key_code != 38 && key_code != 40) {
+                return;
+            }
+            let button = this.querySelector('button:focus');
+            let button_index = button ? menu_items_enabled.indexOf(button) : null;
+            if (key_code == 38) {
+                if (button && this.menu_items_enabled.length > 1) {
+                    if (button_index == 0) {
+                        button_index = this.menu_items_enabled.length;
+                    }
+                } else {
+                    button_index = this.menu_items_enabled.length;
+                }
+                menu_items_enabled[button_index - 1].focus();
+            } else if (key_code = 40) {
+                if (button && this.menu_items_enabled.length > 1) {
+                    if (button_index == this.menu_items_enabled.length - 1) {
+                        button_index = -1;
+                    }
+                } else {
+                    button_index = -1;
+                }
+                menu_items_enabled[button_index + 1].focus();
+            }
+        }
+    */
         menuOnMouseDown(event)
         {
             this._menu.open = false;
@@ -1446,6 +1452,7 @@ context-menu {
         indent(text_val)
         {
             //return text_val.replace(REGEXP_INS_TAB, "\n" + Def.TAB);
+            return "bloan";
         }
 
         selectAll()
@@ -1462,7 +1469,7 @@ context-menu {
 
         deleteSelection()
         {
-            Delete.perform(this);
+            Delete.create(this);
         }
 
         reset()
@@ -1549,4 +1556,216 @@ context-menu {
     }
 
     customElements.define('code-area', CodeArea);
+
+
+    /*
+    getCaretPosFromNode(node, offset) {
+        let r = document.createRange();
+        r.setStart(this.I.editArea, 0);
+        r.setEnd(node, offset);
+        let string = r.tostring();
+
+        // Count newline characters;
+        let row = 0,
+            pos = 0,
+            new_pos,
+            finished = false;
+        do {
+            new_pos = string.indexOf("\n", pos);
+            if (new_pos > -1) {
+                pos = new_pos + 1;
+                row++;
+            } else {
+                finished = true;
+            }
+        } while (!finished);
+
+        return {
+            'row': row,
+            'col'.substr(pos).length
+        };
+    }
+    */
+
+    /*
+    getEditorTextSlices()
+    {
+        let sel =this.getSelection().getRangeAt(sel.rangeCount - 1);
+        let r = document.createRange();
+        let slices = {
+            before: '',
+            selected: '',
+            after: ''
+        }
+        r.setStart(this.I.editArea, 0)
+        r.setEnd(sel.startContainer, sel.startOffset)
+        slices.before = this.getTextFromRange(r)
+        if (!sel.collapsed) {
+            r.setStart(sel.startContainer, sel.startOffset)
+            r.setEnd(sel.endContainer, sel.endOffset)
+            slices.selected = this.getTextFromRange(r)
+        }
+
+        r.setStart(sel.endContainer, sel.endOffset)
+        r.setEnd(this.I.editArea, this.I.editArea.childNodes.length)
+        //r.setEnd(this.I.editArea.lastChild, this.I.editArea.lastChild.length)
+        slices.after = getTextFromRange(r)
+        return slices
+    }
+    */
+
+    /*
+    indentLine()
+    {
+        let sel =getSelection();
+        let sel_start_node = sel.startContainer;
+        let caret_offset = sel.startOffset;
+        //alert(sel_start_node + " : " + caret_offset);
+        let txt = sel_start_node.nodeValue;
+        let sli = txt.slice(0, caret_offset);
+        let pos = sli.lastIndexOf("\n");
+        if (pos > -1) {
+            if (txt.charAt(pos + 1) != "\n") {
+                sel_start_node.insertData(pos + 1, "    ");
+            }
+            return;
+        }
+
+        let b;
+        let n, o;
+        let result_mask = Node.DOCUMENT_POSITION_FOLLOWING + Node.DOCUMENT_POSITION_CONTAINS;
+        for (var i = this.line_beginnings.length - 1; i >= 0; i--) {
+            b = line_beginnings[i];
+            n = b.node;
+            o = b.offset;
+            if ((n.compareDocumentPosition(sel_start_node) & result_mask) != 0) {
+                //var val = n.nodeValue;
+                n.insertData(o + 1, "    ");
+                break;
+            }
+        }
+    }
+
+    indentBlock()
+    {
+        let sel =this.getSelection();
+        let r0 = sel.getRangeAt(sel.rangeCount - 1);
+        let sel_start_node = r0.startContainer;
+        let sel_start_offset = r0.startOffset;
+        let sel_end_node = r0.endContainer,
+            sel_end_offset = r0.endOffset;
+        let sel_start_text_node_num = text_nodes.indexOf(sel_start_node),
+            sel_end_text_node_num = text_nodes.indexOf(sel_end_node),
+            current_text_node_num = sel_start_text_node_num;
+        let numba = sel_end_text_node_num = sel_start_text_node_num;
+        let first_node_val = sel_start_node.nodeValue;
+        let parts = [];
+
+        if (!sel.isCollapsed) {
+            if (sel_start_node == sel_end_node) {
+                let text = r0.tostring();
+                alert(text)
+                let parts = text.split("\n");
+                for (var i in parts) {
+                    if (parts[i].length > 0) {
+                        parts[i] = Def.TAB + parts[i];
+                    }
+                }
+
+                //sel_start_node.replaceData(sel_start_offset, text.length, parts.join("\n"));
+                //var new_content = indent(first_node_val.slice(text));
+                let new_content = indent(text);
+                sel_start_node.replaceData(sel_start_offset, text.length, new_content);
+                r0.setEnd(sel_start_node, sel_start_offset + new_content.length);
+                sel.removeAllRanges().addRange(r0);
+            } else {
+                sel_end_node.nodeValue = indent(sel_end_node.nodeValue.slice(0, sel_end_offset)) + sel_end_node.slice(sel_end_offset);
+                sel_start_node.nodeValue = first_node_val.slice(0, sel_start_offset) + indent(first_node_val.slice(sel_start_offset));
+                if (numba > 1) {
+                    for (var i = 1; i < numba; i++) {
+                        current_text_node_num++;
+                        text_nodes[current_text_node_num].nodeValue = indent(text_nodes[current_text_node_num].nodeValue);
+                    }
+                }
+            }
+        }
+        let sli = first_node_val.slice(0, sel_start_offset);
+        let pos = sli.lastIndexOf("\n");
+
+        if (pos == -1) {
+            do {
+                current_text_node_num--;
+                let n = text_nodes[current_text_node_num];
+                let v = n.nodeValue;
+                let last_eol = v.lastIndexOf("\n");
+                if (last_eol > -1) {
+                    n.insertData(last_eol + 1, Def.TAB);
+                    break;
+                }
+            } while (current_text_node_num > 0);
+        } else {
+            if (first_node_val.charAt(pos + 1) != "\n") {
+                sel_start_node.insertData(pos + 1, Def.TAB);
+            }
+        }
+
+    }
+    */
+
+        /*selectAll()
+        {
+            let sel = this.getSelection();
+            sel.selectAllChildren(this.I.editArea);
+        }*/
+
+    /*
+        indentBlock()
+        {
+            getLineBeginnings();
+            let sel =this.getSelection();
+            let r0 = sel.getRangeAt(sel.rangeCount - 1);
+            let sel_start_node = r0.startContainer;
+            let sel_start_offset = r0.startOffset;
+            let sel_end_node = r0.endContainer,
+                sel_end_offset = r0.endOffset;
+            let sel_start_text_node_num = text_nodes.indexOf(sel_start_node),
+                sel_end_text_node_num = text_nodes.indexOf(sel_end_node),
+                current_text_node_num = sel_start_text_node_num;
+            let numba = sel_end_text_node_num = sel_start_text_node_num;
+            let first_node_val = sel_start_node.nodeValue;
+            let parts = [];
+
+            if (sel.isCollapsed == true) {
+                for (let i in (this.line_beginnings.length - 1)...0) {
+                    let line_start = line_beginnings[i];
+                    if (r0.comparePoint(line_start.node, line_start.offset) == 0) {
+                        if (line_start.node.nodeValue.charAt(line_start.offset + 1) != "\n") {
+                            line_start.node.insertData(line_start.offset + 1, Def.TAB);
+                        }
+                    }
+                }
+            }
+            //range.comparePoint(node, offset);
+            let sli = first_node_val.substring(0, sel_start_offset);
+            let pos = sli.lastIndexOf("\n");
+
+            if (pos == -1) {
+                do {
+                    current_text_node_num--;
+                    let n = text_nodes[current_text_node_num];
+                    let v = n.nodeValue;
+                    let last_eol = v.lastIndexOf("\n");
+                    if (last_eol > -1) {
+                        n.insertData(last_eol + 1, Def.TAB);
+                        break;
+                    }
+                } while (current_text_node_num > 0);
+            } else {
+                if (first_node_val.charAt(pos + 1) != "\n") {
+                    sel_start_node.insertData(pos + 1, Def.TAB);
+                }
+            }
+        }
+    */
+
 }());

@@ -7,7 +7,7 @@ class Extension_Workspacer extends Extension
     public function __construct()
     {
         parent::__construct();
-        $this->settings = (object)Symphony::Configuration()->get(WORKSPACER_ID);
+        $this->settings = Symphony::Configuration()->get(WORKSPACER_ID);
     }
 
     public function install()
@@ -28,17 +28,9 @@ class Extension_Workspacer extends Extension
 
     function config()
     {
-        Symphony::Configuration()->setArray([WORKSPACER_ID => parse_ini_file(WORKSPACER_LIB . '/editor_default_settings.txt')], true);
-            /*[
-                WORKSPACER_ID => [
-                    'font_family' => 'Monaco',
-                    'font_size' => '8.4pt',
-                    'line_height' => '148%',
-                    'indentation_method' => 'tabs',
-                    'indentation_width' => '4'
-                ]
-            ], true
-        );*/
+        Symphony::Configuration()->setArray(
+            [WORKSPACER_ID => parse_ini_file(WORKSPACER_LIB . '/editor_defaults.txt')], true
+        );
         Symphony::Configuration()->write();
     }
 
@@ -83,30 +75,28 @@ class Extension_Workspacer extends Extension
                 'page' => '/system/preferences/',
                 'delegate' => 'AddCustomPreferenceFieldsets',
                 'callback' => 'appendPreferences'
-            ]/*,
-            [
-                'page' => '/system/preferences/',
-                'delegate' => 'Save',
-                'callback' => 'savePreferences'
-            ]*/
+            ]
         ];
     }
 
     public function classAutoloading(array $context)
     {
         $loader = require DOCROOT . '/vendor/autoload.php';
-        $loader->addClassMap(['contentBlueprintsWorkspace' => WORKSPACER . '/content/content.blueprintsworkspace.php']);
+        $loader->addClassMap(
+            [
+                'contentBlueprintsWorkspace' =>
+                WORKSPACER . '/content/content.blueprintsworkspace.php'
+            ]
+        );
     }
 
     public function postCallback(array $context)
     {
         $callback = $context['callback'];
-        //echo "<pre>"; print_r($callback);echo "</pre>";
         if ($callback['driver'] == 'blueprintsworkspace') {
             $callback['driver_location'] = WORKSPACER . '/content/content.blueprintsworkspace.php';
         }
         $context['callback'] = $callback;
-        //echo "<br><br><pre>"; print_r($callback);echo "</pre>"; die;
     }
 
     /**
@@ -119,7 +109,11 @@ class Extension_Workspacer extends Extension
         $driver = $callback['driver'];
         if ($driver == 'blueprintspages' && isset($o_page->Contents)) {
             $o_page->addStylesheetToHead(WORKSPACER_ASSETS_URL . '/workspace.css');
-            $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/codearea.js');
+            $o_page->addElementToHead(
+                new XMLElement('script', null,
+                    ['src' => WORKSPACER_ASSETS_URL . '/codearea/main.js', 'type' => 'module']
+                )
+            );
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/workspace.js');
             $o_page->addScriptToHead(WORKSPACER_ASSETS_URL . '/highlighters/highlight-xsl.js');
 
@@ -167,8 +161,7 @@ class Extension_Workspacer extends Extension
 
             // Editor box
 
-            //print_r($o_page->Context);die;//->Contents;die;
-            $this->settings = Symphony::Configuration()->get('workspacer');
+            //$this->settings = Symphony::Configuration()->get('workspacer');
 
             $dialog = new XMLElement('dialog', null, ['id' => 'EditorBox']);
 
@@ -244,20 +237,28 @@ class Extension_Workspacer extends Extension
 
     public function appendPreferences(array $context)
     {
-        //$mode = strtolower($this->settings->mode);
-
         $fieldset = new XMLElement(
             'fieldset',
             new XMLElement('legend', 'Workspacer'),
             ['class' => 'settings']
         );
+        $fieldset->appendChild(
+            Widget::Label(
+                __('Exclude Directories') . '<i>' . __('Comma separated list') . '</i>',
+                Widget::Input(
+                    'settings[' . WORKSPACER_ID . '][exclude]', $this->settings['exclude'] ?? ''
+                ),
+                null, null,
+                ['class' => 'column']
+            )
+        );
 
         $two_columns = new XMLElement('div', null, ['class' => 'two columns']);
         $two_columns->appendChild(
             Widget::Label(
-                __('Font Family'),
+                __('Editor Font Family'),
                 Widget::Input(
-                    'settings[' . WORKSPACER_ID . '][font_family]', $this->settings->font_family
+                    'settings[' . WORKSPACER_ID . '][font_family]', $this->settings['font_family']
                 ),
                 null, null,
                 ['class' => 'column']
@@ -265,9 +266,9 @@ class Extension_Workspacer extends Extension
         );
         $two_columns->appendChild(
             Widget::Label(
-                __('Font Size'),
+                __('Editor Font Size'),
                 Widget::Input(
-                    'settings[' . WORKSPACER_ID . '][font_size]', $this->settings->font_size
+                    'settings[' . WORKSPACER_ID . '][font_size]', $this->settings['font_size']
                 ),
                 null, null,
                 ['class' => 'column']
@@ -278,9 +279,9 @@ class Extension_Workspacer extends Extension
         $one_column = new XMLElement('div', null, ['class' => 'column']);
         $one_column->appendChild(
             Widget::Label(
-                __('Line Height'),
+                __('Editor Line Height'),
                 Widget::Input(
-                    'settings[' . WORKSPACER_ID . '][line_height]', $this->settings->line_height
+                    'settings[' . WORKSPACER_ID . '][line_height]', $this->settings['line_height']
                 ),
                 null, null,
                 ['class' => 'column']
@@ -291,12 +292,12 @@ class Extension_Workspacer extends Extension
         $two_columns = new XMLElement('div', null, ['class' => 'two columns']);
         $two_columns->appendChild(
             Widget::Label(
-                __('Indentation Method'),
+                __('Editor Indentation Method'),
                 Widget::Select(
                     'settings[' . WORKSPACER_ID . '][indentation_method]',
                     [
-                        ['spaces', $this->settings->indentation_method == 'spaces', 'Spaces'],
-                        ['tabs', $this->settings->indentation_method == 'tabs', 'Tabs']
+                        ['spaces', $this->settings['indentation_method'] == 'spaces', 'Spaces'],
+                        ['tabs', $this->settings['indentation_method'] == 'tabs', 'Tabs']
                     ]
                 ),
                 null, null,
@@ -305,10 +306,10 @@ class Extension_Workspacer extends Extension
         );
         $two_columns->appendChild(
             Widget::Label(
-                __('Indentation/Tab Width'),
+                __('Editor Indentation/Tab Width'),
                 Widget::Input(
                     'settings[' . WORKSPACER_ID . '][indentation_width]',
-                    $this->settings->indentation_width,
+                    $this->settings['indentation_width'],
                     'number',
                     ['min' => '1']
                 ),
